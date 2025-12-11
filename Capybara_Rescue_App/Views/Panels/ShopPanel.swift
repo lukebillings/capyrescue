@@ -417,15 +417,15 @@ struct WatchAdCard: View {
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                     
-                    Text("Quick 5 second video")
+                    Text("Watch the 5 second video and receive 10 coins")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.5))
                 }
                 
                 Spacer()
                 
-                // Reward - only show after ATT prompt if needed
-                if !isLoading && isAdReady && showReward {
+                // Reward - always show when ad is ready
+                if !isLoading && isAdReady {
                     HStack(spacing: 6) {
                         Text("+10")
                             .font(.system(size: 20, weight: .bold, design: .rounded))

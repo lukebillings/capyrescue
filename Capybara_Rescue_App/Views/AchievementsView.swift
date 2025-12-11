@@ -1,11 +1,11 @@
 import SwiftUI
 
-// MARK: - Medals View
-struct MedalsView: View {
+// MARK: - Achievements View
+struct AchievementsView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.dismiss) private var dismiss
     
-    struct Medal: Identifiable {
+    struct Achievement: Identifiable {
         let id: String
         let name: String
         let description: String
@@ -13,13 +13,13 @@ struct MedalsView: View {
         let requirement: String
     }
     
-    private let allMedals: [Medal] = [
-        Medal(id: "daily_login", name: "First Login", description: "Log in at least once every 24 hours", emoji: "🥉", requirement: "Log in once"),
-        Medal(id: "streak_3", name: "3 Day Streak", description: "Log in for 3 consecutive days", emoji: "🥈", requirement: "3 day streak"),
-        Medal(id: "streak_7", name: "7 Day Streak", description: "Log in for 7 consecutive days", emoji: "🥇", requirement: "7 day streak"),
-        Medal(id: "streak_30", name: "30 Day Streak", description: "Log in for 30 consecutive days", emoji: "🏆", requirement: "30 day streak"),
-        Medal(id: "streak_100", name: "100 Day Streak", description: "Log in for 100 consecutive days", emoji: "💎", requirement: "100 day streak"),
-        Medal(id: "streak_365", name: "365 Day Streak", description: "Log in for 365 consecutive days", emoji: "👑", requirement: "365 day streak")
+    private let allAchievements: [Achievement] = [
+        Achievement(id: "daily_login", name: "First Login", description: "Log in at least once every 24 hours", emoji: "🥉", requirement: "Log in once"),
+        Achievement(id: "streak_3", name: "3 Day Streak", description: "Log in for 3 consecutive days", emoji: "🥈", requirement: "3 day streak"),
+        Achievement(id: "streak_7", name: "7 Day Streak", description: "Log in for 7 consecutive days", emoji: "🥇", requirement: "7 day streak"),
+        Achievement(id: "streak_30", name: "30 Day Streak", description: "Log in for 30 consecutive days", emoji: "🏆", requirement: "30 day streak"),
+        Achievement(id: "streak_100", name: "100 Day Streak", description: "Log in for 100 consecutive days", emoji: "💎", requirement: "100 day streak"),
+        Achievement(id: "streak_365", name: "365 Day Streak", description: "Log in for 365 consecutive days", emoji: "👑", requirement: "365 day streak")
     ]
     
     private var currentStreak: Int {
@@ -73,12 +73,12 @@ struct MedalsView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
                         
-                        // Medals list
+                        // Achievements list
                         VStack(spacing: 16) {
-                            ForEach(allMedals) { medal in
-                                MedalRow(
-                                    medal: medal,
-                                    isEarned: gameManager.gameState.earnedMedals.contains(medal.id),
+                            ForEach(allAchievements) { achievement in
+                                AchievementRow(
+                                    achievement: achievement,
+                                    isEarned: gameManager.gameState.earnedAchievements.contains(achievement.id),
                                     currentStreak: currentStreak
                                 )
                             }
@@ -88,7 +88,7 @@ struct MedalsView: View {
                     }
                 }
             }
-            .navigationTitle("Medals")
+            .navigationTitle("Achievements")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -106,14 +106,14 @@ struct MedalsView: View {
     }
 }
 
-// MARK: - Medal Row
-struct MedalRow: View {
-    let medal: MedalsView.Medal
+// MARK: - Achievement Row
+struct AchievementRow: View {
+    let achievement: AchievementsView.Achievement
     let isEarned: Bool
     let currentStreak: Int
     
     private var progress: Double {
-        switch medal.id {
+        switch achievement.id {
         case "daily_login":
             return isEarned ? 1.0 : (currentStreak >= 1 ? 1.0 : 0.0)
         case "streak_3":
@@ -133,8 +133,8 @@ struct MedalRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Medal emoji
-            Text(medal.emoji)
+            // Achievement emoji
+            Text(achievement.emoji)
                 .font(.system(size: 48))
                 .frame(width: 60, height: 60)
                 .background(
@@ -147,10 +147,10 @@ struct MedalRow: View {
                 )
                 .opacity(isEarned ? 1.0 : 0.5)
             
-            // Medal info
+            // Achievement info
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text(medal.name)
+                    Text(achievement.name)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(isEarned ? .white : .white.opacity(0.6))
                     
@@ -161,7 +161,7 @@ struct MedalRow: View {
                     }
                 }
                 
-                Text(medal.description)
+                Text(achievement.description)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.7))
                 
@@ -207,6 +207,6 @@ struct MedalRow: View {
 }
 
 #Preview {
-    MedalsView()
+    AchievementsView()
         .environmentObject(GameManager())
 }

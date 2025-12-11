@@ -8,7 +8,7 @@ struct ContentView: View {
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false
     @State private var showShopSheet = false
-    @State private var showMedalsSheet = false
+    @State private var showAchievementsSheet = false
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "has_completed_onboarding")
@@ -57,8 +57,8 @@ struct ContentView: View {
                             .frame(height: 50)
                     }
                     
-                    // Combined header: Profile, Name, Badges, Edit, Coins, Get More
-                    HStack(spacing: 12) {
+                    // Combined header: Profile, Name, Badges, Coins, Get More
+                    HStack(spacing: 6) {
                         // Capybara image in circle
                         Image("iconcapybara")
                             .resizable()
@@ -70,34 +70,31 @@ struct ContentView: View {
                                     .stroke(.white.opacity(0.3), lineWidth: 2)
                             )
                         
-                        // Name
-                        Text(gameManager.gameState.capybaraName)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.white, .white.opacity(0.8)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        
-                        // Medals button
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showMedalsSheet = true
-                        }) {
-                            Image(systemName: "medal.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(.white.opacity(0.6))
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        
-                        // Edit button
+                        // Name (tappable to rename)
                         Button(action: {
                             HapticManager.shared.buttonPress()
                             showRenameSheet = true
                         }) {
-                            Image(systemName: "pencil.circle.fill")
+                            Text(gameManager.gameState.capybaraName)
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.white, .white.opacity(0.8)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        // Achievements button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            showAchievementsSheet = true
+                        }) {
+                            Image(systemName: "medal.fill")
                                 .font(.system(size: 20))
                                 .foregroundStyle(.white.opacity(0.6))
                         }
@@ -106,7 +103,7 @@ struct ContentView: View {
                         Spacer()
                         
                         // Coin icon and amount
-                        HStack(spacing: 6) {
+                        HStack(spacing: 2) {
                             // Coin icon
                             ZStack {
                                 Circle()
@@ -128,7 +125,10 @@ struct ContentView: View {
                             Text("\(gameManager.gameState.capycoins)")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
+                        .padding(.leading, -8)
                         
                         // Get More button
                         Button(action: {
@@ -295,8 +295,8 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .sheet(isPresented: $showMedalsSheet) {
-            MedalsView()
+        .sheet(isPresented: $showAchievementsSheet) {
+            AchievementsView()
                 .environmentObject(gameManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)

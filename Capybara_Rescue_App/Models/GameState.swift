@@ -14,12 +14,12 @@ struct GameState: Codable {
     var subscriptionEndDate: Date?
     var lastLoginDate: Date?
     var loginStreak: Int
-    var earnedMedals: Set<String>
+    var earnedAchievements: Set<String>
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
-        case lastLoginDate, loginStreak, earnedMedals
+        case lastLoginDate, loginStreak, earnedAchievements
     }
     
     // Custom decoding for backward compatibility
@@ -37,7 +37,18 @@ struct GameState: Codable {
         subscriptionEndDate = try container.decodeIfPresent(Date.self, forKey: .subscriptionEndDate)
         lastLoginDate = try container.decodeIfPresent(Date.self, forKey: .lastLoginDate)
         loginStreak = try container.decodeIfPresent(Int.self, forKey: .loginStreak) ?? 0
-        earnedMedals = try container.decodeIfPresent(Set<String>.self, forKey: .earnedMedals) ?? []
+        // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
+        if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
+            earnedAchievements = achievements
+        } else {
+            // Try to decode from old "earnedMedals" key for backward compatibility
+            let allKeys = container.allKeys
+            if let medalsKey = allKeys.first(where: { $0.stringValue == "earnedMedals" }) {
+                earnedAchievements = try container.decodeIfPresent(Set<String>.self, forKey: medalsKey) ?? []
+            } else {
+                earnedAchievements = []
+            }
+        }
     }
     
     // Custom encoding
@@ -55,7 +66,7 @@ struct GameState: Codable {
         try container.encodeIfPresent(subscriptionEndDate, forKey: .subscriptionEndDate)
         try container.encodeIfPresent(lastLoginDate, forKey: .lastLoginDate)
         try container.encode(loginStreak, forKey: .loginStreak)
-        try container.encode(earnedMedals, forKey: .earnedMedals)
+        try container.encode(earnedAchievements, forKey: .earnedAchievements)
     }
     
     // Manual initializer for default state
@@ -72,7 +83,7 @@ struct GameState: Codable {
         subscriptionEndDate: Date?,
         lastLoginDate: Date?,
         loginStreak: Int,
-        earnedMedals: Set<String>
+        earnedAchievements: Set<String>
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -86,7 +97,7 @@ struct GameState: Codable {
         self.subscriptionEndDate = subscriptionEndDate
         self.lastLoginDate = lastLoginDate
         self.loginStreak = loginStreak
-        self.earnedMedals = earnedMedals
+        self.earnedAchievements = earnedAchievements
     }
     
     static let defaultState = GameState(
@@ -102,7 +113,7 @@ struct GameState: Codable {
         subscriptionEndDate: nil as Date?,
         lastLoginDate: nil as Date?,
         loginStreak: 0,
-        earnedMedals: []
+        earnedAchievements: []
     )
     
     var hasActiveSubscription: Bool {

@@ -22,7 +22,7 @@
 		773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E92C200238E96CDB16E9732 /* FoodPanel.swift */; };
 		79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A5A371906970024C7E6DA72A /* GoogleMobileAds */; };
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
-		80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153588DF1EE28EA6D550592C /* MedalsView.swift */; };
+		80E9A0C86D8D0568F393A57C /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153588DF1EE28EA6D550592C /* AchievementsView.swift */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		84DFF939FD1CC2F8B2771A44 /* RewardedAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */; };
 		87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D94C222145C0127922292B /* CapybaraView.swift */; };
@@ -43,7 +43,7 @@
 		0482BF3A81138611B9C52AD3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		14A995BB7DDA4D6B0A767124 /* ThrownItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThrownItemView.swift; sourceTree = "<group>"; };
-		153588DF1EE28EA6D550592C /* MedalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedalsView.swift; sourceTree = "<group>"; };
+		153588DF1EE28EA6D550592C /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		219C5611AFE168CAEB191B45 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BannerAdView.swift; sourceTree = "<group>"; };
 		27DC24A7428511F72A1DDEED /* GameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameManager.swift; sourceTree = "<group>"; };
 		2CE772C5EE05A58130807151 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
@@ -151,7 +151,7 @@
 		6D2BB6A2FF5FD49AD0097E35 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				153588DF1EE28EA6D550592C /* MedalsView.swift */,
+				153588DF1EE28EA6D550592C /* AchievementsView.swift */,
 				0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */,
 				6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */,
 				A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */,
@@ -282,7 +282,7 @@
 				1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */,
 				A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */,
 				0D61A085AA202EF5EB913E5B /* MasterPanel.swift in Sources */,
-				80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */,
+				80E9A0C86D8D0568F393A57C /* AchievementsView.swift in Sources */,
 				7171803649BEF1868C0D3960 /* OnboardingView.swift in Sources */,
 				84DFF939FD1CC2F8B2771A44 /* RewardedAdViewModel.swift in Sources */,
 				4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */,

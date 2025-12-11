@@ -4,7 +4,7 @@ import SwiftUI
 struct CapybaraNameView: View {
     let name: String
     let onRename: () -> Void
-    let onMedals: () -> Void
+    let onAchievements: () -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -50,10 +50,10 @@ struct CapybaraNameView: View {
             
             Spacer()
             
-            // Medals button
+            // Achievements button
             Button(action: {
                 HapticManager.shared.buttonPress()
-                onMedals()
+                onAchievements()
             }) {
                 Image(systemName: "medal.fill")
                     .font(.system(size: 24))
@@ -177,7 +177,7 @@ struct RenameSheet: View {
         )
         .ignoresSafeArea()
         
-        CapybaraNameView(name: "Cappuccino", onRename: {}, onMedals: {})
+        CapybaraNameView(name: "Cappuccino", onRename: {}, onAchievements: {})
     }
 }
 

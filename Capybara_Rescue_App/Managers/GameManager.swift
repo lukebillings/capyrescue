@@ -64,7 +64,7 @@ class GameManager: ObservableObject {
         startDecayTimer()
     }
     
-    // MARK: - Medal System
+    // MARK: - Achievement System
     func checkDailyLogin() {
         let calendar = Calendar.current
         let now = Date()
@@ -94,31 +94,31 @@ class GameManager: ObservableObject {
         // Update last login date
         gameState.lastLoginDate = now
         
-        // Check for medal achievements
-        checkMedalAchievements()
+        // Check for achievements
+        checkAchievements()
     }
     
-    private func checkMedalAchievements() {
+    private func checkAchievements() {
         let streak = gameState.loginStreak
         
-        // Check each medal threshold
-        if streak >= 1 && !gameState.earnedMedals.contains("daily_login") {
-            gameState.earnedMedals.insert("daily_login")
+        // Check each achievement threshold
+        if streak >= 1 && !gameState.earnedAchievements.contains("daily_login") {
+            gameState.earnedAchievements.insert("daily_login")
         }
-        if streak >= 3 && !gameState.earnedMedals.contains("streak_3") {
-            gameState.earnedMedals.insert("streak_3")
+        if streak >= 3 && !gameState.earnedAchievements.contains("streak_3") {
+            gameState.earnedAchievements.insert("streak_3")
         }
-        if streak >= 7 && !gameState.earnedMedals.contains("streak_7") {
-            gameState.earnedMedals.insert("streak_7")
+        if streak >= 7 && !gameState.earnedAchievements.contains("streak_7") {
+            gameState.earnedAchievements.insert("streak_7")
         }
-        if streak >= 30 && !gameState.earnedMedals.contains("streak_30") {
-            gameState.earnedMedals.insert("streak_30")
+        if streak >= 30 && !gameState.earnedAchievements.contains("streak_30") {
+            gameState.earnedAchievements.insert("streak_30")
         }
-        if streak >= 100 && !gameState.earnedMedals.contains("streak_100") {
-            gameState.earnedMedals.insert("streak_100")
+        if streak >= 100 && !gameState.earnedAchievements.contains("streak_100") {
+            gameState.earnedAchievements.insert("streak_100")
         }
-        if streak >= 365 && !gameState.earnedMedals.contains("streak_365") {
-            gameState.earnedMedals.insert("streak_365")
+        if streak >= 365 && !gameState.earnedAchievements.contains("streak_365") {
+            gameState.earnedAchievements.insert("streak_365")
         }
     }
     
