@@ -8,15 +8,12 @@ struct OnboardingView: View {
     
     @State private var currentStep: OnboardingStep = .welcome
     @State private var capybaraName: String = ""
-    @State private var showingAd = false
-    @State private var adProgress: CGFloat = 0
     @FocusState private var isNameFieldFocused: Bool
     
     enum OnboardingStep {
         case welcome
         case notifications
         case pledge
-        case ad
     }
     
     var body: some View {
@@ -25,19 +22,13 @@ struct OnboardingView: View {
             AppColors.background
                 .ignoresSafeArea()
             
-            if showingAd {
-                adView
-            } else {
-                switch currentStep {
-                case .welcome:
-                    welcomeView
-                case .notifications:
-                    notificationsView
-                case .pledge:
-                    pledgeView
-                case .ad:
-                    adView
-                }
+            switch currentStep {
+            case .welcome:
+                welcomeView
+            case .notifications:
+                notificationsView
+            case .pledge:
+                pledgeView
             }
         }
     }
@@ -212,65 +203,25 @@ struct OnboardingView: View {
             
             // Accept button
             Button(action: {
+                // Complete onboarding and go straight to tutorial
+                UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
+                gameManager.watchAd() // Give coins for watching ad
                 withAnimation {
-                    currentStep = .ad
-                    showingAd = true
+                    isPresented = false
                 }
             }) {
-                VStack(spacing: 8) {
-                    Text("Accept and Go")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.black)
-                    
-                    Text("(Ad will play)")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(.black.opacity(0.7))
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(AppColors.accent)
-                )
+                Text("Accept and Go")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(AppColors.accent)
+                    )
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 40)
-        }
-    }
-    
-    // MARK: - Ad View
-    private var adView: some View {
-        VStack(spacing: 32) {
-            Spacer()
-            
-            Text("📺")
-                .font(.system(size: 80))
-            
-            Text("Watching Ad...")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-            
-            // Progress circle
-            ZStack {
-                Circle()
-                    .stroke(.white.opacity(0.2), lineWidth: 8)
-                    .frame(width: 120, height: 120)
-                
-                Circle()
-                    .trim(from: 0, to: adProgress)
-                    .stroke(AppColors.accent, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .frame(width: 120, height: 120)
-                    .rotationEffect(.degrees(-90))
-                
-                Text("\(Int((1 - adProgress) * 10))")
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-            }
-            
-            Spacer()
-        }
-        .onAppear {
-            startAdTimer()
         }
     }
     
@@ -283,27 +234,6 @@ struct OnboardingView: View {
                 }
             }
         }
-    }
-    
-    private func startAdTimer() {
-        adProgress = 0
-        
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-            Task { @MainActor in
-                adProgress += 0.01
-                
-                if adProgress >= 1.0 {
-                    timer.invalidate()
-                    // Complete onboarding
-                    UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
-                    gameManager.watchAd() // Give coins for watching ad
-                    withAnimation {
-                        isPresented = false
-                    }
-                }
-            }
-        }
-        timer.fire()
     }
 }
 
