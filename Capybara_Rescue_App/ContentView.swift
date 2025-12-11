@@ -55,29 +55,115 @@ struct ContentView: View {
                     if consentManager.canRequestAds {
                         BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
                             .frame(height: 50)
-                            .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 0)
                     }
                     
-                    // Top section - Name
-                    CapybaraNameView(
-                        name: gameManager.gameState.capybaraName,
-                        onRename: {
-                            showRenameSheet = true
-                        },
-                        onMedals: {
+                    // Combined header: Profile, Name, Badges, Edit, Coins, Get More
+                    HStack(spacing: 12) {
+                        // Capybara image in circle
+                        Image("iconcapybara")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(.white.opacity(0.3), lineWidth: 2)
+                            )
+                        
+                        // Name
+                        Text(gameManager.gameState.capybaraName)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.white, .white.opacity(0.8)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                        
+                        // Medals button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
                             showMedalsSheet = true
+                        }) {
+                            Image(systemName: "medal.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.white.opacity(0.6))
                         }
-                    )
-                    .padding(.top, 8)
-                    
-                    // Coin display
-                    CoinDisplayView(
-                        coins: gameManager.gameState.capycoins,
-                        onGetMore: {
+                        .buttonStyle(ScaleButtonStyle())
+                        
+                        // Edit button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            showRenameSheet = true
+                        }) {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                        
+                        Spacer()
+                        
+                        // Coin icon and amount
+                        HStack(spacing: 6) {
+                            // Coin icon
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 28, height: 28)
+                                    .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 6, x: 0, y: 2)
+                                
+                                Text("₵")
+                                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color(hex: "8B4513"))
+                            }
+                            
+                            Text("\(gameManager.gameState.capycoins)")
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
+                        
+                        // Get More button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
                             showShopSheet = true
+                        }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 12, weight: .semibold))
+                                
+                                Text("Get More")
+                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FFD700"), Color(hex: "FF8C00")],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 3)
                         }
+                        .buttonStyle(ScaleButtonStyle())
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        GlassBackground()
                     )
-                    .padding(.horizontal, 16)
                     .padding(.top, 8)
                     
                     // Stats display
