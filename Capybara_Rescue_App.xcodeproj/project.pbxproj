@@ -23,15 +23,11 @@
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153588DF1EE28EA6D550592C /* MedalsView.swift */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
+		84DFF939FD1CC2F8B2771A44 /* RewardedAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */; };
 		87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D94C222145C0127922292B /* CapybaraView.swift */; };
 		9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */; };
 		A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */; };
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */; };
-		A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */; };
-		A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */; };
-		A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */; };
-		A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */; };
 		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
 		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
@@ -52,6 +48,7 @@
 		2CE772C5EE05A58130807151 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		31C4839B791F1C9749F05CFF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3E92C200238E96CDB16E9732 /* FoodPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodPanel.swift; sourceTree = "<group>"; };
+		451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdViewModel.swift; sourceTree = "<group>"; };
 		4B9694621846B25490EFFB06 /* ShopPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopPanel.swift; sourceTree = "<group>"; };
 		5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
@@ -71,11 +68,6 @@
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Capybara.usdz; sourceTree = "<group>"; };
-		B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tophat.usdz; sourceTree = "<group>"; };
-		B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Santahat.usdz; sourceTree = "<group>"; };
-		B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
-		B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sunflower.usdz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,11 +138,6 @@
 				9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */,
 				C2C3AEDFBE8014685F7D5827 /* ContentView.swift */,
 				0482BF3A81138611B9C52AD3 /* Info.plist */,
-				B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */,
-				B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */,
-				B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */,
-				B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */,
-				B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */,
 				1D0E44807E0AFF3318F3B545 /* Extensions */,
 				9BEDE4BB3DECEF702C4B0BCD /* Managers */,
 				4196A1A15FE64C68FCE87B3A /* Models */,
@@ -178,6 +165,7 @@
 				664E587C6368CC37B1D7089B /* ConsentManager.swift */,
 				27DC24A7428511F72A1DDEED /* GameManager.swift */,
 				EB93563846587619659B7D5E /* HapticManager.swift */,
+				451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -262,11 +250,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */,
-				A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */,
-				A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */,
-				A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */,
-				A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,6 +281,7 @@
 				0D61A085AA202EF5EB913E5B /* MasterPanel.swift in Sources */,
 				80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */,
 				7171803649BEF1868C0D3960 /* OnboardingView.swift in Sources */,
+				84DFF939FD1CC2F8B2771A44 /* RewardedAdViewModel.swift in Sources */,
 				4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */,
 				C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */,
 				041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */,

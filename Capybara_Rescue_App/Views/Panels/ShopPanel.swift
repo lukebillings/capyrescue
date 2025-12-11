@@ -3,8 +3,7 @@ import SwiftUI
 // MARK: - Shop Panel
 struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
-    @State private var showingAdSimulation = false
-    @State private var adProgress: CGFloat = 0
+    @StateObject private var rewardedAdViewModel = RewardedAdViewModel()
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -59,8 +58,9 @@ struct ShopPanel: View {
                     .padding(.horizontal, 20)
                     
                     WatchAdCard(
-                        isLoading: showingAdSimulation,
-                        progress: adProgress
+                        isLoading: rewardedAdViewModel.isLoading || rewardedAdViewModel.isShowingAd,
+                        progress: 0,
+                        isAdReady: rewardedAdViewModel.isAdReady
                     ) {
                         watchAd()
                     }
@@ -71,6 +71,13 @@ struct ShopPanel: View {
             }
             .padding(.top, 12)
         }
+        .onAppear {
+            // Set up reward handler
+            rewardedAdViewModel.onRewardEarned = {
+                gameManager.watchAd()
+                HapticManager.shared.purchaseSuccess()
+            }
+        }
     }
     
     private func handleCoinPackPurchase(_ pack: CoinPack) {
@@ -79,22 +86,8 @@ struct ShopPanel: View {
     }
     
     private func watchAd() {
-        showingAdSimulation = true
-        adProgress = 0
-        
-        let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-            Task { @MainActor in
-                adProgress += 0.01
-                
-                if adProgress >= 1.0 {
-                    timer.invalidate()
-                    showingAdSimulation = false
-                    gameManager.watchAd()
-                    HapticManager.shared.purchaseSuccess()
-                }
-            }
-        }
-        timer.fire()
+        HapticManager.shared.buttonPress()
+        rewardedAdViewModel.showAd()
     }
 }
 
@@ -371,11 +364,12 @@ struct CoinPackCard: View {
 struct WatchAdCard: View {
     let isLoading: Bool
     let progress: CGFloat
+    let isAdReady: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: {
-            if !isLoading {
+            if !isLoading && isAdReady {
                 action()
             }
         }) {
@@ -393,36 +387,22 @@ struct WatchAdCard: View {
                         .frame(width: 56, height: 56)
                     
                     if isLoading {
-                        Circle()
-                            .trim(from: 0, to: progress)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [.green, Color(hex: "32CD32")],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                ),
-                                style: StrokeStyle(lineWidth: 4, lineCap: .round)
-                            )
-                            .frame(width: 50, height: 50)
-                            .rotationEffect(.degrees(-90))
-                        
-                        Text("\(Int((1 - progress) * 10))")
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                        ProgressView()
+                            .tint(.green)
                     } else {
-                        Image(systemName: "play.fill")
+                        Image(systemName: isAdReady ? "play.fill" : "hourglass")
                             .font(.system(size: 22, weight: .bold))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(isAdReady ? .green : .white.opacity(0.5))
                     }
                 }
                 
                 // Details
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(isLoading ? "Watching Ad..." : "Watch Ad")
+                    Text(isLoading ? "Loading Ad..." : (isAdReady ? "Watch Ad" : "Preparing Ad..."))
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                     
-                    Text("Quick 10 second video")
+                    Text("Quick 5 second video")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.5))
                 }
@@ -430,7 +410,7 @@ struct WatchAdCard: View {
                 Spacer()
                 
                 // Reward
-                if !isLoading {
+                if !isLoading && isAdReady {
                     HStack(spacing: 6) {
                         Text("+10")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
@@ -469,7 +449,7 @@ struct WatchAdCard: View {
             )
         }
         .buttonStyle(ScaleButtonStyle())
-        .disabled(isLoading)
+        .disabled(isLoading || !isAdReady)
     }
 }
 
