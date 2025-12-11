@@ -140,3 +140,4 @@ class RewardedAdViewModel: NSObject, ObservableObject, FullScreenContentDelegate
         return nil
     }
 }
+

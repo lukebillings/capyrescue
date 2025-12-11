@@ -33,3 +33,4 @@ class TrackingManager: ObservableObject {
         return trackingAuthorizationStatus != .notDetermined
     }
 }
+

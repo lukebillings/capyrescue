@@ -210,3 +210,4 @@ struct AchievementRow: View {
     AchievementsView()
         .environmentObject(GameManager())
 }
+
