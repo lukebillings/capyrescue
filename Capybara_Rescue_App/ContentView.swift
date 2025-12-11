@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Main Content View
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
+    @ObservedObject private var consentManager = ConsentManager.shared
     
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false
@@ -50,6 +51,13 @@ struct ContentView: View {
                 
                 // Main content
                 VStack(spacing: 0) {
+                    // Banner Ad at the top (only show if consent allows)
+                    if consentManager.canRequestAds {
+                        BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
+                            .frame(height: 50)
+                            .padding(.top, geometry.safeAreaInsets.top > 0 ? geometry.safeAreaInsets.top : 0)
+                    }
+                    
                     // Top section - Name
                     CapybaraNameView(
                         name: gameManager.gameState.capybaraName,

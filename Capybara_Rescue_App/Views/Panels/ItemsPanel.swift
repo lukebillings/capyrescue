@@ -467,44 +467,44 @@ struct HatPreviewARView: UIViewRepresentable {
                 return nil
             }
             
-            Task.detached {
+            Task {
                 do {
-                    // Load entity using synchronous API (iOS 17 compatible)
-                    // Running in Task.detached to avoid blocking main actor
-                    let loadedEntity = try Entity.load(contentsOf: usdzURL)
+                    // Load entity using async API (Swift 6 compatible)
+                    let loadedEntity = try await Entity.load(contentsOf: usdzURL)
                     
-                    // Create a container to hold the model and apply transformations
-                    let container = ModelEntity()
-                    
-                    // Handle different entity types
-                    if let directModel = loadedEntity as? ModelEntity {
-                        container.addChild(directModel)
-                    } else {
-                        // Clone all children from the loaded entity
-                        for child in loadedEntity.children {
-                            container.addChild(child.clone(recursive: true))
-                        }
+                    // All Entity operations must run on main actor
+                    await MainActor.run {
+                        // Create a container to hold the model and apply transformations
+                        let container = ModelEntity()
                         
-                        // If no children, try to find model in hierarchy
-                        if container.children.isEmpty {
-                            if let model = findModel(in: loadedEntity) {
-                                container.addChild(model)
+                        // Handle different entity types
+                        if let directModel = loadedEntity as? ModelEntity {
+                            container.addChild(directModel)
+                        } else {
+                            // Clone all children from the loaded entity
+                            for child in loadedEntity.children {
+                                container.addChild(child.clone(recursive: true))
+                            }
+                            
+                            // If no children, try to find model in hierarchy
+                            if container.children.isEmpty {
+                                if let model = findModel(in: loadedEntity) {
+                                    container.addChild(model)
+                                }
                             }
                         }
-                    }
-                    
-                    // Apply transformations if we have a valid model
-                    if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
-                        // Scale based on hat type - adjust for preview size
-                        let isSantaHat = fileName.contains("Santa")
-                        let scale: Float = isSantaHat ? 1.0 : 0.2
-                        container.scale = [scale, scale, scale]
-                        // Move Santa hat up slightly to center it better
-                        let yPosition: Float = isSantaHat ? 0.1 : 0.0
-                        container.position = [0, yPosition, 0]
                         
-                        // Add to anchor on main thread
-                        await MainActor.run {
+                        // Apply transformations if we have a valid model
+                        if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
+                            // Scale based on hat type - adjust for preview size
+                            let isSantaHat = fileName.contains("Santa")
+                            let scale: Float = isSantaHat ? 1.0 : 0.2
+                            container.scale = [scale, scale, scale]
+                            // Move Santa hat up slightly to center it better
+                            let yPosition: Float = isSantaHat ? 0.1 : 0.0
+                            container.position = [0, yPosition, 0]
+                            
+                            // Add to anchor
                             anchor.addChild(container)
                         }
                     }
