@@ -17,7 +17,7 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 }
 
 @main
-struct Capybara_Rescue_AppApp: App {
+struct CapybaraRescueUniverseApp: App {
     @StateObject private var gameManager = GameManager()
     @StateObject private var consentManager = ConsentManager.shared
     private let notificationDelegate = NotificationDelegate()

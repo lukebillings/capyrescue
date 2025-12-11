@@ -22,13 +22,13 @@ GLB files work, but USDZ is the preferred format for iOS. Here are two easy ways
 
 1. **Open your Xcode project**
 2. **Right-click** on your project folder in the Project Navigator (left sidebar)
-3. Select **"Add Files to 'Capybara_Rescue_App'..."**
+3. Select **"Add Files to 'Capybara Rescue Universe'..."**
 4. Navigate to your project folder and select:
    - `Capybara.usdz` (if you converted it) OR
    - `Capybara.glb` (the code will try both formats)
 5. **IMPORTANT**: Make sure these checkboxes are selected:
    - ✅ **"Copy items if needed"** (so the file is copied into your project)
-   - ✅ **Your app target** (Capybara_Rescue_App) is checked under "Add to targets"
+   - ✅ **Your app target** (Capybara Rescue Universe) is checked under "Add to targets"
 6. Click **"Add"**
 
 ## Step 3: Verify the File is Added

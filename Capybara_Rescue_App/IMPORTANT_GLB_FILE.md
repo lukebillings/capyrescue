@@ -6,11 +6,11 @@ Your `Capybara.glb` file exists in the project folder, but it needs to be added 
 
 1. **Open your Xcode project**
 2. **Right-click** on your project folder in the Project Navigator (left sidebar)
-3. Select **"Add Files to 'Capybara_Rescue_App'..."**
+3. Select **"Add Files to 'Capybara Rescue Universe'..."**
 4. Navigate to your project folder and select **`Capybara.glb`**
 5. **IMPORTANT**: Make sure these checkboxes are selected:
    - ✅ **"Copy items if needed"** (if not already copied)
-   - ✅ **Your app target** (Capybara_Rescue_App) is checked under "Add to targets"
+   - ✅ **Your app target** (Capybara Rescue Universe) is checked under "Add to targets"
 6. Click **"Add"**
 
 ## GLB vs USDZ Format:

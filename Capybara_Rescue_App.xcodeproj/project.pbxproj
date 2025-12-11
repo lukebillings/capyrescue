@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -54,7 +54,7 @@
 		5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
-		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6FFBB0356803EFE033303F69 /* Capybara Rescue Universe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Capybara Rescue Universe.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
 		8C99258A5050BE2B6E7997BB /* MasterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterPanel.swift; sourceTree = "<group>"; };
 		8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDisplayView.swift; sourceTree = "<group>"; };
@@ -128,7 +128,7 @@
 		51B8B10BBCE80BDC008B76E2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */,
+				6FFBB0356803EFE033303F69 /* Capybara Rescue Universe.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -188,9 +188,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4545D64289BB1BF349F343AC /* Capybara_Rescue_App */ = {
+		4545D64289BB1BF349F343AC /* Capybara Rescue Universe */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1859CA0A94591A35DCC881E0 /* Build configuration list for PBXNativeTarget "Capybara_Rescue_App" */;
+			buildConfigurationList = 1859CA0A94591A35DCC881E0 /* Build configuration list for PBXNativeTarget "Capybara Rescue Universe" */;
 			buildPhases = (
 				007C9ACDBD60466525017757 /* Sources */,
 				6B81DAB980A9AC98033043C3 /* Resources */,
@@ -200,13 +200,13 @@
 			);
 			dependencies = (
 			);
-			name = Capybara_Rescue_App;
+			name = "Capybara Rescue Universe";
 			packageProductDependencies = (
 				A5A371906970024C7E6DA72A /* GoogleMobileAds */,
 				94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */,
 			);
 			productName = Capybara_Rescue_App;
-			productReference = 6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */;
+			productReference = 6FFBB0356803EFE033303F69 /* Capybara Rescue Universe.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -238,11 +238,10 @@
 				37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 				4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4545D64289BB1BF349F343AC /* Capybara_Rescue_App */,
+				4545D64289BB1BF349F343AC /* Capybara Rescue Universe */,
 			);
 		};
 /* End PBXProject section */
@@ -478,7 +477,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1859CA0A94591A35DCC881E0 /* Build configuration list for PBXNativeTarget "Capybara_Rescue_App" */ = {
+		1859CA0A94591A35DCC881E0 /* Build configuration list for PBXNativeTarget "Capybara Rescue Universe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AF597931C920E9A7CD41DB7A /* Debug */,
