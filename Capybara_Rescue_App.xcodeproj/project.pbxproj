@@ -9,24 +9,14 @@
 /* Begin PBXBuildFile section */
 		041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A995BB7DDA4D6B0A767124 /* ThrownItemView.swift */; };
 		0D61A085AA202EF5EB913E5B /* MasterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C99258A5050BE2B6E7997BB /* MasterPanel.swift */; };
-		1540CD6B37904EC7AA418F42 /* fsmonitor-watchman.sample in Resources */ = {isa = PBXBuildFile; fileRef = 5C69264ED14847B53D3899B3 /* fsmonitor-watchman.sample */; };
-		18C1E0949EFF387A320358D3 /* postings.bin in Resources */ = {isa = PBXBuildFile; fileRef = 968A6C27212F26EF3C2D179F /* postings.bin */; };
 		1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */; };
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
 		2379E584C1E32E56C84434C8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE772C5EE05A58130807151 /* GameState.swift */; };
-		3B9EAE2E8D24360AB80083F9 /* post-update.sample in Resources */ = {isa = PBXBuildFile; fileRef = FD28DF54D49A971CD874499A /* post-update.sample */; };
-		42D9529A346057E9B548CE11 /* pre-rebase.sample in Resources */ = {isa = PBXBuildFile; fileRef = F67A9D988A10F0961C862F3E /* pre-rebase.sample */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
-		4BFF7CAB22C7A19D6503881F /* pre-applypatch.sample in Resources */ = {isa = PBXBuildFile; fileRef = F31E6D6D7E1AF65856DFDA06 /* pre-applypatch.sample */; };
 		4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */; };
 		4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */; };
-		520985BF0F09939B4F0E2F4B /* prepare-commit-msg.sample in Resources */ = {isa = PBXBuildFile; fileRef = 601A499D87CB91DEEA36EAD5 /* prepare-commit-msg.sample */; };
-		658D0A3FEA671D722BB5F702 /* applypatch-msg.sample in Resources */ = {isa = PBXBuildFile; fileRef = 323B950F78FB07E5FFEB55C5 /* applypatch-msg.sample */; };
-		66478EE6DDFA99537CEA0E67 /* index.bin in Resources */ = {isa = PBXBuildFile; fileRef = 9348F0786F7FEDB657841D28 /* index.bin */; };
-		692425E67B601AE3C360F33B /* pre-receive.sample in Resources */ = {isa = PBXBuildFile; fileRef = F8130C8B1298B13626596400 /* pre-receive.sample */; };
 		7171803649BEF1868C0D3960 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */; };
 		753D2F54FAF8045BAE685158 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */; };
-		7583C5CFB021A76878629E0F /* update.sample in Resources */ = {isa = PBXBuildFile; fileRef = 7D1BD801F689833377310D09 /* update.sample */; };
 		773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E92C200238E96CDB16E9732 /* FoodPanel.swift */; };
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153588DF1EE28EA6D550592C /* MedalsView.swift */; };
@@ -37,21 +27,14 @@
 		81769B3C2EEAA0EB005FF3FB /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B342EEAA0EB005FF3FB /* Santahat.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D94C222145C0127922292B /* CapybaraView.swift */; };
-		8EFB75CBFA172CEDDE66B783 /* push-to-checkout.sample in Resources */ = {isa = PBXBuildFile; fileRef = 59C56289BD0A4E2AA5CD57E6 /* push-to-checkout.sample */; };
-		9ACE9F5EEA9ADE4B35848F06 /* commit-msg.sample in Resources */ = {isa = PBXBuildFile; fileRef = 0397F533DEB73E3C6B3A9504 /* commit-msg.sample */; };
 		9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */; };
 		A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */; };
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
-		A7270204B4F05CF5700F3A6E /* pre-commit.sample in Resources */ = {isa = PBXBuildFile; fileRef = 7C1346FFAD1F4D4EAB1EB952 /* pre-commit.sample */; };
-		AA64D63634A92291339636D1 /* pre-push.sample in Resources */ = {isa = PBXBuildFile; fileRef = 9DFE568912F4FADA2BD1807A /* pre-push.sample */; };
-		B1A10F61C88212ECFA14CE3D /* metadata.json in Resources */ = {isa = PBXBuildFile; fileRef = FBAB4D2DF472FB5F34679381 /* metadata.json */; };
-		C1C35410ED0CC64B100E75CC /* pre-merge-commit.sample in Resources */ = {isa = PBXBuildFile; fileRef = 55099A7E8091462CE2C6AF2B /* pre-merge-commit.sample */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
 		C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */; };
 		D5D367EF79E4A56FA344338B /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DC24A7428511F72A1DDEED /* GameManager.swift */; };
 		DCD78B01254A8CD1A53B9C1C /* Capybara_Rescue_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */; };
 		DFAD2A25B8C9CB20A66212A6 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB93563846587619659B7D5E /* HapticManager.swift */; };
-		E1BD96FBC976900A327B9B5D /* sendemail-validate.sample in Resources */ = {isa = PBXBuildFile; fileRef = 1E274B0411E1F8774863B1BF /* sendemail-validate.sample */; };
 		FE8F2C04A76B19DDB0874226 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */; };
 /* End PBXBuildFile section */
 
@@ -615,7 +598,6 @@
 		D8DCFC1D6E32D1982B4191F5 /* 7afc0b756e3562d48fb4ef5978f2f1d690a886 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 7afc0b756e3562d48fb4ef5978f2f1d690a886; sourceTree = "<group>"; };
 		D8E8D2904245638C0379F6DC /* 375bf894a293c29cfa1e2e55486ed747ad00e6 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 375bf894a293c29cfa1e2e55486ed747ad00e6; sourceTree = "<group>"; };
 		D900C498EA81445529C01F20 /* c2aa2d51e854fdd08f255dbb0ad1126f1f859e */ = {isa = PBXFileReference; lastKnownFileType = text; path = c2aa2d51e854fdd08f255dbb0ad1126f1f859e; sourceTree = "<group>"; };
-		D942B302FC2B74322BAFD735 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		D996336828BB93DA140DA4A3 /* cf209d21ec5e4913848c36a3b5687ad901f05e */ = {isa = PBXFileReference; lastKnownFileType = file; path = cf209d21ec5e4913848c36a3b5687ad901f05e; sourceTree = "<group>"; };
 		DA7262F781E8BC8C188ACB24 /* 78c43bcd9307ebfe7f14bf71b8075fd3873463 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 78c43bcd9307ebfe7f14bf71b8075fd3873463; sourceTree = "<group>"; };
 		DB77C2240E985E755EB4890B /* 0f7fac3eed8e73b715f9ed7338199c36fd8506 */ = {isa = PBXFileReference; lastKnownFileType = file; path = 0f7fac3eed8e73b715f9ed7338199c36fd8506; sourceTree = "<group>"; };
@@ -873,16 +855,6 @@
 			path = 16;
 			sourceTree = "<group>";
 		};
-		16CF8DAC5DF2C93E4E401F31 /* f03e18a219c4fcb192092601e24660a7218c8a55 */ = {
-			isa = PBXGroup;
-			children = (
-				9348F0786F7FEDB657841D28 /* index.bin */,
-				FBAB4D2DF472FB5F34679381 /* metadata.json */,
-				968A6C27212F26EF3C2D179F /* postings.bin */,
-			);
-			path = f03e18a219c4fcb192092601e24660a7218c8a55;
-			sourceTree = "<group>";
-		};
 		1703FD52F09FF92DA369154A /* 42 */ = {
 			isa = PBXGroup;
 			children = (
@@ -1040,27 +1012,6 @@
 			path = 21;
 			sourceTree = "<group>";
 		};
-		2D09617EE20425DA2475987A /* hooks */ = {
-			isa = PBXGroup;
-			children = (
-				323B950F78FB07E5FFEB55C5 /* applypatch-msg.sample */,
-				0397F533DEB73E3C6B3A9504 /* commit-msg.sample */,
-				5C69264ED14847B53D3899B3 /* fsmonitor-watchman.sample */,
-				FD28DF54D49A971CD874499A /* post-update.sample */,
-				F31E6D6D7E1AF65856DFDA06 /* pre-applypatch.sample */,
-				7C1346FFAD1F4D4EAB1EB952 /* pre-commit.sample */,
-				55099A7E8091462CE2C6AF2B /* pre-merge-commit.sample */,
-				9DFE568912F4FADA2BD1807A /* pre-push.sample */,
-				F67A9D988A10F0961C862F3E /* pre-rebase.sample */,
-				F8130C8B1298B13626596400 /* pre-receive.sample */,
-				601A499D87CB91DEEA36EAD5 /* prepare-commit-msg.sample */,
-				59C56289BD0A4E2AA5CD57E6 /* push-to-checkout.sample */,
-				1E274B0411E1F8774863B1BF /* sendemail-validate.sample */,
-				7D1BD801F689833377310D09 /* update.sample */,
-			);
-			path = hooks;
-			sourceTree = "<group>";
-		};
 		2D307BD5DF5571AE40F67EF9 /* 78 */ = {
 			isa = PBXGroup;
 			children = (
@@ -1092,14 +1043,6 @@
 				F1A7008DF2CCC01B9018E245 /* 7529021f3e415f5f7fffe8e4b164042168116f */,
 			);
 			path = e0;
-			sourceTree = "<group>";
-		};
-		31D1DC7A4FBFB5E9A8AB7F16 /* crepe */ = {
-			isa = PBXGroup;
-			children = (
-				16CF8DAC5DF2C93E4E401F31 /* f03e18a219c4fcb192092601e24660a7218c8a55 */,
-			);
-			path = crepe;
 			sourceTree = "<group>";
 		};
 		32B0864BFF954C57B068B474 /* e3 */ = {
@@ -1895,12 +1838,10 @@
 		6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */ = {
 			isa = PBXGroup;
 			children = (
-				D942B302FC2B74322BAFD735 /* .gitignore */,
 				31C4839B791F1C9749F05CFF /* Assets.xcassets */,
 				9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */,
 				C2C3AEDFBE8014685F7D5827 /* ContentView.swift */,
 				0482BF3A81138611B9C52AD3 /* Info.plist */,
-				6FC2785804C2A512F10CBBE0 /* .git */,
 				1D0E44807E0AFF3318F3B545 /* Extensions */,
 				9BEDE4BB3DECEF702C4B0BCD /* Managers */,
 				4196A1A15FE64C68FCE87B3A /* Models */,
@@ -1990,25 +1931,6 @@
 				48B5A556863BA9184975048F /* fbd59353f2168701a554108880bdc2b41eb532 */,
 			);
 			path = 88;
-			sourceTree = "<group>";
-		};
-		6FC2785804C2A512F10CBBE0 /* .git */ = {
-			isa = PBXGroup;
-			children = (
-				939622E62D1722B2D2DDD4BA /* COMMIT_EDITMSG */,
-				189B7BC73CE44B8A88F9DCD7 /* config */,
-				4530ACB5C7EC5A95DBA91BC1 /* description */,
-				BD417F079E02AADEBE7ED198 /* HEAD */,
-				C66D18F428B712E391D60B9D /* index */,
-				E8BFA9E485AEADE2694AFFA7 /* ORIG_HEAD */,
-				BA1EE94DCEAC3DD776AFA9EA /* cursor */,
-				2D09617EE20425DA2475987A /* hooks */,
-				1721CE088213423DCC5BF980 /* info */,
-				C07159BCF0B456B1629C4A04 /* logs */,
-				4C16BB95818D879976169974 /* objects */,
-				60DA6F196C424A782E82921E /* refs */,
-			);
-			path = .git;
 			sourceTree = "<group>";
 		};
 		6FDF1ED1C5616D4B48DB3059 /* 1c */ = {
@@ -2740,14 +2662,6 @@
 			path = 3a;
 			sourceTree = "<group>";
 		};
-		BA1EE94DCEAC3DD776AFA9EA /* cursor */ = {
-			isa = PBXGroup;
-			children = (
-				31D1DC7A4FBFB5E9A8AB7F16 /* crepe */,
-			);
-			path = cursor;
-			sourceTree = "<group>";
-		};
 		BA404E025BD559A814140450 /* c6 */ = {
 			isa = PBXGroup;
 			children = (
@@ -3437,28 +3351,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
-				658D0A3FEA671D722BB5F702 /* applypatch-msg.sample in Resources */,
-				9ACE9F5EEA9ADE4B35848F06 /* commit-msg.sample in Resources */,
-				1540CD6B37904EC7AA418F42 /* fsmonitor-watchman.sample in Resources */,
-				66478EE6DDFA99537CEA0E67 /* index.bin in Resources */,
-				B1A10F61C88212ECFA14CE3D /* metadata.json in Resources */,
-				3B9EAE2E8D24360AB80083F9 /* post-update.sample in Resources */,
-				18C1E0949EFF387A320358D3 /* postings.bin in Resources */,
-				4BFF7CAB22C7A19D6503881F /* pre-applypatch.sample in Resources */,
-				A7270204B4F05CF5700F3A6E /* pre-commit.sample in Resources */,
-				C1C35410ED0CC64B100E75CC /* pre-merge-commit.sample in Resources */,
-				AA64D63634A92291339636D1 /* pre-push.sample in Resources */,
-				42D9529A346057E9B548CE11 /* pre-rebase.sample in Resources */,
 				81769B382EEAA0EB005FF3FB /* Sunflower.usdz in Resources */,
 				81769B392EEAA0EB005FF3FB /* Capybara.usdz in Resources */,
 				81769B3A2EEAA0EB005FF3FB /* Sombrero2hat.usdz in Resources */,
 				81769B3B2EEAA0EB005FF3FB /* Tophat.usdz in Resources */,
 				81769B3C2EEAA0EB005FF3FB /* Santahat.usdz in Resources */,
-				692425E67B601AE3C360F33B /* pre-receive.sample in Resources */,
-				520985BF0F09939B4F0E2F4B /* prepare-commit-msg.sample in Resources */,
-				8EFB75CBFA172CEDDE66B783 /* push-to-checkout.sample in Resources */,
-				E1BD96FBC976900A327B9B5D /* sendemail-validate.sample in Resources */,
-				7583C5CFB021A76878629E0F /* update.sample in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
