@@ -1,0 +1,212 @@
+import SwiftUI
+
+// MARK: - Medals View
+struct MedalsView: View {
+    @EnvironmentObject var gameManager: GameManager
+    @Environment(\.dismiss) private var dismiss
+    
+    struct Medal: Identifiable {
+        let id: String
+        let name: String
+        let description: String
+        let emoji: String
+        let requirement: String
+    }
+    
+    private let allMedals: [Medal] = [
+        Medal(id: "daily_login", name: "First Login", description: "Log in at least once every 24 hours", emoji: "🥉", requirement: "Log in once"),
+        Medal(id: "streak_3", name: "3 Day Streak", description: "Log in for 3 consecutive days", emoji: "🥈", requirement: "3 day streak"),
+        Medal(id: "streak_7", name: "7 Day Streak", description: "Log in for 7 consecutive days", emoji: "🥇", requirement: "7 day streak"),
+        Medal(id: "streak_30", name: "30 Day Streak", description: "Log in for 30 consecutive days", emoji: "🏆", requirement: "30 day streak"),
+        Medal(id: "streak_100", name: "100 Day Streak", description: "Log in for 100 consecutive days", emoji: "💎", requirement: "100 day streak"),
+        Medal(id: "streak_365", name: "365 Day Streak", description: "Log in for 365 consecutive days", emoji: "👑", requirement: "365 day streak")
+    ]
+    
+    private var currentStreak: Int {
+        gameManager.gameState.loginStreak
+    }
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                AppColors.background
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Current streak display
+                        VStack(spacing: 12) {
+                            Text("Current Streak")
+                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.7))
+                            
+                            HStack(spacing: 8) {
+                                Image(systemName: "flame.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [.orange, .red],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                
+                                Text("\(currentStreak)")
+                                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.white)
+                                
+                                Text("days")
+                                    .font(.system(size: 20, weight: .medium, design: .rounded))
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                        }
+                        .padding(.vertical, 24)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(.white.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(.white.opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                        .padding(.horizontal, 24)
+                        .padding(.top, 16)
+                        
+                        // Medals list
+                        VStack(spacing: 16) {
+                            ForEach(allMedals) { medal in
+                                MedalRow(
+                                    medal: medal,
+                                    isEarned: gameManager.gameState.earnedMedals.contains(medal.id),
+                                    currentStreak: currentStreak
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
+                    }
+                }
+            }
+            .navigationTitle("Medals")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        HapticManager.shared.buttonPress()
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Medal Row
+struct MedalRow: View {
+    let medal: MedalsView.Medal
+    let isEarned: Bool
+    let currentStreak: Int
+    
+    private var progress: Double {
+        switch medal.id {
+        case "daily_login":
+            return isEarned ? 1.0 : (currentStreak >= 1 ? 1.0 : 0.0)
+        case "streak_3":
+            return min(Double(currentStreak) / 3.0, 1.0)
+        case "streak_7":
+            return min(Double(currentStreak) / 7.0, 1.0)
+        case "streak_30":
+            return min(Double(currentStreak) / 30.0, 1.0)
+        case "streak_100":
+            return min(Double(currentStreak) / 100.0, 1.0)
+        case "streak_365":
+            return min(Double(currentStreak) / 365.0, 1.0)
+        default:
+            return 0.0
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Medal emoji
+            Text(medal.emoji)
+                .font(.system(size: 48))
+                .frame(width: 60, height: 60)
+                .background(
+                    Circle()
+                        .fill(isEarned ? Color(hex: "FFD700").opacity(0.2) : Color.white.opacity(0.05))
+                        .overlay(
+                            Circle()
+                                .stroke(isEarned ? Color(hex: "FFD700").opacity(0.5) : Color.white.opacity(0.1), lineWidth: 2)
+                        )
+                )
+                .opacity(isEarned ? 1.0 : 0.5)
+            
+            // Medal info
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(medal.name)
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(isEarned ? .white : .white.opacity(0.6))
+                    
+                    if isEarned {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(.green)
+                    }
+                }
+                
+                Text(medal.description)
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.7))
+                
+                // Progress bar
+                if !isEarned {
+                    GeometryReader { geometry in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(.white.opacity(0.1))
+                                .frame(height: 6)
+                            
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(width: geometry.size.width * progress, height: 6)
+                        }
+                    }
+                    .frame(height: 6)
+                    
+                    Text("\(Int(progress * 100))% complete")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+            }
+            
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isEarned ? Color(hex: "FFD700").opacity(0.1) : .white.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(isEarned ? Color(hex: "FFD700").opacity(0.3) : .white.opacity(0.1), lineWidth: 1)
+                )
+        )
+    }
+}
+
+#Preview {
+    MedalsView()
+        .environmentObject(GameManager())
+}

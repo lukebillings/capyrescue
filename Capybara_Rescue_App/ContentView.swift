@@ -1,0 +1,400 @@
+import SwiftUI
+
+// MARK: - Main Content View
+struct ContentView: View {
+    @EnvironmentObject var gameManager: GameManager
+    
+    @State private var selectedTab: MenuTab = .food
+    @State private var showRenameSheet = false
+    @State private var showShopSheet = false
+    @State private var showMedalsSheet = false
+    @State private var showPanel = false // Hide panel by default - show only menu bar
+    @State private var capybaraPosition: CGPoint = .zero
+    @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+    @State private var currentTutorialStep: TutorialStep? = nil
+    
+    private func checkTutorialStatus() {
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+        let hasCompletedTutorial = UserDefaults.standard.bool(forKey: "has_completed_tutorial")
+        if hasCompletedOnboarding && !hasCompletedTutorial && currentTutorialStep == nil {
+            currentTutorialStep = .food
+        }
+    }
+    
+    var body: some View {
+        if showOnboarding {
+            OnboardingView(isPresented: $showOnboarding)
+                .environmentObject(gameManager)
+                .onChange(of: showOnboarding) { oldValue, newValue in
+                    if !newValue {
+                        // Onboarding completed, check if tutorial should show
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            checkTutorialStatus()
+                        }
+                    }
+                }
+        } else {
+            mainContentView
+                .onAppear {
+                    checkTutorialStatus()
+                }
+        }
+    }
+    
+    private var mainContentView: some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Background
+                AnimatedBackground()
+                    .ignoresSafeArea()
+                
+                // Main content
+                VStack(spacing: 0) {
+                    // Top section - Name
+                    CapybaraNameView(
+                        name: gameManager.gameState.capybaraName,
+                        onRename: {
+                            showRenameSheet = true
+                        },
+                        onMedals: {
+                            showMedalsSheet = true
+                        }
+                    )
+                    .padding(.top, 8)
+                    
+                    // Coin display
+                    CoinDisplayView(
+                        coins: gameManager.gameState.capycoins,
+                        onGetMore: {
+                            showShopSheet = true
+                        }
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    
+                    // Stats display
+                    StatsDisplayView(
+                        food: gameManager.gameState.food,
+                        drink: gameManager.gameState.drink,
+                        happiness: gameManager.gameState.happiness
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+                    
+                    Spacer()
+                    
+                    // Capybara in the center (3D) - moved up higher
+                    Capybara3DView(
+                        emotion: gameManager.gameState.capybaraEmotion,
+                        equippedAccessories: gameManager.gameState.equippedAccessories,
+                        previewingAccessoryId: gameManager.previewingAccessoryId,
+                        onPet: {
+                            gameManager.petCapybara()
+                        }
+                    )
+                    .frame(height: 320) // Increased height to show full capybara including head
+                    .offset(y: -40) // Move up higher on the page
+                    .tutorialHighlight(key: "capybara_tap")
+                    .background(
+                        GeometryReader { capyGeometry in
+                            Color.clear
+                                .onAppear {
+                                    let frame = capyGeometry.frame(in: .global)
+                                    capybaraPosition = CGPoint(
+                                        x: frame.midX,
+                                        y: frame.midY
+                                    )
+                                }
+                        }
+                    )
+                    
+                    // Panel area - show specific panel (moved up higher)
+                    if showPanel {
+                        panelContent
+                            .frame(minHeight: 50, maxHeight: 320) // Increased height to show all items
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .padding(.top, 20) // Add top padding
+                            .padding(.bottom, 100) // Space for menu bar
+                    } else {
+                        // Spacer when showing master panel at bottom
+                        Spacer()
+                    }
+                }
+                
+                // Master panel at bottom - replaces menu bar
+                VStack {
+                    Spacer(minLength: 0)
+                    
+                    if !showPanel {
+                        // Show master panel at bottom
+                        MasterPanel(onCategorySelected: { tab in
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                selectedTab = tab
+                                if tab == .shop {
+                                    showPanel = false
+                                    showShopSheet = true
+                                } else {
+                                    showPanel = true
+                                }
+                            }
+                        })
+                        .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom : 4)
+                    }
+                }
+                .zIndex(100) // Ensure master panel is always on top
+                
+                // Thrown item animation overlay
+                FoodThrowingOverlay(
+                    item: gameManager.thrownItem,
+                    capybaraPosition: capybaraPosition,
+                    onAnimationComplete: {}
+                )
+                
+                // Love hearts overlay (when happiness > 80)
+                LoveHeartsOverlay(
+                    isActive: gameManager.gameState.happiness > 80,
+                    capybaraPosition: capybaraPosition
+                )
+                
+                // Unhappy emojis overlay (when happiness < 50)
+                UnhappyEmojisOverlay(
+                    isActive: gameManager.gameState.happiness < 50,
+                    capybaraPosition: capybaraPosition
+                )
+                
+                // Speech bubble overlay (when food or drink < 80)
+                CapybaraSpeechBubbleOverlay(
+                    food: gameManager.gameState.food,
+                    drink: gameManager.gameState.drink,
+                    capybaraPosition: capybaraPosition
+                )
+                
+                // Run away overlay
+                if gameManager.gameState.hasRunAway {
+                    RunAwayView(onRestart: {
+                        gameManager.resetGame()
+                    })
+                    .transition(.opacity)
+                }
+                
+                // Tutorial overlay
+                if currentTutorialStep != nil {
+                    TutorialOverlay(currentStep: $currentTutorialStep)
+                        .zIndex(200) // Above everything else
+                }
+            }
+        }
+        .sheet(isPresented: $showRenameSheet) {
+            RenameSheet(
+                isPresented: $showRenameSheet,
+                name: $gameManager.gameState.capybaraName,
+                onSave: { newName in
+                    gameManager.renameCapybara(to: newName)
+                }
+            )
+            .presentationDetents([.height(280)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showShopSheet) {
+            ShopSheetView()
+                .environmentObject(gameManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showMedalsSheet) {
+            MedalsView()
+                .environmentObject(gameManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        // Master panel shows by default (showPanel = false)
+    }
+    
+    @ViewBuilder
+    private var panelContent: some View {
+        switch selectedTab {
+        case .food:
+            FoodPanel(
+                onFoodSelected: { item in
+                    if gameManager.feedCapybara(with: item) {
+                        gameManager.throwItem(emoji: item.emoji, isFood: true)
+                    }
+                },
+                onBack: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showPanel = false // Go back to master panel
+                    }
+                }
+            )
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
+            
+        case .drink:
+            DrinkPanel(
+                onDrinkSelected: { item in
+                    if gameManager.giveWater(with: item) {
+                        gameManager.throwItem(emoji: item.emoji, isFood: false)
+                    }
+                },
+                onBack: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showPanel = false // Go back to master panel
+                    }
+                }
+            )
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
+            
+        case .items:
+            ItemsPanel(
+                onBack: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showPanel = false // Go back to master panel
+                    }
+                },
+                onOpenShop: {
+                    showPanel = false
+                    showShopSheet = true
+                }
+            )
+            .transition(.asymmetric(
+                insertion: .move(edge: .trailing).combined(with: .opacity),
+                removal: .move(edge: .leading).combined(with: .opacity)
+            ))
+            
+        case .shop:
+            EmptyView()
+        }
+    }
+}
+
+// MARK: - Shop Sheet View
+struct ShopSheetView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                AppColors.background
+                    .ignoresSafeArea()
+                
+                ShopPanel()
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        HapticManager.shared.buttonPress()
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Animated Background
+struct AnimatedBackground: View {
+    @State private var phase: CGFloat = 0
+    
+    var body: some View {
+        ZStack {
+            // Base gradient
+            LinearGradient(
+                colors: [
+                    Color(hex: "0f0c29"),
+                    Color(hex: "302b63"),
+                    Color(hex: "24243e")
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            // Animated orbs
+            GeometryReader { geometry in
+                ZStack {
+                    // Large orb 1
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.purple.opacity(0.3),
+                                    Color.purple.opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 200
+                            )
+                        )
+                        .frame(width: 400, height: 400)
+                        .offset(
+                            x: sin(phase) * 30 - 100,
+                            y: cos(phase * 0.7) * 40 - 200
+                        )
+                    
+                    // Large orb 2
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.blue.opacity(0.2),
+                                    Color.blue.opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 250
+                            )
+                        )
+                        .frame(width: 500, height: 500)
+                        .offset(
+                            x: cos(phase * 0.8) * 40 + 100,
+                            y: sin(phase * 0.6) * 50 + 200
+                        )
+                    
+                    // Small accent orb
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color(hex: "FFD700").opacity(0.15),
+                                    Color(hex: "FFD700").opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 100
+                            )
+                        )
+                        .frame(width: 200, height: 200)
+                        .offset(
+                            x: sin(phase * 1.2) * 50,
+                            y: cos(phase) * 30 + 100
+                        )
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+            }
+        }
+        .onAppear {
+            withAnimation(
+                .linear(duration: 10)
+                .repeatForever(autoreverses: false)
+            ) {
+                phase = .pi * 2
+            }
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+        .environmentObject(GameManager())
+}
+

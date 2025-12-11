@@ -1,0 +1,616 @@
+import SwiftUI
+import RealityKit
+import ARKit
+
+// MARK: - 3D Capybara View (iOS 17+ compatible)
+@available(iOS 17.0, *)
+struct Capybara3DView: View {
+    let emotion: CapybaraEmotion
+    let equippedAccessories: [String]
+    let previewingAccessoryId: String?
+    let onPet: () -> Void
+    
+    @State private var isPressed = false
+    @State private var pulseScale: CGFloat = 1.0
+    @State private var heartOffset: CGFloat = 0
+    @State private var showHeart = false
+    @State private var rotationAngle: Double = 0
+    @State private var dragOffset: CGSize = .zero
+    @State private var lastDragValue: CGFloat = 0
+    @State private var useProceduralModel = false // Try to load USDZ model first
+    
+    var body: some View {
+        ZStack {
+            // Glow effect behind capybara
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            emotionColor.opacity(0.3),
+                            emotionColor.opacity(0.1),
+                            .clear
+                        ],
+                        center: .center,
+                        startRadius: 50,
+                        endRadius: 180
+                    )
+                )
+                .frame(width: 360, height: 360)
+                .scaleEffect(pulseScale)
+            
+            // 3D Capybara Model (iOS 17+ compatible using ARView)
+            RealityKitView(
+                rotationAngle: $rotationAngle,
+                useProceduralModel: useProceduralModel,
+                equippedHat: equippedHat,
+                equippedGroundItems: equippedGroundItems,
+                previewingAccessoryId: previewingAccessoryId,
+                onModelLoaded: { }
+            )
+            .frame(width: 400, height: 500) // Increased height to show full face
+            .scaleEffect(isPressed ? 0.95 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        let delta = value.translation.width - lastDragValue
+                        rotationAngle += Double(delta) * 0.5 // Adjust sensitivity
+                        lastDragValue = value.translation.width
+                    }
+                    .onEnded { _ in
+                        lastDragValue = 0
+                    }
+            )
+            
+            // Accessories overlay removed - all accessories are now 3D models in Garden Items category
+            
+            // Floating heart animation
+            if showHeart {
+                Text("❤️")
+                    .font(.system(size: 40))
+                    .offset(y: heartOffset - 100)
+                    .opacity(heartOffset < -50 ? 0 : 1)
+                    .animation(.easeOut(duration: 0.8), value: heartOffset)
+            }
+        }
+        .onTapGesture {
+            handlePet()
+        }
+        .onLongPressGesture(minimumDuration: 0.1, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
+        .onAppear {
+            startPulseAnimation()
+        }
+    }
+    
+    private var emotionColor: Color {
+        switch emotion {
+        case .happy: return .pink
+        case .neutral: return .orange
+        case .sad: return .blue
+        }
+    }
+    
+    private var equippedHat: AccessoryItem? {
+        // First check if previewing a hat
+        if let previewId = previewingAccessoryId,
+           let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
+           (previewItem.id == "tophat" || previewItem.id == "santahat" || previewItem.id == "sombrerohat") {
+            return previewItem
+        }
+        // Otherwise find equipped hat (Tophat, Santahat, or Sombrero) - wearable item
+        return AccessoryItem.allItems.first { item in
+            equippedAccessories.contains(item.id) && (item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat")
+        }
+    }
+    
+    private var equippedGroundItems: [AccessoryItem] {
+        var items: [AccessoryItem] = []
+        
+        // Add previewing ground item if any
+        if let previewId = previewingAccessoryId,
+           let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
+           previewItem.id != "tophat" && previewItem.id != "santahat" && previewItem.id != "sombrerohat" && previewItem.modelFileName != nil {
+            items.append(previewItem)
+        }
+        
+        // Add equipped ground items (like Sunflower) - items that go on the ground
+        let equipped = AccessoryItem.allItems.filter { item in
+            equippedAccessories.contains(item.id) && item.id != "tophat" && item.id != "santahat" && item.id != "sombrerohat" && item.modelFileName != nil
+        }
+        items.append(contentsOf: equipped)
+        
+        return items
+    }
+    
+    private func handlePet() {
+        HapticManager.shared.petCapybara()
+        onPet()
+        
+        // Show heart animation
+        showHeart = true
+        heartOffset = 0
+        
+        withAnimation(.easeOut(duration: 0.8)) {
+            heartOffset = -80
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            showHeart = false
+            heartOffset = 0
+        }
+    }
+    
+    private func startPulseAnimation() {
+        withAnimation(
+            .easeInOut(duration: 2)
+            .repeatForever(autoreverses: true)
+        ) {
+            pulseScale = 1.1
+        }
+    }
+    
+}
+
+// MARK: - iOS 17 Compatible RealityKit View Wrapper
+@available(iOS 17.0, *)
+struct RealityKitView: UIViewRepresentable {
+    @Binding var rotationAngle: Double
+    var useProceduralModel: Bool = false
+    var equippedHat: AccessoryItem?
+    var equippedGroundItems: [AccessoryItem] = []
+    var previewingAccessoryId: String?
+    let onModelLoaded: () -> Void
+    
+    // Hat positioning constants - single source of truth
+    // Positive Z moves hat forward toward camera (onto head, not back)
+    private static let hatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let sombreroPosition: SIMD3<Float> = [-0.1, 4, 2.2] // Lower Y for sombrero and z
+    private static let tophatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
+    private static let santahatScale: SIMD3<Float> = [10, 10, 10] // 10x bigger than tophat
+    private static let sombreroScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    
+    private func hatPosition(for hatId: String?) -> SIMD3<Float> {
+        if hatId == "sombrerohat" {
+            return Self.sombreroPosition
+        }
+        return Self.hatPosition
+    }
+    
+    private func hatScale(for hatId: String?) -> SIMD3<Float> {
+        if hatId == "santahat" {
+            return Self.santahatScale
+        } else if hatId == "sombrerohat" {
+            return Self.sombreroScale
+        }
+        return Self.tophatScale
+    }
+    
+    func makeUIView(context: Context) -> ARView {
+        let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
+        arView.backgroundColor = .clear // Transparent background
+        
+        // Disable problematic rendering features
+        arView.environment.background = .color(.clear)
+        arView.renderOptions = [.disableDepthOfField, .disableMotionBlur, .disableAREnvironmentLighting]
+        
+        // Create anchor for the model
+        let anchor = AnchorEntity(world: [0, 0, 0])
+        arView.scene.addAnchor(anchor)
+        
+        // Set up a custom camera positioned further back to see the whole model
+        let camera = PerspectiveCamera()
+        camera.position = [0, 0.4, 3.0] // Camera: x=center, y=higher up, z=back much further to see full model including head
+        // Set camera clipping planes to prevent hats/accessories from being cut off
+        camera.camera.near = 0.01  // Very close near plane to avoid clipping nearby objects
+        camera.camera.far = 100.0  // Far plane for distant objects
+        let cameraAnchor = AnchorEntity(world: [0, 0, 0])
+        cameraAnchor.addChild(camera)
+        arView.scene.addAnchor(cameraAnchor)
+        
+        // Add simple ambient lighting (no shadows)
+        let light = DirectionalLight()
+        light.light.intensity = 800
+        light.position = [0.5, 1, 1]
+        light.light.isRealWorldProxy = false // Disable real-world lighting
+        let lightAnchor = AnchorEntity(world: [0, 0, 0])
+        lightAnchor.addChild(light)
+        arView.scene.addAnchor(lightAnchor)
+        
+        // Try to load the USDZ model first
+        if !useProceduralModel, let model = loadCapybaraModel() {
+            model.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            model.position = [0, -0.1, 0] // Slightly lower to center better in view
+            
+            // Try to disable shadows on all entities to avoid rendering pipeline issues
+            disableShadowsRecursively(on: model)
+            
+            anchor.addChild(model)
+            context.coordinator.modelEntity = model
+            
+            // Load and attach hat if equipped
+            if let hat = equippedHat {
+                print("🎩 Attempting to load hat: \(hat.name), fileName: \(hat.modelFileName ?? "nil")")
+                if let hatModel = loadHatModel(fileName: hat.modelFileName) {
+                    hatModel.position = hatPosition(for: hat.id)
+                    hatModel.scale = hatScale(for: hat.id)
+                    model.addChild(hatModel)
+                    context.coordinator.hatEntity = hatModel
+                    context.coordinator.currentHatId = hat.id
+                    print("✅ \(hat.name) loaded and attached to capybara's head")
+                } else {
+                    print("❌ Failed to load hat model for: \(hat.name)")
+                }
+            } else {
+                print("⚠️ No hat equipped or equippedHat is nil")
+            }
+            
+            // Load and position ground items (like Sunflower) next to capybara
+            // Attach to model so they rotate with the capybara
+            if let model = context.coordinator.modelEntity {
+                loadGroundItems(items: equippedGroundItems, model: model, coordinator: context.coordinator)
+            }
+        } else if let proceduralModel = createProceduralCapybara() {
+            // Fallback to procedural model if USDZ fails to load
+            proceduralModel.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            proceduralModel.position = [0, -0.1, 0] // Slightly lower to center better in view
+            anchor.addChild(proceduralModel)
+            context.coordinator.modelEntity = proceduralModel
+            
+            // Load and attach hat if equipped
+            if let hat = equippedHat {
+                print("🎩 Attempting to load hat: \(hat.name), fileName: \(hat.modelFileName ?? "nil")")
+                if let hatModel = loadHatModel(fileName: hat.modelFileName) {
+                    hatModel.position = hatPosition(for: hat.id)
+                    hatModel.scale = hatScale(for: hat.id)
+                    proceduralModel.addChild(hatModel)
+                    context.coordinator.hatEntity = hatModel
+                    context.coordinator.currentHatId = hat.id
+                    print("✅ \(hat.name) loaded and attached to procedural capybara")
+                } else {
+                    print("❌ Failed to load hat model for: \(hat.name)")
+                }
+            }
+            
+            // Load and position ground items (like Sunflower) next to capybara
+            // Attach to model so they rotate with the capybara
+            if let model = context.coordinator.modelEntity {
+                loadGroundItems(items: equippedGroundItems, model: model, coordinator: context.coordinator)
+            }
+        }
+        
+        return arView
+    }
+    
+    func updateUIView(_ uiView: ARView, context: Context) {
+        // Update rotation
+        if let model = context.coordinator.modelEntity {
+            let radians = rotationAngle * .pi / 180
+            model.orientation = simd_quatf(angle: Float(radians), axis: [0, 1, 0])
+        }
+        
+        // Update hat if equipped status changed
+        if let hat = equippedHat {
+            print("🎩 Update: Hat equipped - \(hat.name)")
+            // Check if hat ID has changed - if so, remove old hat first
+            if let currentHatId = context.coordinator.currentHatId, currentHatId != hat.id {
+                // Hat ID changed - remove old hat
+                if let hatEntity = context.coordinator.hatEntity {
+                    hatEntity.removeFromParent()
+                    context.coordinator.hatEntity = nil
+                    context.coordinator.currentHatId = nil
+                    print("✅ Old hat removed (switching from \(currentHatId) to \(hat.id))")
+                }
+            }
+            
+            // Only load and attach if not already attached
+            if context.coordinator.hatEntity == nil, let model = context.coordinator.modelEntity {
+                if let hatModel = loadHatModel(fileName: hat.modelFileName) {
+                    hatModel.position = hatPosition(for: hat.id)
+                    hatModel.scale = hatScale(for: hat.id)
+                    model.addChild(hatModel)
+                    context.coordinator.hatEntity = hatModel
+                    context.coordinator.currentHatId = hat.id
+                    print("✅ \(hat.name) attached to capybara's head")
+                } else {
+                    print("❌ Failed to load hat model in update")
+                }
+            } else if let hatEntity = context.coordinator.hatEntity, context.coordinator.currentHatId == hat.id {
+                // Update hat position if it already exists and is the same hat (in case model was reloaded)
+                hatEntity.position = hatPosition(for: hat.id)
+                hatEntity.scale = hatScale(for: hat.id)
+            }
+        } else {
+            // Remove hat if unequipped
+            if let hatEntity = context.coordinator.hatEntity {
+                hatEntity.removeFromParent()
+                context.coordinator.hatEntity = nil
+                context.coordinator.currentHatId = nil
+                print("✅ Hat removed")
+            }
+        }
+        
+        // Update ground items - attach to model so they rotate with capybara
+        if let model = context.coordinator.modelEntity {
+            updateGroundItems(items: equippedGroundItems, model: model, coordinator: context.coordinator)
+        }
+    }
+    
+    // Load and position ground items on the ground next to capybara
+    // Attach to model so they rotate with the capybara
+    private func loadGroundItems(items: [AccessoryItem], model: ModelEntity, coordinator: Coordinator) {
+        for (index, item) in items.enumerated() {
+            if let groundModel = loadHatModel(fileName: item.modelFileName) {
+                // Scale for ground items - 10x bigger
+                groundModel.scale = [2.0, 2.0, 2.0] // 10x bigger (0.2 * 10 = 2.0)
+                
+                // Position on ground to the right side of capybara
+                // Right side = positive X value
+                // Space multiple items along the right side - moved further away since it's 10x bigger
+                // Y position aligns green stalk of sunflower with capybara's feet
+                let x: Float = 2.0 + Float(index) * 1.0 // Start at 2.0 (further to the right), space items 1.0 apart
+                let z: Float = 0.0 // Center front/back
+                groundModel.position = [x, 1.0, z] // Green stalk level with capybara's feet
+                
+                // Add as child of capybara model so it rotates with it
+                model.addChild(groundModel)
+                
+                // Store in coordinator
+                if coordinator.groundItemEntities[item.id] == nil {
+                    coordinator.groundItemEntities[item.id] = groundModel
+                }
+                
+                print("✅ \(item.name) loaded and positioned on right side at [\(x), 0.3, \(z)]")
+            }
+        }
+    }
+    
+    // Update ground items when equipped status changes
+    // Attach to model so they rotate with the capybara
+    private func updateGroundItems(items: [AccessoryItem], model: ModelEntity, coordinator: Coordinator) {
+        // Get current item IDs
+        let currentItemIds = Set(items.map { $0.id })
+        let existingItemIds = Set(coordinator.groundItemEntities.keys)
+        
+        // Remove items that are no longer equipped
+        for itemId in existingItemIds {
+            if !currentItemIds.contains(itemId), let entity = coordinator.groundItemEntities[itemId] {
+                entity.removeFromParent()
+                coordinator.groundItemEntities.removeValue(forKey: itemId)
+                print("✅ Ground item removed: \(itemId)")
+            }
+        }
+        
+        // Add new items
+        for item in items {
+            if coordinator.groundItemEntities[item.id] == nil {
+                if let groundModel = loadHatModel(fileName: item.modelFileName) {
+                    groundModel.scale = [2.0, 2.0, 2.0] // 10x bigger (0.2 * 10 = 2.0)
+                    
+                    // Position on ground to the right side of capybara
+                    // Right side = positive X value
+                    // Space multiple items along the right side - moved further away since it's 10x bigger
+                    // Y position aligns green stalk of sunflower with capybara's feet
+                    let existingCount = coordinator.groundItemEntities.count
+                    let x: Float = 3.0 + Float(existingCount) * 1.0 // Start at 2.0 (further to the right), space items 1.0 apart
+                    let z: Float = 0.0 // Center front/back
+                    groundModel.position = [x, 2.5, z] // Green stalk level with capybara's feet
+                    
+                    // Add as child of capybara model so it rotates with it
+                    model.addChild(groundModel)
+                    coordinator.groundItemEntities[item.id] = groundModel
+                    print("✅ \(item.name) added to right side at [\(x), 0.3, \(z)]")
+                }
+            }
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+    
+    class Coordinator {
+        var modelEntity: ModelEntity?
+        var hatEntity: ModelEntity?
+        var currentHatId: String? // Track current hat ID to detect changes
+        var groundItemEntities: [String: ModelEntity] = [:] // Store ground items by item ID
+    }
+    
+    private func loadHatModel(fileName: String?) -> ModelEntity? {
+        guard let fileName = fileName else { 
+            print("⚠️ loadHatModel: fileName is nil")
+            return nil 
+        }
+        
+        // Try loading USDZ file (e.g., "Tophat" -> "Tophat.usdz")
+        print("🔍 Looking for hat model: \(fileName).usdz")
+        if let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") {
+            print("✅ Found \(fileName).usdz at: \(usdzURL.path)")
+            do {
+                let loadedEntity = try Entity.load(contentsOf: usdzURL)
+                
+                // Create a container ModelEntity to hold the full hierarchy
+                // This preserves all child entities and their visual components
+                let containerModel = ModelEntity()
+                
+                // Clone all children from the loaded entity to preserve full model
+                for child in loadedEntity.children {
+                    containerModel.addChild(child.clone(recursive: true))
+                }
+                
+                // If the loaded entity itself has model components, we need to handle it
+                if let directModel = loadedEntity as? ModelEntity {
+                    return directModel
+                }
+                
+                // If container has children, return it
+                if !containerModel.children.isEmpty {
+                    print("✅ Loaded \(fileName) with \(containerModel.children.count) children")
+                    return containerModel
+                }
+                
+                // Fallback: try to find any ModelEntity in hierarchy
+                if let anyModel = findFirstModelEntity(in: loadedEntity) {
+                    return anyModel
+                }
+            } catch {
+                print("❌ Failed to load hat USDZ model: \(error.localizedDescription)")
+            }
+        } else {
+            print("⚠️ \(fileName).usdz not found in bundle")
+        }
+        
+        return nil
+    }
+    
+    // Helper function to try to simplify materials (shadows are handled at render level)
+    private func disableShadowsRecursively(on entity: Entity) {
+        // Shadows are controlled at the ARView render level, not per entity
+        // The renderOptions we set should handle this
+        // This function is kept for potential future material modifications
+        if entity is ModelEntity {
+            // Could modify materials here if needed
+        }
+        
+        // Recursively process children
+        for child in entity.children {
+            disableShadowsRecursively(on: child)
+        }
+    }
+    
+    private func loadCapybaraModel() -> ModelEntity? {
+        // Try loading USDZ first (preferred format for iOS)
+        if let usdzURL = Bundle.main.url(forResource: "Capybara", withExtension: "usdz") {
+            print("✅ Found Capybara.usdz at: \(usdzURL.path)")
+            do {
+                let modelEntity = try Entity.load(contentsOf: usdzURL)
+                print("✅ Successfully loaded USDZ model")
+                
+                // Check if it's a direct ModelEntity
+                if let model = modelEntity as? ModelEntity {
+                    print("✅ Using direct ModelEntity")
+                    return model
+                }
+                
+                // If it's a scene, get the first model entity
+                print("Model has \(modelEntity.children.count) children")
+                if let firstModel = modelEntity.children.first(where: { $0 is ModelEntity }) as? ModelEntity {
+                    print("✅ Using first child ModelEntity")
+                    return firstModel
+                }
+                
+                // Try to find any ModelEntity in the hierarchy
+                if let anyModel = findFirstModelEntity(in: modelEntity) {
+                    print("✅ Found ModelEntity in hierarchy")
+                    return anyModel
+                }
+                
+                print("⚠️ USDZ loaded but no ModelEntity found")
+            } catch {
+                print("❌ Failed to load USDZ model: \(error)")
+            }
+        } else {
+            print("⚠️ Capybara.usdz not found in bundle")
+        }
+        
+        // Try loading GLB file
+        if let glbURL = Bundle.main.url(forResource: "Capybara", withExtension: "glb") {
+            print("✅ Found Capybara.glb at: \(glbURL.path)")
+            do {
+                let modelEntity = try Entity.load(contentsOf: glbURL)
+                print("✅ Successfully loaded GLB model")
+                
+                // Check if it's a direct ModelEntity
+                if let model = modelEntity as? ModelEntity {
+                    print("✅ Using direct ModelEntity from GLB")
+                    return model
+                }
+                
+                // If it's a scene, get the first model entity
+                print("GLB Model has \(modelEntity.children.count) children")
+                if let firstModel = modelEntity.children.first(where: { $0 is ModelEntity }) as? ModelEntity {
+                    print("✅ Using first child ModelEntity from GLB")
+                    return firstModel
+                }
+                
+                // Try to find any ModelEntity in the hierarchy
+                if let anyModel = findFirstModelEntity(in: modelEntity) {
+                    print("✅ Found ModelEntity in GLB hierarchy")
+                    return anyModel
+                }
+                
+                print("⚠️ GLB loaded but no ModelEntity found")
+            } catch {
+                print("❌ Failed to load GLB model: \(error)")
+                print("⚠️ GLB files are NOT supported by RealityKit on iOS!")
+                print("📦 SOLUTION: Convert Capybara.glb to Capybara.usdz using:")
+                print("   1. Reality Converter app (free from Mac App Store)")
+                print("   2. Or an online GLB to USDZ converter")
+                print("   Then add Capybara.usdz to your Xcode project")
+            }
+        } else {
+            print("⚠️ Capybara.glb not found in bundle")
+            print("⚠️ Make sure the file is added to your Xcode project and included in the app target")
+        }
+        
+        print("⚠️ Falling back to procedural model")
+        return nil
+    }
+    
+    private func findFirstModelEntity(in entity: Entity) -> ModelEntity? {
+        if let model = entity as? ModelEntity {
+            return model
+        }
+        for child in entity.children {
+            if let model = findFirstModelEntity(in: child) {
+                return model
+            }
+        }
+        return nil
+    }
+    
+    private func createProceduralCapybara() -> ModelEntity? {
+        // Create a simple capybara shape using basic meshes
+        let body = ModelEntity(
+            mesh: .generateSphere(radius: 0.2),
+            materials: [SimpleMaterial(color: UIColor(red: 0.55, green: 0.45, blue: 0.35, alpha: 1.0), isMetallic: false)]
+        )
+        body.position.y = 0.1
+        
+        let head = ModelEntity(
+            mesh: .generateSphere(radius: 0.15),
+            materials: [SimpleMaterial(color: UIColor(red: 0.61, green: 0.52, blue: 0.40, alpha: 1.0), isMetallic: false)]
+        )
+        head.position = [0, 0.25, 0.1]
+        
+        let snout = ModelEntity(
+            mesh: .generateBox(size: [0.08, 0.05, 0.06]),
+            materials: [SimpleMaterial(color: UIColor(red: 0.66, green: 0.57, blue: 0.46, alpha: 1.0), isMetallic: false)]
+        )
+        snout.position = [0, 0.3, 0.15]
+        
+        // Create a parent entity to hold all parts
+        let capybara = ModelEntity()
+        capybara.addChild(body)
+        capybara.addChild(head)
+        capybara.addChild(snout)
+        
+        return capybara
+    }
+}
+
+#Preview {
+    ZStack {
+        AppColors.background
+            .ignoresSafeArea()
+        
+        Capybara3DView(
+            emotion: .happy,
+            equippedAccessories: ["crown", "sunglasses"],
+            previewingAccessoryId: nil,
+            onPet: {}
+        )
+    }
+}
+
