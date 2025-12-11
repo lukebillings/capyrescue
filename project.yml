@@ -27,15 +27,19 @@ targets:
         excludes:
           - "*.md"
           - "*.png"
-          - "*.usdz"
     resources:
       - path: Capybara_Rescue_App/Assets.xcassets
         type: assetCatalog
       - path: Capybara_Rescue_App/Capybara.usdz
+        type: file
       - path: Capybara_Rescue_App/Tophat.usdz
+        type: file
       - path: Capybara_Rescue_App/Santahat.usdz
+        type: file
       - path: Capybara_Rescue_App/Sombrero2hat.usdz
+        type: file
       - path: Capybara_Rescue_App/Sunflower.usdz
+        type: file
       - path: Capybara_Rescue_App/iconcapybara.png
     settings:
       base:
