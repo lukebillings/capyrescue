@@ -31,7 +31,7 @@ struct Capybara_Rescue_AppApp: App {
         WindowGroup {
             AppStartupView(consentManager: consentManager)
                 .environmentObject(gameManager)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(ColorScheme.dark)
         }
     }
 }

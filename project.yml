@@ -6,11 +6,22 @@ options:
   developmentLanguage: en
   xcodeVersion: "15.0"
 
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads.git
+    from: 12.14.0
+  GoogleUserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git
+    from: 3.1.0
+
 targets:
   Capybara_Rescue_App:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
+    dependencies:
+      - package: GoogleMobileAds
+      - package: GoogleUserMessagingPlatform
     sources:
       - path: Capybara_Rescue_App
         excludes:
@@ -44,5 +55,3 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: "Capybara Rescue"
         INFOPLIST_KEY_CFBundleShortVersionString: "1.0"
         INFOPLIST_KEY_CFBundleVersion: "1"
-
-

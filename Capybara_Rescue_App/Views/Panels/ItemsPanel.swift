@@ -454,12 +454,26 @@ struct HatPreviewARView: UIViewRepresentable {
         
         // Load hat model
         if let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") {
-            Task {
+            // Helper function to find first model entity (captured for use in Task)
+            func findModel(in entity: Entity) -> ModelEntity? {
+                if let model = entity as? ModelEntity {
+                    return model
+                }
+                for child in entity.children {
+                    if let model = findModel(in: child) {
+                        return model
+                    }
+                }
+                return nil
+            }
+            
+            Task.detached {
                 do {
-                    // Load entity using async API
-                    let loadedEntity = try await Entity.load(contentsOf: usdzURL)
+                    // Load entity using synchronous API (iOS 17 compatible)
+                    // Running in Task.detached to avoid blocking main actor
+                    let loadedEntity = try Entity.load(contentsOf: usdzURL)
                     
-                    // Create a container to hold the model
+                    // Create a container to hold the model and apply transformations
                     let container = ModelEntity()
                     
                     // Handle different entity types
@@ -473,12 +487,13 @@ struct HatPreviewARView: UIViewRepresentable {
                         
                         // If no children, try to find model in hierarchy
                         if container.children.isEmpty {
-                            if let model = findFirstModelEntity(in: loadedEntity) {
+                            if let model = findModel(in: loadedEntity) {
                                 container.addChild(model)
                             }
                         }
                     }
                     
+                    // Apply transformations if we have a valid model
                     if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
                         // Scale based on hat type - adjust for preview size
                         let isSantaHat = fileName.contains("Santa")

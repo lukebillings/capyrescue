@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import GoogleMobileAds
 import UserMessagingPlatform
 
@@ -13,15 +14,15 @@ class ConsentManager: ObservableObject {
     /// Request consent information and present consent form if needed
     func requestConsentInfoUpdate(from viewController: UIViewController? = nil) {
         // Set debug geography if needed for testing (remove in production)
-        // let debugSettings = UMPDebugSettings()
+        // let debugSettings = DebugSettings()
         // debugSettings.geography = .EEA
-        // let parameters = UMPRequestParameters()
+        // let parameters = RequestParameters()
         // parameters.debugSettings = debugSettings
         
-        let parameters = UMPRequestParameters()
+        let parameters = RequestParameters()
         
         // Request consent information update
-        UMPConsentInformation.sharedInstance.requestConsentInfoUpdate(with: parameters) { [weak self] error in
+        ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { [weak self] error in
             guard let self = self else { return }
             
             if let error = error {
@@ -42,7 +43,7 @@ class ConsentManager: ObservableObject {
     
     /// Load and present consent form if required
     private func loadConsentFormIfNeeded(from viewController: UIViewController? = nil) {
-        guard UMPConsentInformation.sharedInstance.formStatus == .available else {
+        guard ConsentInformation.shared.formStatus == .available else {
             // Form not available, we can request ads
             self.canRequestAds = true
             self.isLoading = false
@@ -50,7 +51,7 @@ class ConsentManager: ObservableObject {
         }
         
         // Load consent form
-        UMPConsentForm.load { [weak self] form, loadError in
+        ConsentForm.load { [weak self] form, loadError in
             guard let self = self else { return }
             
             if let loadError = loadError {
@@ -68,7 +69,7 @@ class ConsentManager: ObservableObject {
             }
             
             // Present consent form if needed
-            if UMPConsentInformation.sharedInstance.consentStatus == .required {
+            if ConsentInformation.shared.consentStatus == .required {
                 guard let viewController = viewController ?? self.getRootViewController() else {
                     self.canRequestAds = true
                     self.isLoading = false
@@ -95,12 +96,12 @@ class ConsentManager: ObservableObject {
     
     /// Check if consent is obtained and we can show personalized ads
     var canShowPersonalizedAds: Bool {
-        return UMPConsentInformation.sharedInstance.consentStatus == .obtained
+        return ConsentInformation.shared.consentStatus == .obtained
     }
     
     /// Reset consent for testing purposes
     func resetConsent() {
-        UMPConsentInformation.sharedInstance.reset()
+        ConsentInformation.shared.reset()
         canRequestAds = false
     }
     

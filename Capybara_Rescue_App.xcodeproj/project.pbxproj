@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,19 +18,23 @@
 		7171803649BEF1868C0D3960 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */; };
 		753D2F54FAF8045BAE685158 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */; };
 		773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E92C200238E96CDB16E9732 /* FoodPanel.swift */; };
+		79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A5A371906970024C7E6DA72A /* GoogleMobileAds */; };
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		80E9A0C86D8D0568F393A57C /* MedalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153588DF1EE28EA6D550592C /* MedalsView.swift */; };
-		81769B382EEAA0EB005FF3FB /* Sunflower.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B362EEAA0EB005FF3FB /* Sunflower.usdz */; };
-		81769B392EEAA0EB005FF3FB /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B332EEAA0EB005FF3FB /* Capybara.usdz */; };
-		81769B3A2EEAA0EB005FF3FB /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B352EEAA0EB005FF3FB /* Sombrero2hat.usdz */; };
-		81769B3B2EEAA0EB005FF3FB /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B372EEAA0EB005FF3FB /* Tophat.usdz */; };
-		81769B3C2EEAA0EB005FF3FB /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81769B342EEAA0EB005FF3FB /* Santahat.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D94C222145C0127922292B /* CapybaraView.swift */; };
 		9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */; };
 		A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */; };
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */; };
+		A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = C4D5E6F7A8B9C0D1E2F3A4B5 /* Tophat.usdz */; };
+		A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = D6E7F8A9B0C1D2E3F4A5B6C7 /* Santahat.usdz */; };
+		A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = E8F9A0B1C2D3E4F5A6B7C8D9 /* Sombrero2hat.usdz */; };
+		A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F0A1B2C3D4E5F6A7B8C9D0E1 /* Sunflower.usdz */; };
+		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* iconcapybara.png in Resources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C8D9E0F1A2B3 /* iconcapybara.png */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
+		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
 		C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */; };
 		D5D367EF79E4A56FA344338B /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DC24A7428511F72A1DDEED /* GameManager.swift */; };
 		DCD78B01254A8CD1A53B9C1C /* Capybara_Rescue_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */; };
@@ -49,14 +53,10 @@
 		3E92C200238E96CDB16E9732 /* FoodPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodPanel.swift; sourceTree = "<group>"; };
 		4B9694621846B25490EFFB06 /* ShopPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopPanel.swift; sourceTree = "<group>"; };
 		5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
+		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
-		81769B332EEAA0EB005FF3FB /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Capybara.usdz; sourceTree = "<group>"; };
-		81769B342EEAA0EB005FF3FB /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Santahat.usdz; sourceTree = "<group>"; };
-		81769B352EEAA0EB005FF3FB /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
-		81769B362EEAA0EB005FF3FB /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sunflower.usdz; sourceTree = "<group>"; };
-		81769B372EEAA0EB005FF3FB /* Tophat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tophat.usdz; sourceTree = "<group>"; };
 		8C99258A5050BE2B6E7997BB /* MasterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterPanel.swift; sourceTree = "<group>"; };
 		8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDisplayView.swift; sourceTree = "<group>"; };
 		9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capybara_Rescue_AppApp.swift; sourceTree = "<group>"; };
@@ -70,7 +70,25 @@
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Capybara.usdz; sourceTree = "<group>"; };
+		C4D5E6F7A8B9C0D1E2F3A4B5 /* Tophat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tophat.usdz; sourceTree = "<group>"; };
+		D6E7F8A9B0C1D2E3F4A5B6C7 /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Santahat.usdz; sourceTree = "<group>"; };
+		E8F9A0B1C2D3E4F5A6B7C8D9 /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
+		F0A1B2C3D4E5F6A7B8C9D0E1 /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sunflower.usdz; sourceTree = "<group>"; };
+		C2D3E4F5A6B7C8D9E0F1A2B3 /* iconcapybara.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = iconcapybara.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		55B48E1FB3C7DE546019CA51 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */,
+				ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1D0E44807E0AFF3318F3B545 /* Extensions */ = {
@@ -127,15 +145,16 @@
 				9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */,
 				C2C3AEDFBE8014685F7D5827 /* ContentView.swift */,
 				0482BF3A81138611B9C52AD3 /* Info.plist */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */,
+				C4D5E6F7A8B9C0D1E2F3A4B5 /* Tophat.usdz */,
+				D6E7F8A9B0C1D2E3F4A5B6C7 /* Santahat.usdz */,
+				E8F9A0B1C2D3E4F5A6B7C8D9 /* Sombrero2hat.usdz */,
+				F0A1B2C3D4E5F6A7B8C9D0E1 /* Sunflower.usdz */,
+				C2D3E4F5A6B7C8D9E0F1A2B3 /* iconcapybara.png */,
 				1D0E44807E0AFF3318F3B545 /* Extensions */,
 				9BEDE4BB3DECEF702C4B0BCD /* Managers */,
 				4196A1A15FE64C68FCE87B3A /* Models */,
 				6D2BB6A2FF5FD49AD0097E35 /* Views */,
-				81769B332EEAA0EB005FF3FB /* Capybara.usdz */,
-				81769B342EEAA0EB005FF3FB /* Santahat.usdz */,
-				81769B352EEAA0EB005FF3FB /* Sombrero2hat.usdz */,
-				81769B362EEAA0EB005FF3FB /* Sunflower.usdz */,
-				81769B372EEAA0EB005FF3FB /* Tophat.usdz */,
 			);
 			path = Capybara_Rescue_App;
 			sourceTree = "<group>";
@@ -156,6 +175,7 @@
 		9BEDE4BB3DECEF702C4B0BCD /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				664E587C6368CC37B1D7089B /* ConsentManager.swift */,
 				27DC24A7428511F72A1DDEED /* GameManager.swift */,
 				EB93563846587619659B7D5E /* HapticManager.swift */,
 			);
@@ -183,6 +203,7 @@
 			buildPhases = (
 				007C9ACDBD60466525017757 /* Sources */,
 				6B81DAB980A9AC98033043C3 /* Resources */,
+				55B48E1FB3C7DE546019CA51 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -190,7 +211,8 @@
 			);
 			name = Capybara_Rescue_App;
 			packageProductDependencies = (
-				8153AC5C2EEAA7AA00987AA2 /* GoogleMobileAds */,
+				A5A371906970024C7E6DA72A /* GoogleMobileAds */,
+				94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */,
 			);
 			productName = Capybara_Rescue_App;
 			productReference = 6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */;
@@ -222,8 +244,10 @@
 			mainGroup = 449565BE8651469C1122D5B8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				8153AC5B2EEAA7AA00987AA2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -238,11 +262,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
-				81769B382EEAA0EB005FF3FB /* Sunflower.usdz in Resources */,
-				81769B392EEAA0EB005FF3FB /* Capybara.usdz in Resources */,
-				81769B3A2EEAA0EB005FF3FB /* Sombrero2hat.usdz in Resources */,
-				81769B3B2EEAA0EB005FF3FB /* Tophat.usdz in Resources */,
-				81769B3C2EEAA0EB005FF3FB /* Santahat.usdz in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */,
+				A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */,
+				A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */,
+				A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */,
+				A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* iconcapybara.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +286,7 @@
 				FE8F2C04A76B19DDB0874226 /* CircularProgressView.swift in Sources */,
 				C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */,
 				753D2F54FAF8045BAE685158 /* ColorExtensions.swift in Sources */,
+				C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */,
 				7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */,
 				45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */,
 				773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */,
@@ -485,7 +511,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8153AC5B2EEAA7AA00987AA2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+		37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
 			requirement = {
@@ -493,12 +519,25 @@
 				minimumVersion = 12.14.0;
 			};
 		};
+		4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8153AC5C2EEAA7AA00987AA2 /* GoogleMobileAds */ = {
+		94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8153AC5B2EEAA7AA00987AA2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			package = 4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+		A5A371906970024C7E6DA72A /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
 			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
