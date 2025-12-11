@@ -4,12 +4,47 @@ import SwiftUI
 struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @StateObject private var rewardedAdViewModel = RewardedAdViewModel()
+    @StateObject private var trackingManager = TrackingManager.shared
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 16) {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
+                
+                // Free Coins Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "gift.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(.green)
+                        
+                        Text("Free Coins")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    WatchAdCard(
+                        isLoading: rewardedAdViewModel.isLoading || rewardedAdViewModel.isShowingAd,
+                        progress: 0,
+                        isAdReady: rewardedAdViewModel.isAdReady,
+                        showReward: trackingManager.hasRequestedTracking
+                    ) {
+                        watchAd()
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // Tracking disclaimer
+                    Text("Ads may use tracking. Manage in Settings.")
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 4)
+                }
                 
                 // Coin Packs Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -33,38 +68,33 @@ struct ShopPanel: View {
                     .padding(.horizontal, 20)
                     
                     VStack(spacing: 8) {
-                        ForEach(Array(CoinPack.packs.enumerated()), id: \.element.id) { index, pack in
+                        ForEach(Array(CoinPack.packs.sorted(by: { $0.coins < $1.coins }).enumerated()), id: \.element.id) { index, pack in
                             CoinPackCard(pack: pack, tier: index) {
                                 handleCoinPackPurchase(pack)
                             }
                         }
                     }
                     .padding(.horizontal, 16)
-                }
-                
-                // Free Coins Section
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "gift.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.green)
+                    
+                    // Purchase disclaimers
+                    VStack(spacing: 6) {
+                        Text("Purchases are processed by Apple. Refunds handled via Apple Support.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
                         
-                        Text("Free Coins")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                        Text("Coins can be used for purchasing In Game Items, In Game Foods and In Game Drinks. Coins are non-refundable and have no cash value.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
                         
-                        Spacer()
+                        Text("Terms of Service  •  Privacy Policy")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 20)
-                    
-                    WatchAdCard(
-                        isLoading: rewardedAdViewModel.isLoading || rewardedAdViewModel.isShowingAd,
-                        progress: 0,
-                        isAdReady: rewardedAdViewModel.isAdReady
-                    ) {
-                        watchAd()
-                    }
-                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
                 }
                 
                 Spacer(minLength: 20)
@@ -72,6 +102,9 @@ struct ShopPanel: View {
             .padding(.top, 12)
         }
         .onAppear {
+            // Update tracking status
+            trackingManager.updateTrackingStatus()
+            
             // Set up reward handler
             rewardedAdViewModel.onRewardEarned = {
                 gameManager.watchAd()
@@ -87,7 +120,12 @@ struct ShopPanel: View {
     
     private func watchAd() {
         HapticManager.shared.buttonPress()
-        rewardedAdViewModel.showAd()
+        
+        // Request tracking authorization if needed before showing ad
+        Task {
+            await trackingManager.requestTrackingAuthorizationIfNeeded()
+            rewardedAdViewModel.showAd()
+        }
     }
 }
 
@@ -231,8 +269,8 @@ struct CoinPackCard: View {
     
     private var tierGradient: [Color] {
         switch tier {
-        case 0: // Ultra - Gold/Premium
-            return [Color(hex: "FFD700"), Color(hex: "B8860B")]
+        case 0: // Ultra - Purple (no gold)
+            return [Color(hex: "9B59B6"), Color(hex: "6C3483")]
         case 1: // Mega - Purple
             return [Color(hex: "9B59B6"), Color(hex: "6C3483")]
         case 2: // Super - Blue
@@ -242,44 +280,22 @@ struct CoinPackCard: View {
         }
     }
     
-    private var tierIcon: String {
-        switch tier {
-        case 0: return "crown.fill"
-        case 1: return "bolt.fill"
-        case 2: return "star.fill"
-        default: return "sparkle"
-        }
+    // Unified price button gradient for consistent appearance
+    private var priceButtonGradient: [Color] {
+        return [Color(hex: "4A90E2"), Color(hex: "357ABD")]
     }
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
-                // Tier Icon with Background
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: tierGradient,
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 56, height: 56)
-                        .shadow(color: tierGradient[0].opacity(0.5), radius: 8, y: 4)
-                    
-                    Image(systemName: tierIcon)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundStyle(.white)
-                }
+                // Coin Icon
+                CoinIcon(size: 56)
+                    .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 8, y: 4)
                 
                 // Pack Info
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        Text(pack.name)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        if let badge = pack.badge {
+                    if let badge = pack.badge {
+                        HStack(spacing: 8) {
                             Text(badge)
                                 .font(.system(size: 9, weight: .heavy, design: .rounded))
                                 .foregroundStyle(.white)
@@ -313,21 +329,19 @@ struct CoinPackCard: View {
                 
                 // Price Button
                 Text(pack.price)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
-                    .frame(minWidth: 70)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                    .frame(width: 80, height: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
                             .fill(
                                 LinearGradient(
-                                    colors: tierGradient,
+                                    colors: priceButtonGradient,
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .shadow(color: tierGradient[0].opacity(0.4), radius: 6, y: 3)
+                            .shadow(color: priceButtonGradient[0].opacity(0.4), radius: 6, y: 3)
                     )
             }
             .padding(12)
@@ -365,6 +379,7 @@ struct WatchAdCard: View {
     let isLoading: Bool
     let progress: CGFloat
     let isAdReady: Bool
+    let showReward: Bool
     let action: () -> Void
     
     var body: some View {
@@ -409,8 +424,8 @@ struct WatchAdCard: View {
                 
                 Spacer()
                 
-                // Reward
-                if !isLoading && isAdReady {
+                // Reward - only show after ATT prompt if needed
+                if !isLoading && isAdReady && showReward {
                     HStack(spacing: 6) {
                         Text("+10")
                             .font(.system(size: 20, weight: .bold, design: .rounded))

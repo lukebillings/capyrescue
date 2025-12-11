@@ -12,6 +12,7 @@
 		1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */; };
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
 		2379E584C1E32E56C84434C8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE772C5EE05A58130807151 /* GameState.swift */; };
+		256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BDABA03E65FB27F57C697 /* TrackingManager.swift */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
 		4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */; };
 		4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */; };
@@ -66,6 +67,7 @@
 		D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraNameView.swift; sourceTree = "<group>"; };
 		DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capybara3DView.swift; sourceTree = "<group>"; };
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
+		E35BDABA03E65FB27F57C697 /* TrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManager.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -166,6 +168,7 @@
 				27DC24A7428511F72A1DDEED /* GameManager.swift */,
 				EB93563846587619659B7D5E /* HapticManager.swift */,
 				451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */,
+				E35BDABA03E65FB27F57C697 /* TrackingManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -285,6 +288,7 @@
 				4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */,
 				C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */,
 				041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */,
+				256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */,
 				4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

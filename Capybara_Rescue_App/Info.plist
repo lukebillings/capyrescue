@@ -49,6 +49,8 @@
 	<key>GADApplicationIdentifier</key>
 	<!-- Sample AdMob app ID: ca-app-pub-3940256099942544~1458002511 -->
 	<string>ca-app-pub-4955072757491395~9789266585</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This allows us to show you personalized ads and improve your experience.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
