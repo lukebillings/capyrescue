@@ -27,6 +27,11 @@
 		9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */; };
 		A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */; };
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */; };
+		A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */; };
+		A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */; };
+		A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */; };
+		A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */; };
 		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
 		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
@@ -66,6 +71,11 @@
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Capybara.usdz; sourceTree = "<group>"; };
+		B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Tophat.usdz; sourceTree = "<group>"; };
+		B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Santahat.usdz; sourceTree = "<group>"; };
+		B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
+		B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sunflower.usdz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +146,11 @@
 				9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */,
 				C2C3AEDFBE8014685F7D5827 /* ContentView.swift */,
 				0482BF3A81138611B9C52AD3 /* Info.plist */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* Capybara.usdz */,
+				B4C5D6E7F8A9B0C1D2E3F4A5 /* Tophat.usdz */,
+				B6C7D8E9F0A1B2C3D4E5F6A7 /* Santahat.usdz */,
+				B8C9D0E1F2A3B4C5D6E7F8A9 /* Sombrero2hat.usdz */,
+				B0C1D2E3F4A5B6C7D8E9F0A1 /* Sunflower.usdz */,
 				1D0E44807E0AFF3318F3B545 /* Extensions */,
 				9BEDE4BB3DECEF702C4B0BCD /* Managers */,
 				4196A1A15FE64C68FCE87B3A /* Models */,
@@ -247,6 +262,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* Capybara.usdz in Resources */,
+				A3B4C5D6E7F8A9B0C1D2E3F4 /* Tophat.usdz in Resources */,
+				A5B6C7D8E9F0A1B2C3D4E5F6 /* Santahat.usdz in Resources */,
+				A7B8C9D0E1F2A3B4C5D6E7F8 /* Sombrero2hat.usdz in Resources */,
+				A9B0C1D2E3F4A5B6C7D8E9F0 /* Sunflower.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
