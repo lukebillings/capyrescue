@@ -90,18 +90,22 @@ struct ItemsPanel: View {
         .padding(.bottom, 8) // Add bottom padding
         .onChange(of: gameManager.gameState.capycoins) { oldValue, newValue in
             // Update preview state when coins change (e.g., after buying coins)
-            if let previewId = previewingItemId,
-               let item = AccessoryItem.allItems.first(where: { $0.id == previewId }) {
-                if gameManager.canAfford(item.cost) {
-                    showInsufficientCoinsMessage = false
-                }
+            guard let previewId = previewingItemId, !previewId.isEmpty else { return }
+            guard let item = AccessoryItem.allItems.first(where: { $0.id == previewId }) else {
+                print("⚠️ Preview item not found: \(previewId)")
+                return
+            }
+            if gameManager.canAfford(item.cost) {
+                showInsufficientCoinsMessage = false
             }
         }
     }
     
     @ViewBuilder
     private var insufficientCoinsOverlay: some View {
-        if showInsufficientCoinsMessage, let previewingId = previewingItemId,
+        if showInsufficientCoinsMessage, 
+           let previewingId = previewingItemId,
+           !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             InsufficientCoinsOverlay(
                 itemName: item.name,
@@ -123,7 +127,9 @@ struct ItemsPanel: View {
     
     @ViewBuilder
     private var looksGoodModalOverlay: some View {
-        if showLooksGoodModal, let previewingId = previewingItemId,
+        if showLooksGoodModal,
+           let previewingId = previewingItemId,
+           !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             LooksGoodModal(
                 itemName: item.name,
@@ -159,17 +165,31 @@ struct ItemsPanel: View {
     }
     
     private var filteredItems: [AccessoryItem] {
-        AccessoryItem.allItems
+        // Safety check: ensure allItems is accessible
+        guard !AccessoryItem.allItems.isEmpty else {
+            print("⚠️ No accessory items available")
+            return []
+        }
+        // Sort items by price (cost) in ascending order
+        return AccessoryItem.allItems.sorted { $0.cost < $1.cost }
     }
     
     private func handleItemAction(_ item: AccessoryItem) {
+        // Safety check: ensure item is valid
+        guard !item.id.isEmpty else {
+            print("⚠️ Invalid item ID")
+            return
+        }
+        
         if gameManager.gameState.ownedAccessories.contains(item.id) {
             // Check if this is a hat and if another hat is already equipped
-            let isHat = item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat"
-            if isHat {
-                // Check if another hat is equipped
-                let otherEquippedHats = gameManager.gameState.equippedAccessories.filter { equippedId in
-                    equippedId == "tophat" || equippedId == "santahat" || equippedId == "sombrerohat"
+            if item.isHat {
+                // Check if another hat is equipped - safely access allItems
+                let otherEquippedHats = gameManager.gameState.equippedAccessories.compactMap { equippedId -> String? in
+                    guard !equippedId.isEmpty,
+                          let equippedItem = AccessoryItem.allItems.first(where: { $0.id == equippedId }),
+                          equippedItem.isHat else { return nil }
+                    return equippedId
                 }
                 
                 if !otherEquippedHats.isEmpty && !gameManager.gameState.equippedAccessories.contains(item.id) {
@@ -277,21 +297,36 @@ struct AccessoryItemButton: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 10) {
-                // 3D Model or Emoji
+                // 3D Model Preview
                 ZStack {
                     Circle()
                         .fill(backgroundColor)
                         .frame(width: 70, height: 70)
                     
-                    if #available(iOS 17.0, *),
-                       let modelFileName = item.modelFileName, 
-                       (item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat") {
-                        // Show 3D model for hats
-                        HatPreview3DView(fileName: modelFileName)
-                            .frame(width: 70, height: 70)
-                            .clipShape(Circle())
+                    if let modelFileName = item.modelFileName, !modelFileName.isEmpty, item.isHat {
+                        // Always show 3D model preview for hats
+                        if #available(iOS 17.0, *) {
+                            HatPreview3DView(fileName: modelFileName)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else {
+                            // Fallback for older iOS versions
+                            Text(item.emoji)
+                                .font(.system(size: 36))
+                        }
+                    } else if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
+                        // Show 3D model for other items with models
+                        if #available(iOS 17.0, *) {
+                            HatPreview3DView(fileName: modelFileName)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else {
+                            // Fallback for older iOS versions
+                            Text(item.emoji)
+                                .font(.system(size: 36))
+                        }
                     } else {
-                        // Fallback to emoji for other items or older iOS
+                        // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
                             .font(.system(size: 36))
                     }
@@ -452,65 +487,73 @@ struct HatPreviewARView: UIViewRepresentable {
         ambientLightAnchor.addChild(ambientLight)
         arView.scene.addAnchor(ambientLightAnchor)
         
-        // Load hat model
-        if let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") {
-            // Helper function to find first model entity (captured for use in Task)
-            func findModel(in entity: Entity) -> ModelEntity? {
-                if let model = entity as? ModelEntity {
+        // Load hat model - with safety checks
+        guard !fileName.isEmpty else {
+            print("⚠️ Empty file name for hat preview")
+            return arView
+        }
+        
+        guard let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") else {
+            print("⚠️ Hat file not found in bundle: \(fileName).usdz")
+            return arView
+        }
+        
+        // Helper function to find first model entity (captured for use in Task)
+        func findModel(in entity: Entity) -> ModelEntity? {
+            if let model = entity as? ModelEntity {
+                return model
+            }
+            for child in entity.children {
+                if let model = findModel(in: child) {
                     return model
                 }
-                for child in entity.children {
-                    if let model = findModel(in: child) {
-                        return model
-                    }
-                }
-                return nil
             }
-            
-            Task {
-                do {
-                    // Load entity using async API (Swift 6 compatible)
-                    let loadedEntity = try await Entity.load(contentsOf: usdzURL)
+            return nil
+        }
+        
+        Task { @MainActor in
+            do {
+                // Load entity using async API (Swift 6 compatible)
+                let loadedEntity = try await Entity.load(contentsOf: usdzURL)
+                
+                // Create a container to hold the model and apply transformations
+                let container = ModelEntity()
+                
+                // Handle different entity types
+                if let directModel = loadedEntity as? ModelEntity {
+                    container.addChild(directModel)
+                } else {
+                    // Clone all children from the loaded entity
+                    for child in loadedEntity.children {
+                        container.addChild(child.clone(recursive: true))
+                    }
                     
-                    // All Entity operations must run on main actor
-                    await MainActor.run {
-                        // Create a container to hold the model and apply transformations
-                        let container = ModelEntity()
-                        
-                        // Handle different entity types
-                        if let directModel = loadedEntity as? ModelEntity {
-                            container.addChild(directModel)
-                        } else {
-                            // Clone all children from the loaded entity
-                            for child in loadedEntity.children {
-                                container.addChild(child.clone(recursive: true))
-                            }
-                            
-                            // If no children, try to find model in hierarchy
-                            if container.children.isEmpty {
-                                if let model = findModel(in: loadedEntity) {
-                                    container.addChild(model)
-                                }
-                            }
-                        }
-                        
-                        // Apply transformations if we have a valid model
-                        if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
-                            // Scale based on hat type - adjust for preview size
-                            let isSantaHat = fileName.contains("Santa")
-                            let scale: Float = isSantaHat ? 1.0 : 0.2
-                            container.scale = [scale, scale, scale]
-                            // Move Santa hat up slightly to center it better
-                            let yPosition: Float = isSantaHat ? 0.1 : 0.0
-                            container.position = [0, yPosition, 0]
-                            
-                            // Add to anchor
-                            anchor.addChild(container)
+                    // If no children, try to find model in hierarchy
+                    if container.children.isEmpty {
+                        if let model = findModel(in: loadedEntity) {
+                            container.addChild(model)
                         }
                     }
-                } catch {
-                    print("❌ Failed to load hat preview: \(error)")
                 }
+                
+                // Apply transformations if we have a valid model
+                if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
+                    // Scale based on hat type - adjust for preview size
+                    let isSantaHat = fileName.contains("Santa")
+                    let scale: Float = isSantaHat ? 1.0 : 0.2
+                    container.scale = [scale, scale, scale]
+                    // Move Santa hat up slightly to center it better
+                    let yPosition: Float = isSantaHat ? 0.1 : 0.0
+                    container.position = [0, yPosition, 0]
+                    
+                    // Add to anchor safely
+                    anchor.addChild(container)
+                } else {
+                    print("⚠️ No valid model found in hat file: \(fileName)")
+                }
+            } catch {
+                print("❌ Failed to load hat preview: \(error.localizedDescription)")
+                print("   File: \(fileName).usdz")
             }
         }
         

@@ -96,12 +96,12 @@ struct Capybara3DView: View {
         // First check if previewing a hat
         if let previewId = previewingAccessoryId,
            let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
-           (previewItem.id == "tophat" || previewItem.id == "santahat" || previewItem.id == "sombrerohat") {
+           previewItem.isHat {
             return previewItem
         }
-        // Otherwise find equipped hat (Tophat, Santahat, or Sombrero) - wearable item
+        // Otherwise find equipped hat - wearable item
         return AccessoryItem.allItems.first { item in
-            equippedAccessories.contains(item.id) && (item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat")
+            equippedAccessories.contains(item.id) && item.isHat
         }
     }
     
@@ -111,13 +111,13 @@ struct Capybara3DView: View {
         // Add previewing ground item if any
         if let previewId = previewingAccessoryId,
            let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
-           previewItem.id != "tophat" && previewItem.id != "santahat" && previewItem.id != "sombrerohat" && previewItem.modelFileName != nil {
+           !previewItem.isHat && previewItem.modelFileName != nil {
             items.append(previewItem)
         }
         
         // Add equipped ground items (like Sunflower) - items that go on the ground
         let equipped = AccessoryItem.allItems.filter { item in
-            equippedAccessories.contains(item.id) && item.id != "tophat" && item.id != "santahat" && item.id != "sombrerohat" && item.modelFileName != nil
+            equippedAccessories.contains(item.id) && !item.isHat && item.modelFileName != nil
         }
         items.append(contentsOf: equipped)
         

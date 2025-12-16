@@ -203,12 +203,44 @@ struct AccessoryItem: Identifiable, Equatable {
         case gardenItems = ""
     }
     
-    static let allItems: [AccessoryItem] = [
-        // Garden Items
-        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top Hat", category: .gardenItems, cost: 400, modelFileName: "Tophat"), // Loads Tophat.usdz
-        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 10000, modelFileName: "Santahat"), // Loads Santahat.usdz
-        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 4000, modelFileName: "Sombrero2hat"), // Loads Sombrero2hat.usdz
+    // Check if this item is a hat (only one hat can be equipped at a time)
+    var isHat: Bool {
+        guard !id.isEmpty else { return false }
+        guard modelFileName != nil else { return false }
+        
+        let hatIds: Set<String> = [
+            "baseballcap",
+            "cowboyhat",
+            "tophat",
+            "wizardhat",
+            "piratehat",
+            "propellerhat",
+            "sombrerohat",
+            "froghat",
+            "foxhat",
+            "santahat"
+        ]
+        
+        return hatIds.contains(id)
+    }
+    
+    private static let _allItems: [AccessoryItem] = [
+        // Hats
+        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap"),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 200, modelFileName: "Cowboy hat"),
+        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 300, modelFileName: "Tophat"),
+        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 400, modelFileName: "Wizard hat"),
+        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 400, modelFileName: "Pirate hat"),
+        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 800, modelFileName: "Propeller hat"),
+        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 4000, modelFileName: "Sombrero2hat"),
+        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 8000, modelFileName: "Frog Hat"),
+        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 7000, modelFileName: "Fox Hat"),
+        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 10000, modelFileName: "Santahat"),
     ]
+    
+    static var allItems: [AccessoryItem] {
+        return _allItems
+    }
 }
 
 // MARK: - Coin Pack

@@ -16,7 +16,6 @@
 		256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BDABA03E65FB27F57C697 /* TrackingManager.swift */; };
 		3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
-		4C2791C009B0E151861F79D5 /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = D58CC86C80F124F3633215B7 /* Sombrero2hat.usdz */; };
 		4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */; };
 		4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */; };
 		66DBD658C0076D4EBCE2E550 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219C5611AFE168CAEB191B45 /* BannerAdView.swift */; };
@@ -27,6 +26,14 @@
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		7AF44475E591A27725D43264 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
+		81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */; };
+		81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */; };
+		81FA1C332EF1C0180060CEF1 /* Wizard hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C302EF1C0180060CEF1 /* Wizard hat.usdz */; };
+		81FA1C342EF1C0180060CEF1 /* Pirate hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2E2EF1C0180060CEF1 /* Pirate hat.usdz */; };
+		81FA1C352EF1C0180060CEF1 /* Fox Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */; };
+		81FA1C362EF1C0180060CEF1 /* Frog Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */; };
+		81FA1C372EF1C0180060CEF1 /* Cowboy hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2B2EF1C0180060CEF1 /* Cowboy hat.usdz */; };
+		81FA1C3B2EF1C0660060CEF1 /* Sombrero2hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C3A2EF1C0660060CEF1 /* Sombrero2hat.usdz */; };
 		84DFF939FD1CC2F8B2771A44 /* RewardedAdViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451D428ED93DD3765C8DCEC6 /* RewardedAdViewModel.swift */; };
 		87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4D94C222145C0127922292B /* CapybaraView.swift */; };
 		9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */; };
@@ -63,6 +70,14 @@
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
+		81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Baseball cap.usdz"; sourceTree = "<group>"; };
+		81FA1C2B2EF1C0180060CEF1 /* Cowboy hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cowboy hat.usdz"; sourceTree = "<group>"; };
+		81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fox Hat.usdz"; sourceTree = "<group>"; };
+		81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Frog Hat.usdz"; sourceTree = "<group>"; };
+		81FA1C2E2EF1C0180060CEF1 /* Pirate hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pirate hat.usdz"; sourceTree = "<group>"; };
+		81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Propeller hat.usdz"; sourceTree = "<group>"; };
+		81FA1C302EF1C0180060CEF1 /* Wizard hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Wizard hat.usdz"; sourceTree = "<group>"; };
+		81FA1C3A2EF1C0660060CEF1 /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
 		8C99258A5050BE2B6E7997BB /* MasterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterPanel.swift; sourceTree = "<group>"; };
 		8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDisplayView.swift; sourceTree = "<group>"; };
 		9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capybara_Rescue_AppApp.swift; sourceTree = "<group>"; };
@@ -73,7 +88,6 @@
 		C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidMenuBar.swift; sourceTree = "<group>"; };
 		C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraNameView.swift; sourceTree = "<group>"; };
-		D58CC86C80F124F3633215B7 /* Sombrero2hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Sombrero2hat.usdz; sourceTree = "<group>"; };
 		D929CE28E0EC27ED19506142 /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Sunflower.usdz; sourceTree = "<group>"; };
 		DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capybara3DView.swift; sourceTree = "<group>"; };
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
@@ -146,13 +160,20 @@
 		6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */ = {
 			isa = PBXGroup;
 			children = (
+				81FA1C3A2EF1C0660060CEF1 /* Sombrero2hat.usdz */,
+				81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */,
+				81FA1C2B2EF1C0180060CEF1 /* Cowboy hat.usdz */,
+				81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */,
+				81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */,
+				81FA1C2E2EF1C0180060CEF1 /* Pirate hat.usdz */,
+				81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */,
+				81FA1C302EF1C0180060CEF1 /* Wizard hat.usdz */,
 				31C4839B791F1C9749F05CFF /* Assets.xcassets */,
 				9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */,
 				6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */,
 				C2C3AEDFBE8014685F7D5827 /* ContentView.swift */,
 				0482BF3A81138611B9C52AD3 /* Info.plist */,
 				9C2351377F437F65D65ABCCD /* Santahat.usdz */,
-				D58CC86C80F124F3633215B7 /* Sombrero2hat.usdz */,
 				D929CE28E0EC27ED19506142 /* Sunflower.usdz */,
 				1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */,
 				1D0E44807E0AFF3318F3B545 /* Extensions */,
@@ -265,10 +286,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */,
+				81FA1C3B2EF1C0660060CEF1 /* Sombrero2hat.usdz in Resources */,
+				81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */,
+				81FA1C332EF1C0180060CEF1 /* Wizard hat.usdz in Resources */,
+				81FA1C342EF1C0180060CEF1 /* Pirate hat.usdz in Resources */,
+				81FA1C352EF1C0180060CEF1 /* Fox Hat.usdz in Resources */,
+				81FA1C362EF1C0180060CEF1 /* Frog Hat.usdz in Resources */,
+				81FA1C372EF1C0180060CEF1 /* Cowboy hat.usdz in Resources */,
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
 				3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */,
 				B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */,
-				4C2791C009B0E151861F79D5 /* Sombrero2hat.usdz in Resources */,
 				9CF47036A79B74EB3558D9B5 /* Sunflower.usdz in Resources */,
 				7AF44475E591A27725D43264 /* Tophat.usdz in Resources */,
 			);
