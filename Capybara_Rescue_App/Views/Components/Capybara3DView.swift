@@ -169,9 +169,9 @@ struct RealityKitView: UIViewRepresentable {
     // Positive Z moves hat forward toward camera (onto head, not back)
     private static let hatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
     private static let sombreroPosition: SIMD3<Float> = [-0.1, 4, 2.2] // Lower Y for sombrero and z
-    private static let baseballcapPosition: SIMD3<Float> = [0.3, 4.2, 2] // "baseballcap" matches hat ID in GameState
+    private static let baseballcapPosition: SIMD3<Float> = [0.3, 4.2, 2.4] // "baseballcap" matches hat ID in GameState
     private static let cowboyhatPosition: SIMD3<Float> = [-0.1, 4, 2.2]
-    private static let tophatPosition: SIMD3<Float> = [-0.1, 4.8, 3]
+    private static let tophatPosition: SIMD3<Float> = [0, 4.8, 2.4]
     private static let wizardhatPosition: SIMD3<Float> = [-0.1, 3.9, 2.3]
     private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
     private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
