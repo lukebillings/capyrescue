@@ -442,6 +442,52 @@ struct HatPreview3DView: View {
 struct HatPreviewARView: UIViewRepresentable {
     let fileName: String
     
+    // Preview-specific scale adjustments for items panel
+    private func previewScale(for fileName: String) -> Float {
+        if fileName.contains("Santa") {
+            return 1.0
+        } else if fileName.contains("Cowboy") {
+            return 0.3 // Slightly smaller
+        } else if fileName.contains("Wizard") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Pirate") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Propeller") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Fox") {
+            return 0.35 // Bigger
+        } else if fileName.contains("Frog") {
+            return 0.35 // Bigger
+        } else {
+            return 0.2 // Default
+        }
+    }
+    
+    // Preview-specific position adjustments for items panel
+    private func previewPosition(for fileName: String) -> SIMD3<Float> {
+        if fileName.contains("Baseball") {
+            return [0.1, 0.0, 0.0] // More to the right
+        } else if fileName.contains("Santa") {
+            return [0, 0.1, 0]
+        } else if fileName.contains("Pirate") {
+            return [0, 0.1, 0] // Move up
+        } else if fileName.contains("Wizard") {
+            return [0, -0.1, 0] // Move down
+        } else {
+            return [0, 0.0, 0.0] // Default centered
+        }
+    }
+    
+    // Preview-specific rotation adjustments for items panel
+    private func previewRotation(for fileName: String) -> simd_quatf {
+        if fileName.contains("Frog") {
+            // Rotate 90 degrees around Y axis so frog face faces the user
+            return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
+        } else {
+            return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation
+        }
+    }
+    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
         arView.backgroundColor = .clear
@@ -454,11 +500,19 @@ struct HatPreviewARView: UIViewRepresentable {
         let anchor = AnchorEntity(world: [0, 0, 0])
         arView.scene.addAnchor(anchor)
         
-        // Set up camera - adjust for Santa hat
+        // Set up camera - adjust based on hat type
         let camera = PerspectiveCamera()
-        let isSantaHat = fileName.contains("Santa")
-        if isSantaHat {
-            // Closer camera for Santa hat to make it appear bigger
+        if fileName.contains("Propeller") {
+            // Zoom out more for propeller hat
+            camera.position = [0, 0.1, 1.0]
+        } else if fileName.contains("Pirate") {
+            // Much more zoomed out for pirate hat
+            camera.position = [0, 0.1, 1.5]
+        } else if fileName.contains("Cowboy") {
+            // More zoomed out for cowboy hat
+            camera.position = [0, 0.1, 0.8]
+        } else if fileName.contains("Santa") || fileName.contains("Fox") || fileName.contains("Frog") {
+            // Closer camera for larger hats
             camera.position = [0, 0.1, 0.3]
         } else {
             camera.position = [0, 0.1, 0.6]
@@ -539,12 +593,13 @@ struct HatPreviewARView: UIViewRepresentable {
                 // Apply transformations if we have a valid model
                 if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
                     // Scale based on hat type - adjust for preview size
-                    let isSantaHat = fileName.contains("Santa")
-                    let scale: Float = isSantaHat ? 1.0 : 0.2
+                    let scale = previewScale(for: fileName)
                     container.scale = [scale, scale, scale]
-                    // Move Santa hat up slightly to center it better
-                    let yPosition: Float = isSantaHat ? 0.1 : 0.0
-                    container.position = [0, yPosition, 0]
+                    // Position based on hat type
+                    let position = previewPosition(for: fileName)
+                    container.position = position
+                    // Rotation based on hat type
+                    container.orientation = previewRotation(for: fileName)
                     
                     // Add to anchor safely
                     anchor.addChild(container)
