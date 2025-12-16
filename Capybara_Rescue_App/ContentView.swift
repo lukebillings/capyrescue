@@ -203,17 +203,20 @@ struct ContentView: View {
                         }
                     )
                     
-                    // Panel area - show specific panel (moved up higher)
-                    if showPanel {
-                        panelContent
-                            .frame(minHeight: 50, maxHeight: 50) // Increased height to show all items
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                            .padding(.top, 20) // Add top padding
-                            .padding(.bottom, 100) // Space for menu bar
-                    } else {
-                        // Spacer when showing master panel at bottom
+                    // Spacer - always present to maintain capybara position
+                    Spacer()
+                }
+                
+                // Panel area - show specific panel as overlay
+                if showPanel {
+                    VStack {
                         Spacer()
+                        panelContent
+                            .frame(minHeight: 50, maxHeight: 180) // Fixed height for panels
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom + 4 : 8)
                     }
+                    .zIndex(99) // Below master panel overlay but above main content
                 }
                 
                 // Master panel at bottom - replaces menu bar
