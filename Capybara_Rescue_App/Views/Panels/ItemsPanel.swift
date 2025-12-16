@@ -27,44 +27,6 @@ struct ItemsPanel: View {
     
     private var mainContent: some View {
         VStack(spacing: 16) {
-            // Header with back button
-            HStack {
-                if let onBack = onBack {
-                    Button(action: {
-                        HapticManager.shared.buttonPress()
-                        // Clear preview if unpurchased item is being previewed
-                        if let previewId = previewingItemId,
-                           !gameManager.gameState.ownedAccessories.contains(previewId) {
-                            previewingItemId = nil
-                            gameManager.clearPreview()
-                        }
-                        onBack()
-                    }) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.7))
-                    }
-                }
-                
-                Spacer()
-                
-                PanelHeader(
-                    title: "Accessorise Your Capybara",
-                    subtitle: "Make them stylish! ✨",
-                    color: .purple
-                )
-                
-                Spacer()
-                
-                // Spacer for symmetry
-                if onBack != nil {
-                    Image(systemName: "chevron.left.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.clear)
-                }
-            }
-            .padding(.horizontal, 16)
-            
             // Items - horizontal scrolling row
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -85,8 +47,44 @@ struct ItemsPanel: View {
                 .padding(.vertical, 8) // Add vertical padding to prevent cutoff
             }
             .frame(maxHeight: .infinity) // Allow scroll view to take available space
+            
+            // Header with back button - moved below items
+            HStack {
+                if let onBack = onBack {
+                    Button(action: {
+                        HapticManager.shared.buttonPress()
+                        // Clear preview if unpurchased item is being previewed
+                        if let previewId = previewingItemId,
+                           !gameManager.gameState.ownedAccessories.contains(previewId) {
+                            previewingItemId = nil
+                            gameManager.clearPreview()
+                        }
+                        onBack()
+                    }) {
+                        Image(systemName: "chevron.left.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+                
+                Spacer()
+                
+                Text("Accessorise Your Capybara")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                // Spacer for symmetry
+                if onBack != nil {
+                    Image(systemName: "chevron.left.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.clear)
+                }
+            }
+            .padding(.horizontal, 16)
         }
-        .padding(.top, 20)
+        .padding(.top, 80)
         .padding(.bottom, 8) // Add bottom padding
         .onChange(of: gameManager.gameState.capycoins) { oldValue, newValue in
             // Update preview state when coins change (e.g., after buying coins)
@@ -296,7 +294,7 @@ struct AccessoryItemButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 10) {
+            VStack(spacing: 6) {
                 // 3D Model Preview
                 ZStack {
                     Circle()
@@ -312,7 +310,7 @@ struct AccessoryItemButton: View {
                         } else {
                             // Fallback for older iOS versions
                             Text(item.emoji)
-                                .font(.system(size: 36))
+                                .font(.system(size: 48))
                         }
                     } else if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
                         // Show 3D model for other items with models
@@ -323,12 +321,12 @@ struct AccessoryItemButton: View {
                         } else {
                             // Fallback for older iOS versions
                             Text(item.emoji)
-                                .font(.system(size: 36))
+                                .font(.system(size: 48))
                         }
                     } else {
                         // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
-                            .font(.system(size: 36))
+                            .font(.system(size: 48))
                     }
                     
                     // Equipped indicator
@@ -383,13 +381,13 @@ struct AccessoryItemButton: View {
                 }
                 }
             }
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(.white.opacity(isOwned ? 0.1 : 0.05))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(borderColor, lineWidth: 1)
                     )
             )
@@ -400,7 +398,7 @@ struct AccessoryItemButton: View {
             // Preview indicator
             Group {
                 if isPreviewing {
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.blue, lineWidth: 2)
                 }
             }

@@ -206,7 +206,7 @@ struct ContentView: View {
                     // Panel area - show specific panel (moved up higher)
                     if showPanel {
                         panelContent
-                            .frame(minHeight: 50, maxHeight: 320) // Increased height to show all items
+                            .frame(minHeight: 50, maxHeight: 50) // Increased height to show all items
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                             .padding(.top, 20) // Add top padding
                             .padding(.bottom, 100) // Space for menu bar
