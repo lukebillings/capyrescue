@@ -174,7 +174,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let tophatPosition: SIMD3<Float> = [-0.1, 4.8, 3]
     private static let wizardhatPosition: SIMD3<Float> = [-0.1, 3.9, 2.3]
     private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
-    private static let propellerhatPosition: SIMD3<Float> = [-0.1, 4.8, 2]
+    private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
     private static let froghatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
     private static let foxhatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
     private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
@@ -187,7 +187,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let cowboyhatScale: SIMD3<Float> = [0.01, 0.01, 0.01 ]
     private static let wizardhatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
     private static let piratehatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
-    private static let propellerhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let propellerhatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
     private static let froghatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
     private static let foxhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
     
