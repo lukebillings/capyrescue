@@ -165,26 +165,88 @@ struct RealityKitView: UIViewRepresentable {
     
     // Hat positioning constants - single source of truth
     // Positive Z moves hat forward toward camera (onto head, not back)
+    // Hat positioning constants - single source of truth
+    // Positive Z moves hat forward toward camera (onto head, not back)
     private static let hatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
     private static let sombreroPosition: SIMD3<Float> = [-0.1, 4, 2.2] // Lower Y for sombrero and z
+    private static let baseballcapPosition: SIMD3<Float> = [0.3, 4.2, 2] // "baseballcap" matches hat ID in GameState
+    private static let cowboyhatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let tophatPosition: SIMD3<Float> = [-0.1, 4.8, 3]
+    private static let wizardhatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let propellerhatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let froghatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let foxhatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+
+    // Hat scaling constants
     private static let tophatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
     private static let santahatScale: SIMD3<Float> = [10, 10, 10] // 10x bigger than tophat
     private static let sombreroScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let baseballcapScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let cowboyhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let wizardhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let piratehatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let propellerhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let froghatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let foxhatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
     
     private func hatPosition(for hatId: String?) -> SIMD3<Float> {
-        if hatId == "sombrerohat" {
+        guard let hatId = hatId else { return Self.hatPosition }
+        
+        switch hatId {
+        case "sombrerohat":
             return Self.sombreroPosition
+        case "baseballcap":
+            return Self.baseballcapPosition
+        case "cowboyhat":
+            return Self.cowboyhatPosition
+        case "tophat":
+            return Self.tophatPosition
+        case "wizardhat":
+            return Self.wizardhatPosition
+        case "piratehat":
+            return Self.piratehatPosition
+        case "propellerhat":
+            return Self.propellerhatPosition
+        case "froghat":
+            return Self.froghatPosition
+        case "foxhat":
+            return Self.foxhatPosition
+        case "santahat":
+            return Self.santahatPosition
+        default:
+            return Self.hatPosition
         }
-        return Self.hatPosition
     }
     
     private func hatScale(for hatId: String?) -> SIMD3<Float> {
-        if hatId == "santahat" {
+        guard let hatId = hatId else { return Self.tophatScale }
+        
+        switch hatId {
+        case "tophat":
+            return Self.tophatScale
+        case "santahat":
             return Self.santahatScale
-        } else if hatId == "sombrerohat" {
+        case "sombrerohat":
             return Self.sombreroScale
+        case "baseballcap":
+            return Self.baseballcapScale
+        case "cowboyhat":
+            return Self.cowboyhatScale
+        case "wizardhat":
+            return Self.wizardhatScale
+        case "piratehat":
+            return Self.piratehatScale
+        case "propellerhat":
+            return Self.propellerhatScale
+        case "froghat":
+            return Self.froghatScale
+        case "foxhat":
+            return Self.foxhatScale
+        default:
+            return Self.tophatScale
         }
-        return Self.tophatScale
     }
     
     func makeUIView(context: Context) -> ARView {
