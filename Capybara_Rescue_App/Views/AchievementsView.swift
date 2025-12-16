@@ -11,19 +11,20 @@ struct AchievementsView: View {
         let description: String
         let emoji: String
         let requirement: String
+        let coinReward: Int
     }
     
     private let allAchievements: [Achievement] = [
-        Achievement(id: "daily_login", name: "First Login", description: "Log in at least once every 24 hours", emoji: "🥉", requirement: "Log in once"),
-        Achievement(id: "streak_3", name: "3 Day Streak", description: "Log in for 3 consecutive days", emoji: "🥈", requirement: "3 day streak"),
-        Achievement(id: "streak_7", name: "7 Day Streak", description: "Log in for 7 consecutive days", emoji: "🥇", requirement: "7 day streak"),
-        Achievement(id: "streak_30", name: "30 Day Streak", description: "Log in for 30 consecutive days", emoji: "🏆", requirement: "30 day streak"),
-        Achievement(id: "streak_100", name: "100 Day Streak", description: "Log in for 100 consecutive days", emoji: "💎", requirement: "100 day streak"),
-        Achievement(id: "streak_365", name: "365 Day Streak", description: "Log in for 365 consecutive days", emoji: "👑", requirement: "365 day streak")
+        Achievement(id: "daily_login", name: "1 Day Care", description: "Keep all stats above 50 for 1 day", emoji: "🥉", requirement: "1 day streak", coinReward: 500),
+        Achievement(id: "streak_3", name: "3 Day Care", description: "Keep all stats above 50 for 3 consecutive days", emoji: "🥈", requirement: "3 day streak", coinReward: 600),
+        Achievement(id: "streak_7", name: "7 Day Care", description: "Keep all stats above 50 for 7 consecutive days", emoji: "🥇", requirement: "7 day streak", coinReward: 700),
+        Achievement(id: "streak_30", name: "30 Day Care", description: "Keep all stats above 50 for 30 consecutive days", emoji: "🏆", requirement: "30 day streak", coinReward: 800),
+        Achievement(id: "streak_100", name: "100 Day Care", description: "Keep all stats above 50 for 100 consecutive days", emoji: "💎", requirement: "100 day streak", coinReward: 900),
+        Achievement(id: "streak_365", name: "365 Day Care", description: "Keep all stats above 50 for 365 consecutive days", emoji: "👑", requirement: "365 day streak", coinReward: 1000)
     ]
     
     private var currentStreak: Int {
-        gameManager.gameState.loginStreak
+        gameManager.gameState.statsStreak
     }
     
     var body: some View {
@@ -36,9 +37,14 @@ struct AchievementsView: View {
                     VStack(spacing: 24) {
                         // Current streak display
                         VStack(spacing: 12) {
-                            Text("Current Streak")
+                            Text("Current Care Streak")
                                 .font(.system(size: 18, weight: .medium, design: .rounded))
                                 .foregroundStyle(.white.opacity(0.7))
+                            
+                            Text("Keep food, drink, and happiness all above 50")
+                                .font(.system(size: 14, weight: .regular, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
                             
                             HStack(spacing: 8) {
                                 Image(systemName: "flame.fill")
@@ -164,6 +170,19 @@ struct AchievementRow: View {
                 Text(achievement.description)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.7))
+                
+                // Coin reward - always shown
+                HStack(spacing: 4) {
+                    Text("₵")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD700"))
+                    Text("\(achievement.coinReward)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD700"))
+                    Text(isEarned ? "rewarded" : "reward")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
                 
                 // Progress bar
                 if !isEarned {

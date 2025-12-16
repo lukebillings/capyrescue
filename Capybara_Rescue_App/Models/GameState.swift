@@ -15,11 +15,13 @@ struct GameState: Codable {
     var lastLoginDate: Date?
     var loginStreak: Int
     var earnedAchievements: Set<String>
+    var statsStreak: Int // Consecutive days with all stats (food, drink, happiness) > 50
+    var lastStatsCheckDate: Date? // Last date we checked if all stats were > 50
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
-        case lastLoginDate, loginStreak, earnedAchievements
+        case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
     }
     
     // Custom decoding for backward compatibility
@@ -37,6 +39,8 @@ struct GameState: Codable {
         subscriptionEndDate = try container.decodeIfPresent(Date.self, forKey: .subscriptionEndDate)
         lastLoginDate = try container.decodeIfPresent(Date.self, forKey: .lastLoginDate)
         loginStreak = try container.decodeIfPresent(Int.self, forKey: .loginStreak) ?? 0
+        statsStreak = try container.decodeIfPresent(Int.self, forKey: .statsStreak) ?? 0
+        lastStatsCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastStatsCheckDate)
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -67,6 +71,8 @@ struct GameState: Codable {
         try container.encodeIfPresent(lastLoginDate, forKey: .lastLoginDate)
         try container.encode(loginStreak, forKey: .loginStreak)
         try container.encode(earnedAchievements, forKey: .earnedAchievements)
+        try container.encode(statsStreak, forKey: .statsStreak)
+        try container.encodeIfPresent(lastStatsCheckDate, forKey: .lastStatsCheckDate)
     }
     
     // Manual initializer for default state
@@ -83,7 +89,9 @@ struct GameState: Codable {
         subscriptionEndDate: Date?,
         lastLoginDate: Date?,
         loginStreak: Int,
-        earnedAchievements: Set<String>
+        earnedAchievements: Set<String>,
+        statsStreak: Int,
+        lastStatsCheckDate: Date?
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -98,14 +106,16 @@ struct GameState: Codable {
         self.lastLoginDate = lastLoginDate
         self.loginStreak = loginStreak
         self.earnedAchievements = earnedAchievements
+        self.statsStreak = statsStreak
+        self.lastStatsCheckDate = lastStatsCheckDate
     }
     
     static let defaultState = GameState(
         capybaraName: "Cappuccino",
-        food: 50,
-        drink: 50,
-        happiness: 50,
-        capycoins: 100,
+        food: 60,
+        drink: 60,
+        happiness: 60,
+        capycoins: 500,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -113,7 +123,9 @@ struct GameState: Codable {
         subscriptionEndDate: nil as Date?,
         lastLoginDate: nil as Date?,
         loginStreak: 0,
-        earnedAchievements: []
+        earnedAchievements: [],
+        statsStreak: 0,
+        lastStatsCheckDate: nil as Date?
     )
     
     var hasActiveSubscription: Bool {

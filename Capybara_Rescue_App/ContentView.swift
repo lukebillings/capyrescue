@@ -99,6 +99,7 @@ struct ContentView: View {
                                 .foregroundStyle(.white.opacity(0.6))
                         }
                         .buttonStyle(ScaleButtonStyle())
+                        .tutorialHighlight(key: "achievements_button")
                         
                         Spacer()
                         

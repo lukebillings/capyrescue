@@ -205,7 +205,6 @@ struct OnboardingView: View {
             Button(action: {
                 // Complete onboarding and go straight to tutorial
                 UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
-                gameManager.watchAd() // Give coins for watching ad
                 withAnimation {
                     isPresented = false
                 }

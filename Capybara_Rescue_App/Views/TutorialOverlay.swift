@@ -19,6 +19,7 @@ enum TutorialStep: Int, CaseIterable {
     case happy = 2
     case items = 3
     case shop = 4
+    case achievements = 5
     
     var title: String {
         switch self {
@@ -27,21 +28,24 @@ enum TutorialStep: Int, CaseIterable {
         case .happy: return "Happy"
         case .items: return "Items"
         case .shop: return "Shop"
+        case .achievements: return "Achievements"
         }
     }
     
     var message: String {
         switch self {
         case .food:
-            return "Make sure to keep this over 80. You can give it food."
+            return "Try to keep this over 80. You can give it food."
         case .drink:
-            return "Make sure to keep this over 80. You can give it drinks."
+            return "Try to keep this over 80. You can give it drinks."
         case .happy:
-            return "Make sure to keep this over 80. Increase its happiness by petting it."
+            return "Try to keep this over 80. Increase its happiness by petting it."
         case .items:
             return "Your capybara would love to have some accessories. Buy an item."
         case .shop:
             return "You can buy more coins from the shop."
+        case .achievements:
+            return "Keep food, drink, and happiness all above 50 for consecutive days to earn achievement rewards!"
         }
     }
     
@@ -53,6 +57,7 @@ enum TutorialStep: Int, CaseIterable {
         case .happy: return "happy_stat"
         case .items: return "items_button"
         case .shop: return "shop_button"
+        case .achievements: return "achievements_button"
         }
     }
     
@@ -64,6 +69,7 @@ enum TutorialStep: Int, CaseIterable {
         case .happy: return "capybara_tap"
         case .items: return nil
         case .shop: return nil
+        case .achievements: return nil
         }
     }
 }
@@ -197,11 +203,31 @@ struct TutorialOverlay: View {
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
             
-            Text(step.message)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.9))
-                .multilineTextAlignment(.center)
-                .lineLimit(nil)
+            if step == .achievements {
+                VStack(spacing: 12) {
+                    Text(step.message)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                    
+                    HStack(spacing: 8) {
+                        Text("You can check your streaks with the")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.9))
+                        
+                        Image(systemName: "medal.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white)
+                    }
+                }
+            } else {
+                Text(step.message)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+            }
             
             Button(action: {
                 if let nextStep = TutorialStep(rawValue: step.rawValue + 1) {

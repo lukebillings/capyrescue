@@ -41,11 +41,14 @@ class GameManager: ObservableObject {
     
     init() {
         // Load saved state or use default
+        let isNewGame: Bool
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
             self.gameState = savedState
+            isNewGame = false
         } else {
             self.gameState = GameState.defaultState
+            isNewGame = true
         }
         
         // Apply time-based decay from last session
@@ -53,6 +56,13 @@ class GameManager: ObservableObject {
         
         // Check and update login streak
         checkDailyLogin()
+        
+        // For new games, mark the 1-day achievement as already earned
+        // This ensures the initial 500 coins count as the 1-day achievement reward
+        // and prevents awarding another 500 coins immediately
+        if isNewGame {
+            gameState.earnedAchievements.insert("daily_login")
+        }
         
         // Check notification permissions (will request if not determined)
         checkNotificationPermissions()
@@ -94,31 +104,76 @@ class GameManager: ObservableObject {
         // Update last login date
         gameState.lastLoginDate = now
         
+        // Check stats streak (all stats > 50)
+        checkStatsStreak()
+        
         // Check for achievements
         checkAchievements()
     }
     
+    private func checkStatsStreak() {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // Check if all stats are above 50
+        let allStatsAbove50 = gameState.food > 50 && gameState.drink > 50 && gameState.happiness > 50
+        
+        if allStatsAbove50 {
+            // Check if we've already checked today
+            if let lastCheck = gameState.lastStatsCheckDate {
+                if calendar.isDateInToday(lastCheck) {
+                    // Already checked today, do nothing
+                    return
+                }
+                
+                // Check if last check was yesterday
+                if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
+                   calendar.isDate(lastCheck, inSameDayAs: yesterday) {
+                    // Checked yesterday and all stats were > 50, continue streak
+                    gameState.statsStreak += 1
+                } else {
+                    // Gap in checking, reset streak to 1 (today is day 1)
+                    gameState.statsStreak = 1
+                }
+            } else {
+                // First time checking - don't set streak to 1 yet
+                // The streak will become 1 on the next day if stats are still above 50
+                // This prevents awarding the 1-day achievement immediately on first launch
+                gameState.statsStreak = 0
+            }
+            
+            // Update last check date
+            gameState.lastStatsCheckDate = now
+        } else {
+            // Stats not all above 50, reset streak
+            gameState.statsStreak = 0
+            gameState.lastStatsCheckDate = now
+        }
+    }
+    
     private func checkAchievements() {
-        let streak = gameState.loginStreak
+        let streak = gameState.statsStreak
+        
+        // Achievement rewards: 1 day = 500, 3 days = 600, 7 days = 700, 30 days = 800, 100 days = 900, 365 days = 1000
+        let achievementRewards: [Int: (String, Int)] = [
+            1: ("daily_login", 500),
+            3: ("streak_3", 600),
+            7: ("streak_7", 700),
+            30: ("streak_30", 800),
+            100: ("streak_100", 900),
+            365: ("streak_365", 1000)
+        ]
         
         // Check each achievement threshold
-        if streak >= 1 && !gameState.earnedAchievements.contains("daily_login") {
-            gameState.earnedAchievements.insert("daily_login")
-        }
-        if streak >= 3 && !gameState.earnedAchievements.contains("streak_3") {
-            gameState.earnedAchievements.insert("streak_3")
-        }
-        if streak >= 7 && !gameState.earnedAchievements.contains("streak_7") {
-            gameState.earnedAchievements.insert("streak_7")
-        }
-        if streak >= 30 && !gameState.earnedAchievements.contains("streak_30") {
-            gameState.earnedAchievements.insert("streak_30")
-        }
-        if streak >= 100 && !gameState.earnedAchievements.contains("streak_100") {
-            gameState.earnedAchievements.insert("streak_100")
-        }
-        if streak >= 365 && !gameState.earnedAchievements.contains("streak_365") {
-            gameState.earnedAchievements.insert("streak_365")
+        // IMPORTANT: Achievements can only be earned once. If a user earns a 30-day achievement,
+        // breaks their streak, and then reaches 30 days again, they will NOT receive the coins again
+        // because the achievement is already in earnedAchievements.
+        for (days, (achievementId, coins)) in achievementRewards.sorted(by: { $0.key < $1.key }) {
+            // Only award if streak meets threshold AND achievement hasn't been earned before
+            if streak >= days && !gameState.earnedAchievements.contains(achievementId) {
+                gameState.earnedAchievements.insert(achievementId)
+                gameState.capycoins += coins
+            }
         }
     }
     
