@@ -175,7 +175,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let wizardhatPosition: SIMD3<Float> = [-0.1, 3.9, 2.3]
     private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
     private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
-    private static let froghatPosition: SIMD3<Float> = [-0.1, 4.3, 2.2]
+    private static let froghatPosition: SIMD3<Float> = [0, 4.3, 2.2]
     private static let foxhatPosition: SIMD3<Float> = [0, 4.3, 1.9]
     private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
 
