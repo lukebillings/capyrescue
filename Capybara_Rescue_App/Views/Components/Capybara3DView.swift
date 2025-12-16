@@ -175,7 +175,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let wizardhatPosition: SIMD3<Float> = [-0.1, 3.9, 2.3]
     private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
     private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
-    private static let froghatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+    private static let froghatPosition: SIMD3<Float> = [-0.1, 4.3, 2.2]
     private static let foxhatPosition: SIMD3<Float> = [0, 4.3, 1.9]
     private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
 
@@ -188,7 +188,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let wizardhatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
     private static let piratehatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
     private static let propellerhatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
-    private static let froghatScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let froghatScale: SIMD3<Float> = [2, 2, 2]
     private static let foxhatScale: SIMD3<Float> = [2.8, 2.8, 2.8]
     
     private func hatPosition(for hatId: String?) -> SIMD3<Float> {
@@ -249,6 +249,18 @@ struct RealityKitView: UIViewRepresentable {
         }
     }
     
+    private func hatRotation(for hatId: String?) -> simd_quatf {
+        guard let hatId = hatId else { return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) } // No rotation
+        
+        switch hatId {
+        case "froghat":
+            // Rotate 90 degrees around Y axis to face forward
+            return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
+        default:
+            return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation for other hats
+        }
+    }
+    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
         arView.backgroundColor = .clear // Transparent background
@@ -297,6 +309,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     model.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id
@@ -326,6 +339,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     proceduralModel.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id
@@ -371,6 +385,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     model.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id
