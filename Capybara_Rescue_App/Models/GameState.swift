@@ -227,7 +227,7 @@ struct AccessoryItem: Identifiable, Equatable {
     private static let _allItems: [AccessoryItem] = [
         // Hats
         AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap"),
-        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 200, modelFileName: "Cowboy hat"),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 200, modelFileName: "Cowboy Hat 2"),
         AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 300, modelFileName: "Tophat"),
         AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 400, modelFileName: "Wizard hat"),
         AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 400, modelFileName: "Pirate hat"),
