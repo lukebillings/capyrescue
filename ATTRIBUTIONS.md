@@ -52,6 +52,69 @@ Sunflower by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0
 - **Link**: [Poly Pizza](https://poly.pizza/m/ce4GXw3VYE5)
 - **File**: `Sunflower.usdz`
 
+## Baseball Cap Model
+
+Baseball cap by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/aaC5GgcWEhM)
+
+- **Model**: Baseball cap
+- **Source**: Poly by Google
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/aaC5GgcWEhM)
+
+## Propeller Hat Model
+
+Propeller hat by jeremy [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/0vAOG_PcdNb)
+
+- **Model**: Propeller hat
+- **Creator**: jeremy
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/0vAOG_PcdNb)
+
+## Pirate Hat Model
+
+Pirate hat by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/9QEds6cYAy6)
+
+- **Model**: Pirate hat
+- **Source**: Poly by Google
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/9QEds6cYAy6)
+
+## Wizard Hat Model
+
+Wizard hat by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/7VVumyY7L_u)
+
+- **Model**: Wizard hat
+- **Source**: Poly by Google
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/7VVumyY7L_u)
+
+## Frog Hat Model
+
+Frog Hat by J-Toastie [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/IBL2UX2eOZ)
+
+- **Model**: Frog Hat
+- **Creator**: J-Toastie
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/IBL2UX2eOZ)
+
+## Fox Hat Model
+
+Fox Hat by J-Toastie [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/vIhmiBqBtr)
+
+- **Model**: Fox Hat
+- **Creator**: J-Toastie
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/vIhmiBqBtr)
+
+## Cowboy Hat Model
+
+Cowboy Hat by J-Toastie [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/jcXfae4GiZ)
+
+- **Model**: Cowboy Hat
+- **Creator**: J-Toastie
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/jcXfae4GiZ)
+
 ---
 
 ## License Information
@@ -77,12 +140,3 @@ Models marked with CC0 1.0 Universal are in the public domain. This means you ar
 - No attribution is required (though attribution is appreciated)
 
 For more information, visit: https://creativecommons.org/publicdomain/zero/1.0/
-
-
-
-
-
-
-
-
-
