@@ -15,7 +15,6 @@ struct AchievementsView: View {
     }
     
     private let allAchievements: [Achievement] = [
-        Achievement(id: "daily_login", name: "1 Day Care", description: "Keep all stats above 50 for 1 day", emoji: "🥉", requirement: "1 day streak", coinReward: 500),
         Achievement(id: "streak_3", name: "3 Day Care", description: "Keep all stats above 50 for 3 consecutive days", emoji: "🥈", requirement: "3 day streak", coinReward: 600),
         Achievement(id: "streak_7", name: "7 Day Care", description: "Keep all stats above 50 for 7 consecutive days", emoji: "🥇", requirement: "7 day streak", coinReward: 700),
         Achievement(id: "streak_30", name: "30 Day Care", description: "Keep all stats above 50 for 30 consecutive days", emoji: "🏆", requirement: "30 day streak", coinReward: 800),
@@ -120,8 +119,6 @@ struct AchievementRow: View {
     
     private var progress: Double {
         switch achievement.id {
-        case "daily_login":
-            return isEarned ? 1.0 : (currentStreak >= 1 ? 1.0 : 0.0)
         case "streak_3":
             return min(Double(currentStreak) / 3.0, 1.0)
         case "streak_7":
@@ -176,7 +173,7 @@ struct AchievementRow: View {
                     Text("₵")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(Color(hex: "FFD700"))
-                    Text("\(achievement.coinReward)")
+                    Text("\(achievement.coinReward) coins")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
                         .foregroundStyle(Color(hex: "FFD700"))
                     Text(isEarned ? "rewarded" : "reward")

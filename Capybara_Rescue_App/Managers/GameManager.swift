@@ -58,13 +58,6 @@ class GameManager: ObservableObject {
         // Check and update login streak
         checkDailyLogin()
         
-        // For new games, mark the 1-day achievement as already earned
-        // This ensures the initial 500 coins count as the 1-day achievement reward
-        // and prevents awarding another 500 coins immediately
-        if isNewGame {
-            gameState.earnedAchievements.insert("daily_login")
-        }
-        
         // Check notification permissions (will request if not determined)
         checkNotificationPermissions()
         
@@ -155,9 +148,8 @@ class GameManager: ObservableObject {
     private func checkAchievements() {
         let streak = gameState.statsStreak
         
-        // Achievement rewards: 1 day = 500, 3 days = 600, 7 days = 700, 30 days = 800, 100 days = 900, 365 days = 1000
+        // Achievement rewards: 3 days = 600, 7 days = 700, 30 days = 800, 100 days = 900, 365 days = 1000
         let achievementRewards: [Int: (String, Int)] = [
-            1: ("daily_login", 500),
             3: ("streak_3", 600),
             7: ("streak_7", 700),
             30: ("streak_30", 800),
