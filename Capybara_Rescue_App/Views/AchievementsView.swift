@@ -78,6 +78,41 @@ struct AchievementsView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
                         
+                        // Test Notification Button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            gameManager.testNotification()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "bell.badge.fill")
+                                    .font(.system(size: 16))
+                                Text("Test Notification")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.blue, Color.purple],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .padding(.horizontal, 24)
+                        
+                        Text("Close the app to test if notifications work when app is closed")
+                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.top, -12)
+                        
                         // Achievements list
                         VStack(spacing: 16) {
                             ForEach(allAchievements) { achievement in

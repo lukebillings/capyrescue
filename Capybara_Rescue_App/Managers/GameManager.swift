@@ -11,17 +11,8 @@ class GameManager: ObservableObject {
             if !isSaving {
                 saveGameState()
             }
-            // Check for threshold crossings and send notifications
-            // Compare each stat individually since struct assignment creates new instance
-            if oldValue.food != gameState.food {
-                checkThresholdCrossing(statType: "food", oldValue: oldValue.food, newValue: gameState.food)
-            }
-            if oldValue.drink != gameState.drink {
-                checkThresholdCrossing(statType: "drink", oldValue: oldValue.drink, newValue: gameState.drink)
-            }
-            if oldValue.happiness != gameState.happiness {
-                checkThresholdCrossing(statType: "petting", oldValue: oldValue.happiness, newValue: gameState.happiness)
-            }
+            // Note: Notifications are now handled by scheduleFutureNotifications()
+            // which schedules them in advance based on stat decay rates
         }
     }
     
@@ -61,8 +52,11 @@ class GameManager: ObservableObject {
         // Check notification permissions (will request if not determined)
         checkNotificationPermissions()
         
-        // Check current stats and send notifications if needed
-        checkCurrentStatsForNotifications()
+        // Clear badge when app opens (user has seen the app)
+        clearBadge()
+        
+        // Schedule future notifications for when app is closed
+        scheduleFutureNotifications()
         
         // Start decay timer
         startDecayTimer()
@@ -215,6 +209,9 @@ class GameManager: ObservableObject {
         gameState.happiness = max(0, gameState.happiness - 1)
         
         checkRunAway()
+        
+        // Reschedule future notifications based on new stat values
+        scheduleFutureNotifications()
     }
     
     private func checkRunAway() {
@@ -237,6 +234,10 @@ class GameManager: ObservableObject {
         gameState.capycoins -= item.cost
         
         gameState.food = min(100, gameState.food + item.foodValue)
+        
+        // Reschedule notifications based on new stat value
+        scheduleFutureNotifications()
+        
         return true
     }
     
@@ -252,11 +253,18 @@ class GameManager: ObservableObject {
         gameState.capycoins -= item.cost
         
         gameState.drink = min(100, gameState.drink + item.drinkValue)
+        
+        // Reschedule notifications based on new stat value
+        scheduleFutureNotifications()
+        
         return true
     }
     
     func petCapybara() {
         gameState.happiness = min(100, gameState.happiness + 1)
+        
+        // Reschedule notifications based on new stat value
+        scheduleFutureNotifications()
     }
     
     func purchaseAccessory(_ item: AccessoryItem) -> Bool {
@@ -432,9 +440,149 @@ class GameManager: ObservableObject {
         }
     }
     
+    // MARK: - Badge Management
+    private func clearBadge() {
+        // Clear badge count
+        UNUserNotificationCenter.current().setBadgeCount(0) { error in
+            if let error = error {
+                print("❌ Failed to clear badge: \(error.localizedDescription)")
+            } else {
+                print("✅ Badge cleared")
+            }
+        }
+        
+        // Also remove all delivered notifications from notification center
+        // This ensures when user opens app, old notifications are cleared
+        UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+        print("✅ Cleared all delivered notifications")
+    }
+    
+    // MARK: - Schedule Future Notifications
+    func scheduleFutureNotifications() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .authorized else { return }
+            
+            // Cancel all pending notifications first
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            
+            DispatchQueue.main.async {
+                let name = self.gameState.capybaraName
+                let currentFood = self.gameState.food
+                let currentDrink = self.gameState.drink
+                let currentHappiness = self.gameState.happiness
+                
+                // Track which notifications we're scheduling to set badge correctly
+                var scheduledNotifications: [(hours: Int, title: String, body: String, identifier: String)] = []
+                
+                // Calculate when each stat will hit 80 and 50 thresholds
+                // Stats decay by 1 per hour
+                // Only schedule notifications for future threshold crossings
+                
+                // Schedule food notifications
+                if currentFood >= 80 {
+                    let hoursUntil79 = currentFood - 79
+                    scheduledNotifications.append((hoursUntil79, "Food Alert", "\(name) needs some food", "food_80"))
+                } else if currentFood >= 50 {
+                    let hoursUntil49 = currentFood - 49
+                    scheduledNotifications.append((hoursUntil49, "Food Alert!", "\(name) really needs some food!", "food_50"))
+                }
+                
+                // Schedule drink notifications
+                if currentDrink >= 80 {
+                    let hoursUntil79 = currentDrink - 79
+                    scheduledNotifications.append((hoursUntil79, "Drink Alert", "\(name) needs some drink", "drink_80"))
+                } else if currentDrink >= 50 {
+                    let hoursUntil49 = currentDrink - 49
+                    scheduledNotifications.append((hoursUntil49, "Drink Alert!", "\(name) really needs some drink!", "drink_50"))
+                }
+                
+                // Schedule happiness notifications
+                if currentHappiness >= 80 {
+                    let hoursUntil79 = currentHappiness - 79
+                    scheduledNotifications.append((hoursUntil79, "Happiness Alert", "\(name) needs some petting", "happiness_80"))
+                } else if currentHappiness >= 50 {
+                    let hoursUntil49 = currentHappiness - 49
+                    scheduledNotifications.append((hoursUntil49, "Happiness Alert!", "\(name) really needs some petting!", "happiness_50"))
+                }
+                
+                // Now schedule all notifications with badges based on their index
+                for (index, notification) in scheduledNotifications.enumerated() {
+                    self.scheduleNotificationAt(
+                        hours: notification.hours,
+                        title: notification.title,
+                        body: notification.body,
+                        identifier: notification.identifier,
+                        badgeNumber: index + 1
+                    )
+                }
+            }
+        }
+    }
+    
+    private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {
+        guard hours > 0 else { return }
+        
+        // Query current delivered notifications to calculate proper badge
+        UNUserNotificationCenter.current().getDeliveredNotifications { deliveredNotifications in
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = .default
+            // Set badge to current delivered count + this notification
+            content.badge = NSNumber(value: deliveredNotifications.count + 1)
+            
+            // Schedule notification for the calculated hours from now
+            let timeInterval = TimeInterval(hours * 3600) // Convert hours to seconds
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule notification: \(error.localizedDescription)")
+                } else {
+                    print("✅ Scheduled notification '\(identifier)' for \(hours) hours from now")
+                }
+            }
+        }
+    }
+    
     // MARK: - Test Notification (for debugging)
     func testNotification() {
-        sendNotification(statType: "drink", urgent: false)
+        let name = gameState.capybaraName
+        
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                guard settings.authorizationStatus == .authorized else {
+                    print("❌ Notifications not authorized. Status: \(settings.authorizationStatus.rawValue)")
+                    self.showToast("Notifications not enabled!")
+                    return
+                }
+                
+                let content = UNMutableNotificationContent()
+                content.title = "Test Notification 🔔"
+                content.body = "This is a test! If you see this when the app is closed, notifications are working! \(name) says hi!"
+                content.sound = .default
+                content.badge = 1
+                
+                // Schedule for 5 seconds from now - gives you time to close the app
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5.0, repeats: false)
+                let request = UNNotificationRequest(identifier: "test_notification", content: content, trigger: trigger)
+                
+                UNUserNotificationCenter.current().add(request) { error in
+                    if let error = error {
+                        print("❌ Failed to schedule test notification: \(error.localizedDescription)")
+                        DispatchQueue.main.async {
+                            self.showToast("Failed to schedule notification")
+                        }
+                    } else {
+                        print("✅ Test notification scheduled for 5 seconds from now")
+                        DispatchQueue.main.async {
+                            self.showToast("Notification scheduled! Close app to test.")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
