@@ -186,10 +186,10 @@ class GameManager: ObservableObject {
     
     // MARK: - Decay System
     private func applyOfflineDecay() {
-        // Calculate decay based on 10-minute intervals
-        let minutesSinceLastUpdate = Date().timeIntervalSince(gameState.lastUpdateTime) / 60
-        let tenMinuteIntervals = Int(minutesSinceLastUpdate / 10)
-        let decayAmount = tenMinuteIntervals // 1 point per 10 minutes
+        // Calculate decay based on 1-hour intervals
+        let hoursSinceLastUpdate = Date().timeIntervalSince(gameState.lastUpdateTime) / 3600
+        let hourIntervals = Int(hoursSinceLastUpdate)
+        let decayAmount = hourIntervals // 1 point per hour
         
         if decayAmount > 0 {
             gameState.food = max(0, gameState.food - decayAmount)
@@ -201,8 +201,8 @@ class GameManager: ObservableObject {
     }
     
     private func startDecayTimer() {
-        // Decay stats every 10 minutes (600 seconds)
-        decayTimer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
+        // Decay stats every 1 hour (3600 seconds)
+        decayTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.applyDecay()
             }
