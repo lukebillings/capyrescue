@@ -28,6 +28,7 @@ class GameManager: ObservableObject {
     @Published var thrownItem: ThrownItem?
     @Published var showRunAwayAlert: Bool = false
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
+    @Published var toastMessage: String? = nil // For showing toast messages to user
     
     private var decayTimer: Timer?
     private let userDefaultsKey = "capybara_rescue_game_state"
@@ -233,6 +234,12 @@ class GameManager: ObservableObject {
     
     // MARK: - Actions
     func feedCapybara(with item: FoodItem) -> Bool {
+        // Check if food is already at max
+        guard gameState.food < 100 else {
+            showToast("CAPYBARA IS FULL 😊")
+            return false
+        }
+        
         guard canAfford(item.cost) else { return false }
         
         gameState.capycoins -= item.cost
@@ -242,6 +249,12 @@ class GameManager: ObservableObject {
     }
     
     func giveWater(with item: DrinkItem) -> Bool {
+        // Check if drink is already at max
+        guard gameState.drink < 100 else {
+            showToast("CAPYBARA HAS HAD ENOUGH TO DRINK 😊")
+            return false
+        }
+        
         guard canAfford(item.cost) else { return false }
         
         gameState.capycoins -= item.cost
@@ -312,6 +325,15 @@ class GameManager: ObservableObject {
         // Clear after animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.thrownItem = nil
+        }
+    }
+    
+    func showToast(_ message: String) {
+        toastMessage = message
+        
+        // Clear after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            self.toastMessage = nil
         }
     }
     

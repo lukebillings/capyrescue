@@ -280,6 +280,16 @@ struct ContentView: View {
                     TutorialOverlay(currentStep: $currentTutorialStep)
                         .zIndex(200) // Above everything else
                 }
+                
+                // Toast overlay
+                if let toastMessage = gameManager.toastMessage {
+                    VStack {
+                        Spacer()
+                        ToastView(message: toastMessage)
+                            .padding(.bottom, 100)
+                    }
+                    .zIndex(201) // Above everything including tutorial
+                }
             }
         }
         .sheet(isPresented: $showRenameSheet) {
@@ -488,6 +498,31 @@ struct AnimatedBackground: View {
                 phase = .pi * 2
             }
         }
+    }
+}
+
+// MARK: - Toast View
+struct ToastView: View {
+    let message: String
+    
+    var body: some View {
+        Text(message)
+            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .foregroundColor(.white)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.red.opacity(0.9), Color.orange.opacity(0.9)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+            )
+            .transition(.scale.combined(with: .opacity))
     }
 }
 

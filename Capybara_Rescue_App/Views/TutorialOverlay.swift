@@ -35,11 +35,11 @@ enum TutorialStep: Int, CaseIterable {
     var message: String {
         switch self {
         case .food:
-            return "Try to keep this over 80. You can give it food."
+            return "Try to keep this over 80. You can give it food.\n\n⚠️ If all stats reach 0, your capybara will run away!"
         case .drink:
-            return "Try to keep this over 80. You can give it drinks."
+            return "Try to keep this over 80. You can give it drinks.\n\n⚠️ If all stats reach 0, your capybara will run away!"
         case .happy:
-            return "Try to keep this over 80. Increase its happiness by petting it."
+            return "Try to keep this over 80. Increase its happiness by petting it.\n\n⚠️ If all stats reach 0, your capybara will run away!"
         case .items:
             return "Your capybara would love to have some accessories. Buy an item."
         case .shop:
