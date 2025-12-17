@@ -417,7 +417,7 @@ struct WatchAdCard: View {
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                     
-                    Text("Watch the 5 second video and receive 10 coins")
+                    Text("Watch a selection of ads and receive 10 coins")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.5))
                 }

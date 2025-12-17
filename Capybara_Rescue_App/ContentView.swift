@@ -99,6 +99,7 @@ struct ContentView: View {
                                 .foregroundStyle(.white.opacity(0.6))
                         }
                         .buttonStyle(ScaleButtonStyle())
+                        .tutorialHighlight(key: "achievements_button")
                         
                         Spacer()
                         
@@ -202,17 +203,20 @@ struct ContentView: View {
                         }
                     )
                     
-                    // Panel area - show specific panel (moved up higher)
-                    if showPanel {
-                        panelContent
-                            .frame(minHeight: 50, maxHeight: 320) // Increased height to show all items
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
-                            .padding(.top, 20) // Add top padding
-                            .padding(.bottom, 100) // Space for menu bar
-                    } else {
-                        // Spacer when showing master panel at bottom
+                    // Spacer - always present to maintain capybara position
+                    Spacer()
+                }
+                
+                // Panel area - show specific panel as overlay
+                if showPanel {
+                    VStack {
                         Spacer()
+                        panelContent
+                            .frame(minHeight: 50, maxHeight: 180) // Fixed height for panels
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom + 4 : 8)
                     }
+                    .zIndex(99) // Below master panel overlay but above main content
                 }
                 
                 // Master panel at bottom - replaces menu bar
@@ -275,6 +279,16 @@ struct ContentView: View {
                 if currentTutorialStep != nil {
                     TutorialOverlay(currentStep: $currentTutorialStep)
                         .zIndex(200) // Above everything else
+                }
+                
+                // Toast overlay
+                if let toastMessage = gameManager.toastMessage {
+                    VStack {
+                        Spacer()
+                        ToastView(message: toastMessage)
+                            .padding(.bottom, 100)
+                    }
+                    .zIndex(201) // Above everything including tutorial
                 }
             }
         }
@@ -484,6 +498,31 @@ struct AnimatedBackground: View {
                 phase = .pi * 2
             }
         }
+    }
+}
+
+// MARK: - Toast View
+struct ToastView: View {
+    let message: String
+    
+    var body: some View {
+        Text(message)
+            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .foregroundColor(.white)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.red.opacity(0.9), Color.orange.opacity(0.9)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
+            )
+            .transition(.scale.combined(with: .opacity))
     }
 }
 

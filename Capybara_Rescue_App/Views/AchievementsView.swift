@@ -11,19 +11,19 @@ struct AchievementsView: View {
         let description: String
         let emoji: String
         let requirement: String
+        let coinReward: Int
     }
     
     private let allAchievements: [Achievement] = [
-        Achievement(id: "daily_login", name: "First Login", description: "Log in at least once every 24 hours", emoji: "🥉", requirement: "Log in once"),
-        Achievement(id: "streak_3", name: "3 Day Streak", description: "Log in for 3 consecutive days", emoji: "🥈", requirement: "3 day streak"),
-        Achievement(id: "streak_7", name: "7 Day Streak", description: "Log in for 7 consecutive days", emoji: "🥇", requirement: "7 day streak"),
-        Achievement(id: "streak_30", name: "30 Day Streak", description: "Log in for 30 consecutive days", emoji: "🏆", requirement: "30 day streak"),
-        Achievement(id: "streak_100", name: "100 Day Streak", description: "Log in for 100 consecutive days", emoji: "💎", requirement: "100 day streak"),
-        Achievement(id: "streak_365", name: "365 Day Streak", description: "Log in for 365 consecutive days", emoji: "👑", requirement: "365 day streak")
+        Achievement(id: "streak_3", name: "3 Day Care", description: "Keep all stats above 50 for 3 consecutive days", emoji: "🥈", requirement: "3 day streak", coinReward: 600),
+        Achievement(id: "streak_7", name: "7 Day Care", description: "Keep all stats above 50 for 7 consecutive days", emoji: "🥇", requirement: "7 day streak", coinReward: 700),
+        Achievement(id: "streak_30", name: "30 Day Care", description: "Keep all stats above 50 for 30 consecutive days", emoji: "🏆", requirement: "30 day streak", coinReward: 800),
+        Achievement(id: "streak_100", name: "100 Day Care", description: "Keep all stats above 50 for 100 consecutive days", emoji: "💎", requirement: "100 day streak", coinReward: 900),
+        Achievement(id: "streak_365", name: "365 Day Care", description: "Keep all stats above 50 for 365 consecutive days", emoji: "👑", requirement: "365 day streak", coinReward: 1000)
     ]
     
     private var currentStreak: Int {
-        gameManager.gameState.loginStreak
+        gameManager.gameState.statsStreak
     }
     
     var body: some View {
@@ -36,9 +36,14 @@ struct AchievementsView: View {
                     VStack(spacing: 24) {
                         // Current streak display
                         VStack(spacing: 12) {
-                            Text("Current Streak")
+                            Text("Current Care Streak")
                                 .font(.system(size: 18, weight: .medium, design: .rounded))
                                 .foregroundStyle(.white.opacity(0.7))
+                            
+                            Text("Keep food, drink, and happiness all above 50")
+                                .font(.system(size: 14, weight: .regular, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
                             
                             HStack(spacing: 8) {
                                 Image(systemName: "flame.fill")
@@ -72,6 +77,41 @@ struct AchievementsView: View {
                         )
                         .padding(.horizontal, 24)
                         .padding(.top, 16)
+                        
+                        // Test Notification Button
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            gameManager.testNotification()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "bell.badge.fill")
+                                    .font(.system(size: 16))
+                                Text("Test Notification")
+                                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.blue, Color.purple],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .shadow(color: Color.blue.opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .padding(.horizontal, 24)
+                        
+                        Text("Close the app to test if notifications work when app is closed")
+                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.top, -12)
                         
                         // Achievements list
                         VStack(spacing: 16) {
@@ -114,8 +154,6 @@ struct AchievementRow: View {
     
     private var progress: Double {
         switch achievement.id {
-        case "daily_login":
-            return isEarned ? 1.0 : (currentStreak >= 1 ? 1.0 : 0.0)
         case "streak_3":
             return min(Double(currentStreak) / 3.0, 1.0)
         case "streak_7":
@@ -165,6 +203,19 @@ struct AchievementRow: View {
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.7))
                 
+                // Coin reward - always shown
+                HStack(spacing: 4) {
+                    Text("₵")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD700"))
+                    Text("\(achievement.coinReward) coins")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "FFD700"))
+                    Text(isEarned ? "rewarded" : "reward")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                
                 // Progress bar
                 if !isEarned {
                     GeometryReader { geometry in
@@ -210,6 +261,11 @@ struct AchievementRow: View {
     AchievementsView()
         .environmentObject(GameManager())
 }
+
+
+
+
+
 
 
 

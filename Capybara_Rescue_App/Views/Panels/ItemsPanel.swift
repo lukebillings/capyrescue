@@ -27,44 +27,6 @@ struct ItemsPanel: View {
     
     private var mainContent: some View {
         VStack(spacing: 16) {
-            // Header with back button
-            HStack {
-                if let onBack = onBack {
-                    Button(action: {
-                        HapticManager.shared.buttonPress()
-                        // Clear preview if unpurchased item is being previewed
-                        if let previewId = previewingItemId,
-                           !gameManager.gameState.ownedAccessories.contains(previewId) {
-                            previewingItemId = nil
-                            gameManager.clearPreview()
-                        }
-                        onBack()
-                    }) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.7))
-                    }
-                }
-                
-                Spacer()
-                
-                PanelHeader(
-                    title: "Accessorise Your Capybara",
-                    subtitle: "Make them stylish! ✨",
-                    color: .purple
-                )
-                
-                Spacer()
-                
-                // Spacer for symmetry
-                if onBack != nil {
-                    Image(systemName: "chevron.left.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.clear)
-                }
-            }
-            .padding(.horizontal, 16)
-            
             // Items - horizontal scrolling row
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -85,23 +47,63 @@ struct ItemsPanel: View {
                 .padding(.vertical, 8) // Add vertical padding to prevent cutoff
             }
             .frame(maxHeight: .infinity) // Allow scroll view to take available space
+            
+            // Header with back button - moved below items
+            HStack {
+                if let onBack = onBack {
+                    Button(action: {
+                        HapticManager.shared.buttonPress()
+                        // Clear preview if unpurchased item is being previewed
+                        if let previewId = previewingItemId,
+                           !gameManager.gameState.ownedAccessories.contains(previewId) {
+                            previewingItemId = nil
+                            gameManager.clearPreview()
+                        }
+                        onBack()
+                    }) {
+                        Image(systemName: "chevron.left.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+                }
+                
+                Spacer()
+                
+                Text("Accessorise Your Capybara")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Spacer()
+                
+                // Spacer for symmetry
+                if onBack != nil {
+                    Image(systemName: "chevron.left.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.clear)
+                }
+            }
+            .padding(.horizontal, 16)
         }
-        .padding(.top, 20)
+        .padding(.top, 80)
         .padding(.bottom, 8) // Add bottom padding
         .onChange(of: gameManager.gameState.capycoins) { oldValue, newValue in
             // Update preview state when coins change (e.g., after buying coins)
-            if let previewId = previewingItemId,
-               let item = AccessoryItem.allItems.first(where: { $0.id == previewId }) {
-                if gameManager.canAfford(item.cost) {
-                    showInsufficientCoinsMessage = false
-                }
+            guard let previewId = previewingItemId, !previewId.isEmpty else { return }
+            guard let item = AccessoryItem.allItems.first(where: { $0.id == previewId }) else {
+                print("⚠️ Preview item not found: \(previewId)")
+                return
+            }
+            if gameManager.canAfford(item.cost) {
+                showInsufficientCoinsMessage = false
             }
         }
     }
     
     @ViewBuilder
     private var insufficientCoinsOverlay: some View {
-        if showInsufficientCoinsMessage, let previewingId = previewingItemId,
+        if showInsufficientCoinsMessage, 
+           let previewingId = previewingItemId,
+           !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             InsufficientCoinsOverlay(
                 itemName: item.name,
@@ -123,7 +125,9 @@ struct ItemsPanel: View {
     
     @ViewBuilder
     private var looksGoodModalOverlay: some View {
-        if showLooksGoodModal, let previewingId = previewingItemId,
+        if showLooksGoodModal,
+           let previewingId = previewingItemId,
+           !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             LooksGoodModal(
                 itemName: item.name,
@@ -159,17 +163,31 @@ struct ItemsPanel: View {
     }
     
     private var filteredItems: [AccessoryItem] {
-        AccessoryItem.allItems
+        // Safety check: ensure allItems is accessible
+        guard !AccessoryItem.allItems.isEmpty else {
+            print("⚠️ No accessory items available")
+            return []
+        }
+        // Sort items by price (cost) in ascending order
+        return AccessoryItem.allItems.sorted { $0.cost < $1.cost }
     }
     
     private func handleItemAction(_ item: AccessoryItem) {
+        // Safety check: ensure item is valid
+        guard !item.id.isEmpty else {
+            print("⚠️ Invalid item ID")
+            return
+        }
+        
         if gameManager.gameState.ownedAccessories.contains(item.id) {
             // Check if this is a hat and if another hat is already equipped
-            let isHat = item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat"
-            if isHat {
-                // Check if another hat is equipped
-                let otherEquippedHats = gameManager.gameState.equippedAccessories.filter { equippedId in
-                    equippedId == "tophat" || equippedId == "santahat" || equippedId == "sombrerohat"
+            if item.isHat {
+                // Check if another hat is equipped - safely access allItems
+                let otherEquippedHats = gameManager.gameState.equippedAccessories.compactMap { equippedId -> String? in
+                    guard !equippedId.isEmpty,
+                          let equippedItem = AccessoryItem.allItems.first(where: { $0.id == equippedId }),
+                          equippedItem.isHat else { return nil }
+                    return equippedId
                 }
                 
                 if !otherEquippedHats.isEmpty && !gameManager.gameState.equippedAccessories.contains(item.id) {
@@ -276,24 +294,39 @@ struct AccessoryItemButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 10) {
-                // 3D Model or Emoji
+            VStack(spacing: 6) {
+                // 3D Model Preview
                 ZStack {
                     Circle()
                         .fill(backgroundColor)
                         .frame(width: 70, height: 70)
                     
-                    if #available(iOS 17.0, *),
-                       let modelFileName = item.modelFileName, 
-                       (item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat") {
-                        // Show 3D model for hats
-                        HatPreview3DView(fileName: modelFileName)
-                            .frame(width: 70, height: 70)
-                            .clipShape(Circle())
+                    if let modelFileName = item.modelFileName, !modelFileName.isEmpty, item.isHat {
+                        // Always show 3D model preview for hats
+                        if #available(iOS 17.0, *) {
+                            HatPreview3DView(fileName: modelFileName)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else {
+                            // Fallback for older iOS versions
+                            Text(item.emoji)
+                                .font(.system(size: 48))
+                        }
+                    } else if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
+                        // Show 3D model for other items with models
+                        if #available(iOS 17.0, *) {
+                            HatPreview3DView(fileName: modelFileName)
+                                .frame(width: 70, height: 70)
+                                .clipShape(Circle())
+                        } else {
+                            // Fallback for older iOS versions
+                            Text(item.emoji)
+                                .font(.system(size: 48))
+                        }
                     } else {
-                        // Fallback to emoji for other items or older iOS
+                        // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
-                            .font(.system(size: 36))
+                            .font(.system(size: 48))
                     }
                     
                     // Equipped indicator
@@ -348,13 +381,13 @@ struct AccessoryItemButton: View {
                 }
                 }
             }
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(.white.opacity(isOwned ? 0.1 : 0.05))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 16)
                             .stroke(borderColor, lineWidth: 1)
                     )
             )
@@ -365,7 +398,7 @@ struct AccessoryItemButton: View {
             // Preview indicator
             Group {
                 if isPreviewing {
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(Color.blue, lineWidth: 2)
                 }
             }
@@ -407,6 +440,52 @@ struct HatPreview3DView: View {
 struct HatPreviewARView: UIViewRepresentable {
     let fileName: String
     
+    // Preview-specific scale adjustments for items panel
+    private func previewScale(for fileName: String) -> Float {
+        if fileName.contains("Santa") {
+            return 1.0
+        } else if fileName.contains("Cowboy") {
+            return 0.3 // Slightly smaller
+        } else if fileName.contains("Wizard") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Pirate") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Propeller") {
+            return 0.15 // Smaller
+        } else if fileName.contains("Fox") {
+            return 0.35 // Bigger
+        } else if fileName.contains("Frog") {
+            return 0.35 // Bigger
+        } else {
+            return 0.2 // Default
+        }
+    }
+    
+    // Preview-specific position adjustments for items panel
+    private func previewPosition(for fileName: String) -> SIMD3<Float> {
+        if fileName.contains("Baseball") {
+            return [0.1, 0.0, 0.0] // More to the right
+        } else if fileName.contains("Santa") {
+            return [0, 0.1, 0]
+        } else if fileName.contains("Pirate") {
+            return [0, 0.1, 0] // Move up
+        } else if fileName.contains("Wizard") {
+            return [0, -0.1, 0] // Move down
+        } else {
+            return [0, 0.0, 0.0] // Default centered
+        }
+    }
+    
+    // Preview-specific rotation adjustments for items panel
+    private func previewRotation(for fileName: String) -> simd_quatf {
+        if fileName.contains("Frog") {
+            // Rotate 90 degrees around Y axis so frog face faces the user
+            return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
+        } else {
+            return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation
+        }
+    }
+    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
         arView.backgroundColor = .clear
@@ -419,11 +498,19 @@ struct HatPreviewARView: UIViewRepresentable {
         let anchor = AnchorEntity(world: [0, 0, 0])
         arView.scene.addAnchor(anchor)
         
-        // Set up camera - adjust for Santa hat
+        // Set up camera - adjust based on hat type
         let camera = PerspectiveCamera()
-        let isSantaHat = fileName.contains("Santa")
-        if isSantaHat {
-            // Closer camera for Santa hat to make it appear bigger
+        if fileName.contains("Propeller") {
+            // Zoom out more for propeller hat
+            camera.position = [0, 0.1, 1.0]
+        } else if fileName.contains("Pirate") {
+            // Much more zoomed out for pirate hat
+            camera.position = [0, 0.1, 1.5]
+        } else if fileName.contains("Cowboy") {
+            // More zoomed out for cowboy hat
+            camera.position = [0, 0.1, 0.8]
+        } else if fileName.contains("Santa") || fileName.contains("Fox") || fileName.contains("Frog") {
+            // Closer camera for larger hats
             camera.position = [0, 0.1, 0.3]
         } else {
             camera.position = [0, 0.1, 0.6]
@@ -452,65 +539,74 @@ struct HatPreviewARView: UIViewRepresentable {
         ambientLightAnchor.addChild(ambientLight)
         arView.scene.addAnchor(ambientLightAnchor)
         
-        // Load hat model
-        if let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") {
-            // Helper function to find first model entity (captured for use in Task)
-            func findModel(in entity: Entity) -> ModelEntity? {
-                if let model = entity as? ModelEntity {
+        // Load hat model - with safety checks
+        guard !fileName.isEmpty else {
+            print("⚠️ Empty file name for hat preview")
+            return arView
+        }
+        
+        guard let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") else {
+            print("⚠️ Hat file not found in bundle: \(fileName).usdz")
+            return arView
+        }
+        
+        // Helper function to find first model entity (captured for use in Task)
+        func findModel(in entity: Entity) -> ModelEntity? {
+            if let model = entity as? ModelEntity {
+                return model
+            }
+            for child in entity.children {
+                if let model = findModel(in: child) {
                     return model
                 }
-                for child in entity.children {
-                    if let model = findModel(in: child) {
-                        return model
-                    }
-                }
-                return nil
             }
-            
-            Task {
-                do {
-                    // Load entity using async API (Swift 6 compatible)
-                    let loadedEntity = try await Entity.load(contentsOf: usdzURL)
+            return nil
+        }
+        
+        Task { @MainActor in
+            do {
+                // Load entity using async API (Swift 6 compatible)
+                let loadedEntity = try await Entity.load(contentsOf: usdzURL)
+                
+                // Create a container to hold the model and apply transformations
+                let container = ModelEntity()
+                
+                // Handle different entity types
+                if let directModel = loadedEntity as? ModelEntity {
+                    container.addChild(directModel)
+                } else {
+                    // Clone all children from the loaded entity
+                    for child in loadedEntity.children {
+                        container.addChild(child.clone(recursive: true))
+                    }
                     
-                    // All Entity operations must run on main actor
-                    await MainActor.run {
-                        // Create a container to hold the model and apply transformations
-                        let container = ModelEntity()
-                        
-                        // Handle different entity types
-                        if let directModel = loadedEntity as? ModelEntity {
-                            container.addChild(directModel)
-                        } else {
-                            // Clone all children from the loaded entity
-                            for child in loadedEntity.children {
-                                container.addChild(child.clone(recursive: true))
-                            }
-                            
-                            // If no children, try to find model in hierarchy
-                            if container.children.isEmpty {
-                                if let model = findModel(in: loadedEntity) {
-                                    container.addChild(model)
-                                }
-                            }
-                        }
-                        
-                        // Apply transformations if we have a valid model
-                        if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
-                            // Scale based on hat type - adjust for preview size
-                            let isSantaHat = fileName.contains("Santa")
-                            let scale: Float = isSantaHat ? 1.0 : 0.2
-                            container.scale = [scale, scale, scale]
-                            // Move Santa hat up slightly to center it better
-                            let yPosition: Float = isSantaHat ? 0.1 : 0.0
-                            container.position = [0, yPosition, 0]
-                            
-                            // Add to anchor
-                            anchor.addChild(container)
+                    // If no children, try to find model in hierarchy
+                    if container.children.isEmpty {
+                        if let model = findModel(in: loadedEntity) {
+                            container.addChild(model)
                         }
                     }
-                } catch {
-                    print("❌ Failed to load hat preview: \(error)")
                 }
+                
+                // Apply transformations if we have a valid model
+                if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
+                    // Scale based on hat type - adjust for preview size
+                    let scale = previewScale(for: fileName)
+                    container.scale = [scale, scale, scale]
+                    // Position based on hat type
+                    let position = previewPosition(for: fileName)
+                    container.position = position
+                    // Rotation based on hat type
+                    container.orientation = previewRotation(for: fileName)
+                    
+                    // Add to anchor safely
+                    anchor.addChild(container)
+                } else {
+                    print("⚠️ No valid model found in hat file: \(fileName)")
+                }
+            } catch {
+                print("❌ Failed to load hat preview: \(error.localizedDescription)")
+                print("   File: \(fileName).usdz")
             }
         }
         

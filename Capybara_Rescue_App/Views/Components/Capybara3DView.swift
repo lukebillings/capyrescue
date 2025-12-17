@@ -96,12 +96,12 @@ struct Capybara3DView: View {
         // First check if previewing a hat
         if let previewId = previewingAccessoryId,
            let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
-           (previewItem.id == "tophat" || previewItem.id == "santahat" || previewItem.id == "sombrerohat") {
+           previewItem.isHat {
             return previewItem
         }
-        // Otherwise find equipped hat (Tophat, Santahat, or Sombrero) - wearable item
+        // Otherwise find equipped hat - wearable item
         return AccessoryItem.allItems.first { item in
-            equippedAccessories.contains(item.id) && (item.id == "tophat" || item.id == "santahat" || item.id == "sombrerohat")
+            equippedAccessories.contains(item.id) && item.isHat
         }
     }
     
@@ -111,13 +111,13 @@ struct Capybara3DView: View {
         // Add previewing ground item if any
         if let previewId = previewingAccessoryId,
            let previewItem = AccessoryItem.allItems.first(where: { $0.id == previewId }),
-           previewItem.id != "tophat" && previewItem.id != "santahat" && previewItem.id != "sombrerohat" && previewItem.modelFileName != nil {
+           !previewItem.isHat && previewItem.modelFileName != nil {
             items.append(previewItem)
         }
         
         // Add equipped ground items (like Sunflower) - items that go on the ground
         let equipped = AccessoryItem.allItems.filter { item in
-            equippedAccessories.contains(item.id) && item.id != "tophat" && item.id != "santahat" && item.id != "sombrerohat" && item.modelFileName != nil
+            equippedAccessories.contains(item.id) && !item.isHat && item.modelFileName != nil
         }
         items.append(contentsOf: equipped)
         
@@ -165,26 +165,100 @@ struct RealityKitView: UIViewRepresentable {
     
     // Hat positioning constants - single source of truth
     // Positive Z moves hat forward toward camera (onto head, not back)
+    // Hat positioning constants - single source of truth
+    // Positive Z moves hat forward toward camera (onto head, not back)
     private static let hatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
     private static let sombreroPosition: SIMD3<Float> = [-0.1, 4, 2.2] // Lower Y for sombrero and z
+    private static let baseballcapPosition: SIMD3<Float> = [0.3, 4.2, 2.4] // "baseballcap" matches hat ID in GameState
+    private static let cowboyhatPosition: SIMD3<Float> = [-0.1, 4, 2.2]
+    private static let tophatPosition: SIMD3<Float> = [0, 4.8, 2.4]
+    private static let wizardhatPosition: SIMD3<Float> = [-0.1, 3.9, 2.3]
+    private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
+    private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
+    private static let froghatPosition: SIMD3<Float> = [0, 4.3, 2.2]
+    private static let foxhatPosition: SIMD3<Float> = [0, 4.3, 1.9]
+    private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
+
+    // Hat scaling constants
     private static let tophatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
     private static let santahatScale: SIMD3<Float> = [10, 10, 10] // 10x bigger than tophat
     private static let sombreroScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let baseballcapScale: SIMD3<Float> = [0.8, 0.8, 0.8]
+    private static let cowboyhatScale: SIMD3<Float> = [2, 2, 2]
+    private static let wizardhatScale: SIMD3<Float> = [0.5, 0.5, 0.5]
+    private static let piratehatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
+    private static let propellerhatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
+    private static let froghatScale: SIMD3<Float> = [2, 2, 2]
+    private static let foxhatScale: SIMD3<Float> = [2.8, 2.8, 2.8]
     
     private func hatPosition(for hatId: String?) -> SIMD3<Float> {
-        if hatId == "sombrerohat" {
+        guard let hatId = hatId else { return Self.hatPosition }
+        
+        switch hatId {
+        case "sombrerohat":
             return Self.sombreroPosition
+        case "baseballcap":
+            return Self.baseballcapPosition
+        case "cowboyhat":
+            return Self.cowboyhatPosition
+        case "tophat":
+            return Self.tophatPosition
+        case "wizardhat":
+            return Self.wizardhatPosition
+        case "piratehat":
+            return Self.piratehatPosition
+        case "propellerhat":
+            return Self.propellerhatPosition
+        case "froghat":
+            return Self.froghatPosition
+        case "foxhat":
+            return Self.foxhatPosition
+        case "santahat":
+            return Self.santahatPosition
+        default:
+            return Self.hatPosition
         }
-        return Self.hatPosition
     }
     
     private func hatScale(for hatId: String?) -> SIMD3<Float> {
-        if hatId == "santahat" {
+        guard let hatId = hatId else { return Self.tophatScale }
+        
+        switch hatId {
+        case "tophat":
+            return Self.tophatScale
+        case "santahat":
             return Self.santahatScale
-        } else if hatId == "sombrerohat" {
+        case "sombrerohat":
             return Self.sombreroScale
+        case "baseballcap":
+            return Self.baseballcapScale
+        case "cowboyhat":
+            return Self.cowboyhatScale
+        case "wizardhat":
+            return Self.wizardhatScale
+        case "piratehat":
+            return Self.piratehatScale
+        case "propellerhat":
+            return Self.propellerhatScale
+        case "froghat":
+            return Self.froghatScale
+        case "foxhat":
+            return Self.foxhatScale
+        default:
+            return Self.tophatScale
         }
-        return Self.tophatScale
+    }
+    
+    private func hatRotation(for hatId: String?) -> simd_quatf {
+        guard let hatId = hatId else { return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) } // No rotation
+        
+        switch hatId {
+        case "froghat":
+            // Rotate 90 degrees around Y axis to face forward
+            return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
+        default:
+            return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation for other hats
+        }
     }
     
     func makeUIView(context: Context) -> ARView {
@@ -235,6 +309,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     model.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id
@@ -264,6 +339,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     proceduralModel.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id
@@ -309,6 +385,7 @@ struct RealityKitView: UIViewRepresentable {
                 if let hatModel = loadHatModel(fileName: hat.modelFileName) {
                     hatModel.position = hatPosition(for: hat.id)
                     hatModel.scale = hatScale(for: hat.id)
+                    hatModel.orientation = hatRotation(for: hat.id)
                     model.addChild(hatModel)
                     context.coordinator.hatEntity = hatModel
                     context.coordinator.currentHatId = hat.id

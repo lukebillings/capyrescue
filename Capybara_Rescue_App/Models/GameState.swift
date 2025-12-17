@@ -15,11 +15,13 @@ struct GameState: Codable {
     var lastLoginDate: Date?
     var loginStreak: Int
     var earnedAchievements: Set<String>
+    var statsStreak: Int // Consecutive days with all stats (food, drink, happiness) > 50
+    var lastStatsCheckDate: Date? // Last date we checked if all stats were > 50
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
-        case lastLoginDate, loginStreak, earnedAchievements
+        case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
     }
     
     // Custom decoding for backward compatibility
@@ -37,6 +39,8 @@ struct GameState: Codable {
         subscriptionEndDate = try container.decodeIfPresent(Date.self, forKey: .subscriptionEndDate)
         lastLoginDate = try container.decodeIfPresent(Date.self, forKey: .lastLoginDate)
         loginStreak = try container.decodeIfPresent(Int.self, forKey: .loginStreak) ?? 0
+        statsStreak = try container.decodeIfPresent(Int.self, forKey: .statsStreak) ?? 0
+        lastStatsCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastStatsCheckDate)
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -67,6 +71,8 @@ struct GameState: Codable {
         try container.encodeIfPresent(lastLoginDate, forKey: .lastLoginDate)
         try container.encode(loginStreak, forKey: .loginStreak)
         try container.encode(earnedAchievements, forKey: .earnedAchievements)
+        try container.encode(statsStreak, forKey: .statsStreak)
+        try container.encodeIfPresent(lastStatsCheckDate, forKey: .lastStatsCheckDate)
     }
     
     // Manual initializer for default state
@@ -83,7 +89,9 @@ struct GameState: Codable {
         subscriptionEndDate: Date?,
         lastLoginDate: Date?,
         loginStreak: Int,
-        earnedAchievements: Set<String>
+        earnedAchievements: Set<String>,
+        statsStreak: Int,
+        lastStatsCheckDate: Date?
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -98,14 +106,16 @@ struct GameState: Codable {
         self.lastLoginDate = lastLoginDate
         self.loginStreak = loginStreak
         self.earnedAchievements = earnedAchievements
+        self.statsStreak = statsStreak
+        self.lastStatsCheckDate = lastStatsCheckDate
     }
     
     static let defaultState = GameState(
         capybaraName: "Cappuccino",
-        food: 50,
-        drink: 50,
-        happiness: 50,
-        capycoins: 100,
+        food: 60,
+        drink: 60,
+        happiness: 60,
+        capycoins: 500,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -113,7 +123,9 @@ struct GameState: Codable {
         subscriptionEndDate: nil as Date?,
         lastLoginDate: nil as Date?,
         loginStreak: 0,
-        earnedAchievements: []
+        earnedAchievements: [],
+        statsStreak: 0,
+        lastStatsCheckDate: nil as Date?
     )
     
     var hasActiveSubscription: Bool {
@@ -191,12 +203,44 @@ struct AccessoryItem: Identifiable, Equatable {
         case gardenItems = ""
     }
     
-    static let allItems: [AccessoryItem] = [
-        // Garden Items
-        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top Hat", category: .gardenItems, cost: 400, modelFileName: "Tophat"), // Loads Tophat.usdz
-        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 10000, modelFileName: "Santahat"), // Loads Santahat.usdz
-        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 4000, modelFileName: "Sombrero2hat"), // Loads Sombrero2hat.usdz
+    // Check if this item is a hat (only one hat can be equipped at a time)
+    var isHat: Bool {
+        guard !id.isEmpty else { return false }
+        guard modelFileName != nil else { return false }
+        
+        let hatIds: Set<String> = [
+            "baseballcap",
+            "cowboyhat",
+            "tophat",
+            "wizardhat",
+            "piratehat",
+            "propellerhat",
+            "sombrerohat",
+            "froghat",
+            "foxhat",
+            "santahat"
+        ]
+        
+        return hatIds.contains(id)
+    }
+    
+    private static let _allItems: [AccessoryItem] = [
+        // Hats
+        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap"),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 200, modelFileName: "Cowboy Hat 2"),
+        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 300, modelFileName: "Tophat"),
+        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 400, modelFileName: "Wizard hat"),
+        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 400, modelFileName: "Pirate hat"),
+        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 800, modelFileName: "Propeller hat"),
+        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 4000, modelFileName: "Sombrero2hat"),
+        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 8000, modelFileName: "Frog Hat"),
+        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 7000, modelFileName: "Fox Hat"),
+        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 10000, modelFileName: "Santahat"),
     ]
+    
+    static var allItems: [AccessoryItem] {
+        return _allItems
+    }
 }
 
 // MARK: - Coin Pack

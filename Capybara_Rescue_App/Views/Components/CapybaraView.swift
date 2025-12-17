@@ -95,9 +95,9 @@ struct CapybaraView: View {
     }
     
     private var equippedHat: AccessoryItem? {
-        // Find any equipped accessory that has a 3D model (like the Tophat)
+        // Find any equipped hat
         AccessoryItem.allItems.first { item in
-            equippedAccessories.contains(item.id) && item.modelFileName != nil
+            equippedAccessories.contains(item.id) && item.isHat
         }
     }
     
