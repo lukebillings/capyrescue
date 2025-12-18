@@ -255,30 +255,37 @@ struct CoinPack: Identifiable {
     static let packs: [CoinPack] = [
         CoinPack(
             name: "Ultra Pack",
-            coins: 10000,
-            price: "£100",
+            coins: 25000,
+            price: "£99.99",
             description: "Maximum coins for serious players",
             badge: nil
         ),
         CoinPack(
             name: "Mega Pack",
-            coins: 4000,
-            price: "£50",
+            coins: 10000,
+            price: "£49.99",
             description: "Best value - save 33%",
             badge: nil
         ),
         CoinPack(
             name: "Super Pack",
-            coins: 400,
-            price: "£10",
+            coins: 1500,
+            price: "£9.99",
             description: "Great value for regular players",
             badge: nil
         ),
         CoinPack(
             name: "Starter Pack",
-            coins: 100,
-            price: "£5",
+            coins: 500,
+            price: "£4.99",
             description: "Perfect for trying out new items",
+            badge: nil
+        ),
+        CoinPack(
+            name: "Mini Pack",
+            coins: 50,
+            price: "£0.99",
+            description: "Small pack to get started",
             badge: nil
         )
     ]
