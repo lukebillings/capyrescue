@@ -93,17 +93,10 @@ struct Capybara3DView: View {
             startPulseAnimation()
             
             // Check if we should apply default rotation after onboarding
-            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+            // Note: We use a local UserDefaults flag for rotation since it's device-specific UI state
             let hasAppliedRotation = UserDefaults.standard.bool(forKey: "has_applied_initial_capybara_rotation")
             
-            if hasCompletedOnboarding && !hasAppliedRotation && rotationAngle == 0 {
-                // Apply 45 degree rotation to the right after onboarding
-                withAnimation(.easeOut(duration: 0.5)) {
-                    rotationAngle = 45.0
-                }
-                UserDefaults.standard.set(true, forKey: "has_applied_initial_capybara_rotation")
-                hasAppliedInitialRotation = true
-            } else if let initialRotation = initialRotation, !hasAppliedInitialRotation {
+            if let initialRotation = initialRotation, !hasAppliedInitialRotation {
                 // Apply provided initial rotation if available
                 rotationAngle = initialRotation
                 hasAppliedInitialRotation = true

@@ -228,7 +228,7 @@ struct OnboardingView: View {
             // Accept button
             Button(action: {
                 // Complete onboarding and go straight to tutorial
-                UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
+                gameManager.gameState.hasCompletedOnboarding = true
                 withAnimation {
                     isPresented = false
                 }

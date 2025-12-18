@@ -22,8 +22,9 @@ class GameManager: ObservableObject {
     @Published var toastMessage: String? = nil // For showing toast messages to user
     
     private var decayTimer: Timer?
-    private let userDefaultsKey = "capybara_rescue_game_state"
+    private let storageKey = "capybara_rescue_game_state"
     private var isSaving = false
+    private let cloudStore = NSUbiquitousKeyValueStore.default
     
     struct ThrownItem: Identifiable {
         let id = UUID()
@@ -32,13 +33,19 @@ class GameManager: ObservableObject {
     }
     
     init() {
+        // Set up iCloud sync notification observer
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleCloudStoreChange(_:)),
+            name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+            object: cloudStore
+        )
+        
         // Load saved state or use default
-        if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
-           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
-            self.gameState = savedState
-        } else {
-            self.gameState = GameState.defaultState
-        }
+        loadGameState()
+        
+        // Migrate old UserDefaults values if needed (for backward compatibility)
+        migrateFromUserDefaults()
         
         // Apply time-based decay from last session
         applyOfflineDecay()
@@ -57,6 +64,62 @@ class GameManager: ObservableObject {
         
         // Start decay timer
         startDecayTimer()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - iCloud Sync
+    @objc private func handleCloudStoreChange(_ notification: Notification) {
+        // Handle external changes from iCloud sync
+        guard let userInfo = notification.userInfo,
+              let reason = userInfo[NSUbiquitousKeyValueStoreChangeReasonKey] as? Int else {
+            return
+        }
+        
+        // Only reload if the change came from another device
+        if reason == NSUbiquitousKeyValueStoreServerChange ||
+           reason == NSUbiquitousKeyValueStoreInitialSyncChange {
+            print("☁️ iCloud sync detected - reloading game state")
+            loadGameState()
+        }
+    }
+    
+    private func loadGameState() {
+        if let data = cloudStore.data(forKey: storageKey),
+           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
+            self.gameState = savedState
+            print("✅ Loaded game state from iCloud")
+        } else {
+            self.gameState = GameState.defaultState
+            print("ℹ️ Using default game state (first launch or no iCloud data)")
+        }
+    }
+    
+    private func migrateFromUserDefaults() {
+        // Migrate tutorial/onboarding completion from old UserDefaults to GameState
+        // This ensures backward compatibility for existing users
+        if !gameState.hasCompletedOnboarding {
+            let oldValue = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+            if oldValue {
+                gameState.hasCompletedOnboarding = true
+                print("🔄 Migrated onboarding completion from UserDefaults")
+            }
+        }
+        
+        if !gameState.hasCompletedTutorial {
+            let oldValue = UserDefaults.standard.bool(forKey: "has_completed_tutorial")
+            if oldValue {
+                gameState.hasCompletedTutorial = true
+                print("🔄 Migrated tutorial completion from UserDefaults")
+            }
+        }
+        
+        // Save migrated state if we made changes
+        if gameState.hasCompletedOnboarding || gameState.hasCompletedTutorial {
+            saveGameState()
+        }
     }
     
     // MARK: - Achievement System
@@ -171,7 +234,9 @@ class GameManager: ObservableObject {
         gameState.lastUpdateTime = Date()
         
         if let data = try? JSONEncoder().encode(gameState) {
-            UserDefaults.standard.set(data, forKey: userDefaultsKey)
+            cloudStore.set(data, forKey: storageKey)
+            cloudStore.synchronize() // Explicitly sync to iCloud
+            print("💾 Saved game state to iCloud")
         }
     }
     

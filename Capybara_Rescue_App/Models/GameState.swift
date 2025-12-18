@@ -19,12 +19,14 @@ struct GameState: Codable {
     var lastStatsCheckDate: Date? // Last date we checked if all stats were > 50
     var appOpenCount: Int // Track how many times app has been opened
     var hasRemovedBannerAds: Bool // Track if user purchased ad removal
+    var hasCompletedOnboarding: Bool // Track if user completed onboarding
+    var hasCompletedTutorial: Bool // Track if user completed tutorial
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
-        case appOpenCount, hasRemovedBannerAds
+        case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
     }
     
     // Custom decoding for backward compatibility
@@ -46,6 +48,8 @@ struct GameState: Codable {
         lastStatsCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastStatsCheckDate)
         appOpenCount = try container.decodeIfPresent(Int.self, forKey: .appOpenCount) ?? 0
         hasRemovedBannerAds = try container.decodeIfPresent(Bool.self, forKey: .hasRemovedBannerAds) ?? false
+        hasCompletedOnboarding = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? false
+        hasCompletedTutorial = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedTutorial) ?? false
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -80,6 +84,8 @@ struct GameState: Codable {
         try container.encodeIfPresent(lastStatsCheckDate, forKey: .lastStatsCheckDate)
         try container.encode(appOpenCount, forKey: .appOpenCount)
         try container.encode(hasRemovedBannerAds, forKey: .hasRemovedBannerAds)
+        try container.encode(hasCompletedOnboarding, forKey: .hasCompletedOnboarding)
+        try container.encode(hasCompletedTutorial, forKey: .hasCompletedTutorial)
     }
     
     // Manual initializer for default state
@@ -100,7 +106,9 @@ struct GameState: Codable {
         statsStreak: Int,
         lastStatsCheckDate: Date?,
         appOpenCount: Int,
-        hasRemovedBannerAds: Bool
+        hasRemovedBannerAds: Bool,
+        hasCompletedOnboarding: Bool,
+        hasCompletedTutorial: Bool
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -119,6 +127,8 @@ struct GameState: Codable {
         self.lastStatsCheckDate = lastStatsCheckDate
         self.appOpenCount = appOpenCount
         self.hasRemovedBannerAds = hasRemovedBannerAds
+        self.hasCompletedOnboarding = hasCompletedOnboarding
+        self.hasCompletedTutorial = hasCompletedTutorial
     }
     
     static let defaultState = GameState(
@@ -138,7 +148,9 @@ struct GameState: Codable {
         statsStreak: 0,
         lastStatsCheckDate: nil as Date?,
         appOpenCount: 0,
-        hasRemovedBannerAds: false
+        hasRemovedBannerAds: false,
+        hasCompletedOnboarding: false,
+        hasCompletedTutorial: false
     )
     
     var hasActiveSubscription: Bool {

@@ -82,6 +82,7 @@ enum TutorialStep: Int, CaseIterable {
 
 // MARK: - Tutorial Overlay
 struct TutorialOverlay: View {
+    @EnvironmentObject var gameManager: GameManager
     @Binding var currentStep: TutorialStep?
     @State private var elementFrames: [String: CGRect] = [:]
     @State private var globalFrame: CGRect = .zero
@@ -240,7 +241,7 @@ struct TutorialOverlay: View {
                     currentStep = nextStep
                 } else {
                     // Tutorial complete
-                    UserDefaults.standard.set(true, forKey: "has_completed_tutorial")
+                    gameManager.gameState.hasCompletedTutorial = true
                     currentStep = nil
                 }
             }) {
