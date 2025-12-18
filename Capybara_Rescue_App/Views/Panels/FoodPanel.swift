@@ -33,32 +33,38 @@ struct FoodPanel: View {
             .frame(maxHeight: .infinity) // Allow scroll view to take available space
             
             // Header with back button - moved below items
-            HStack {
-                if let onBack = onBack {
-                    Button(action: {
-                        HapticManager.shared.buttonPress()
-                        onBack()
-                    }) {
+            VStack(spacing: 4) {
+                HStack {
+                    if let onBack = onBack {
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            onBack()
+                        }) {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Feed Your Capybara")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    // Spacer for symmetry
+                    if onBack != nil {
                         Image(systemName: "chevron.left.circle.fill")
                             .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(.clear)
                     }
                 }
                 
-                Spacer()
-                
-                Text("Feed Your Capybara")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                
-                Spacer()
-                
-                // Spacer for symmetry
-                if onBack != nil {
-                    Image(systemName: "chevron.left.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.clear)
-                }
+                Text("Foods are one time use")
+                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.6))
             }
             .padding(.horizontal, 16)
         }
