@@ -563,51 +563,49 @@ struct HatPreviewARView: UIViewRepresentable {
             return nil
         }
         
-        Task { @MainActor in
-            do {
-                // Load entity using async API (Swift 6 compatible)
-                let loadedEntity = try await Entity.load(contentsOf: usdzURL)
-                
-                // Create a container to hold the model and apply transformations
-                let container = ModelEntity()
-                
-                // Handle different entity types
-                if let directModel = loadedEntity as? ModelEntity {
-                    container.addChild(directModel)
-                } else {
-                    // Clone all children from the loaded entity
-                    for child in loadedEntity.children {
-                        container.addChild(child.clone(recursive: true))
-                    }
-                    
-                    // If no children, try to find model in hierarchy
-                    if container.children.isEmpty {
-                        if let model = findModel(in: loadedEntity) {
-                            container.addChild(model)
-                        }
-                    }
+        // Load entity synchronously (Entity.load is synchronous)
+        do {
+            let loadedEntity = try Entity.load(contentsOf: usdzURL)
+            
+            // Create a container to hold the model and apply transformations
+            let container = ModelEntity()
+            
+            // Handle different entity types
+            if let directModel = loadedEntity as? ModelEntity {
+                container.addChild(directModel)
+            } else {
+                // Clone all children from the loaded entity
+                for child in loadedEntity.children {
+                    container.addChild(child.clone(recursive: true))
                 }
                 
-                // Apply transformations if we have a valid model
-                if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
-                    // Scale based on hat type - adjust for preview size
-                    let scale = previewScale(for: fileName)
-                    container.scale = [scale, scale, scale]
-                    // Position based on hat type
-                    let position = previewPosition(for: fileName)
-                    container.position = position
-                    // Rotation based on hat type
-                    container.orientation = previewRotation(for: fileName)
-                    
-                    // Add to anchor safely
-                    anchor.addChild(container)
-                } else {
-                    print("⚠️ No valid model found in hat file: \(fileName)")
+                // If no children, try to find model in hierarchy
+                if container.children.isEmpty {
+                    if let model = findModel(in: loadedEntity) {
+                        container.addChild(model)
+                    }
                 }
-            } catch {
-                print("❌ Failed to load hat preview: \(error.localizedDescription)")
-                print("   File: \(fileName).usdz")
             }
+            
+            // Apply transformations if we have a valid model
+            if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
+                // Scale based on hat type - adjust for preview size
+                let scale = previewScale(for: fileName)
+                container.scale = [scale, scale, scale]
+                // Position based on hat type
+                let position = previewPosition(for: fileName)
+                container.position = position
+                // Rotation based on hat type
+                container.orientation = previewRotation(for: fileName)
+                
+                // Add to anchor safely
+                anchor.addChild(container)
+            } else {
+                print("⚠️ No valid model found in hat file: \(fileName)")
+            }
+        } catch {
+            print("❌ Failed to load hat preview: \(error.localizedDescription)")
+            print("   File: \(fileName).usdz")
         }
         
         return arView

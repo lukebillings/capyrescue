@@ -33,14 +33,11 @@ class GameManager: ObservableObject {
     
     init() {
         // Load saved state or use default
-        let isNewGame: Bool
         if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
            let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
             self.gameState = savedState
-            isNewGame = false
         } else {
             self.gameState = GameState.defaultState
-            isNewGame = true
         }
         
         // Apply time-based decay from last session
@@ -307,6 +304,25 @@ class GameManager: ObservableObject {
         // In a real app, this would integrate with StoreKit
         // For now, we'll just add the coins directly
         gameState.capycoins += pack.coins
+    }
+    
+    func purchaseRemoveBannerAds() {
+        // In a real app, this would integrate with StoreKit
+        // For now, we'll just set the flag directly
+        gameState.hasRemovedBannerAds = true
+        showToast("Banner ads removed! 🎉")
+    }
+    
+    func incrementAppOpenCount() {
+        gameState.appOpenCount += 1
+    }
+    
+    func shouldShowAdRemovalPromo() -> Bool {
+        // Show every 4th time the app is opened, but only if:
+        // 1. User hasn't already purchased ad removal
+        // 2. App has been opened at least a few times (4, 8, 12, etc.)
+        guard !gameState.hasRemovedBannerAds else { return false }
+        return gameState.appOpenCount > 0 && gameState.appOpenCount % 4 == 0
     }
     
     func renameCapybara(to newName: String) {

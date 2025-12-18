@@ -13,6 +13,7 @@
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
 		23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */; };
 		2379E584C1E32E56C84434C8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE772C5EE05A58130807151 /* GameState.swift */; };
+		F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */; };
 		256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BDABA03E65FB27F57C697 /* TrackingManager.swift */; };
 		3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
@@ -67,6 +68,7 @@
 		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Capybara.usdz; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveBannerAdPromoView.swift; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
@@ -189,6 +191,7 @@
 			children = (
 				6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */,
 				0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */,
 				6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */,
 				A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */,
 				48DE05D73317A438974531A1 /* Components */,
@@ -310,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */,
+				F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */,
 				66DBD658C0076D4EBCE2E550 /* BannerAdView.swift in Sources */,
 				1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */,
 				81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */,

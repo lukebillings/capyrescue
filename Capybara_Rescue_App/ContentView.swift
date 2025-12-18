@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "has_completed_onboarding")
     @State private var currentTutorialStep: TutorialStep? = nil
+    @State private var showAdRemovalPromo = false
     
     private func checkTutorialStatus() {
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
@@ -38,6 +39,14 @@ struct ContentView: View {
             mainContentView
                 .onAppear {
                     checkTutorialStatus()
+                    // Track app open and check if we should show ad removal promo
+                    gameManager.incrementAppOpenCount()
+                    if gameManager.shouldShowAdRemovalPromo() {
+                        // Small delay to ensure UI is ready
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                            showAdRemovalPromo = true
+                        }
+                    }
                 }
         }
     }
@@ -51,8 +60,8 @@ struct ContentView: View {
                 
                 // Main content
                 VStack(spacing: 0) {
-                    // Banner Ad at the top (only show if consent allows)
-                    if consentManager.canRequestAds {
+                    // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
+                    if consentManager.canRequestAds && !gameManager.gameState.hasRemovedBannerAds {
                         BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
                             .frame(height: 50)
                     }
@@ -289,6 +298,12 @@ struct ContentView: View {
                             .padding(.bottom, 100)
                     }
                     .zIndex(201) // Above everything including tutorial
+                }
+                
+                // Ad removal promo popup
+                if showAdRemovalPromo {
+                    RemoveBannerAdPromoView(isPresented: $showAdRemovalPromo)
+                        .zIndex(202) // Above everything
                 }
             }
         }
