@@ -175,7 +175,8 @@ struct ContentView: View {
                         }
                         .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.leading, geometry.safeAreaInsets.leading > 0 ? geometry.safeAreaInsets.leading + 16 : 20)
+                    .padding(.trailing, geometry.safeAreaInsets.trailing > 0 ? geometry.safeAreaInsets.trailing + 16 : 20)
                     .padding(.vertical, 10)
                     .background(
                         GlassBackground()
