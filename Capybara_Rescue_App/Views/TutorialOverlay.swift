@@ -17,15 +17,17 @@ enum TutorialStep: Int, CaseIterable {
     case food = 0
     case drink = 1
     case happy = 2
-    case items = 3
-    case shop = 4
-    case achievements = 5
+    case statsWarning = 3
+    case items = 4
+    case shop = 5
+    case achievements = 6
     
     var title: String {
         switch self {
         case .food: return "Food"
         case .drink: return "Drink"
         case .happy: return "Happy"
+        case .statsWarning: return "Keep stats above 0"
         case .items: return "Items"
         case .shop: return "Shop"
         case .achievements: return "Achievements"
@@ -35,11 +37,13 @@ enum TutorialStep: Int, CaseIterable {
     var message: String {
         switch self {
         case .food:
-            return "Try to keep this over 80. You can give it food.\n\n⚠️ If all stats reach 0, your capybara will run away!"
+            return "Try to keep this over 80. You can give it food."
         case .drink:
-            return "Try to keep this over 80. You can give it drinks.\n\n⚠️ If all stats reach 0, your capybara will run away!"
+            return "Try to keep this over 80. You can give it drinks."
         case .happy:
-            return "Try to keep this over 80. Increase its happiness by petting it.\n\n⚠️ If all stats reach 0, your capybara will run away!"
+            return "Try to keep this over 80. Increase its happiness by petting it."
+        case .statsWarning:
+            return "⚠️ If all stats reach 0, your capybara will run away!"
         case .items:
             return "Your capybara would love to have some accessories. Buy an item."
         case .shop:
@@ -55,6 +59,7 @@ enum TutorialStep: Int, CaseIterable {
         case .food: return "food_stat"
         case .drink: return "drink_stat"
         case .happy: return "happy_stat"
+        case .statsWarning: return "food_stat" // Highlight all stats, but we'll use food_stat as anchor
         case .items: return "items_button"
         case .shop: return "shop_button"
         case .achievements: return "achievements_button"
@@ -67,6 +72,7 @@ enum TutorialStep: Int, CaseIterable {
         case .food: return "food_button"
         case .drink: return "drink_button"
         case .happy: return "capybara_tap"
+        case .statsWarning: return nil // No tap target for warning
         case .items: return nil
         case .shop: return nil
         case .achievements: return nil
