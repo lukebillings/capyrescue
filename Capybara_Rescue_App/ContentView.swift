@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "has_completed_onboarding")
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var showAdRemovalPromo = false
+    @State private var shouldApplyInitialRotation = false
     
     private func checkTutorialStatus() {
         let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
@@ -29,9 +30,14 @@ struct ContentView: View {
                 .environmentObject(gameManager)
                 .onChange(of: showOnboarding) { oldValue, newValue in
                     if !newValue {
-                        // Onboarding completed, check if tutorial should show
+                        // Onboarding completed, apply initial rotation and check if tutorial should show
+                        shouldApplyInitialRotation = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             checkTutorialStatus()
+                        }
+                        // Reset after a short delay so it only applies once
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            shouldApplyInitialRotation = false
                         }
                     }
                 }
@@ -194,7 +200,8 @@ struct ContentView: View {
                         previewingAccessoryId: gameManager.previewingAccessoryId,
                         onPet: {
                             gameManager.petCapybara()
-                        }
+                        },
+                        initialRotation: shouldApplyInitialRotation ? 45 : nil
                     )
                     .frame(height: 320) // Increased height to show full capybara including head
                     .offset(y: -40) // Move up higher on the page

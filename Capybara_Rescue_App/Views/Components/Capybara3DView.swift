@@ -9,6 +9,7 @@ struct Capybara3DView: View {
     let equippedAccessories: [String]
     let previewingAccessoryId: String?
     let onPet: () -> Void
+    let initialRotation: Double?
     
     @State private var isPressed = false
     @State private var pulseScale: CGFloat = 1.0
@@ -18,6 +19,15 @@ struct Capybara3DView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var lastDragValue: CGFloat = 0
     @State private var useProceduralModel = false // Try to load USDZ model first
+    @State private var hasAppliedInitialRotation = false
+    
+    init(emotion: CapybaraEmotion, equippedAccessories: [String], previewingAccessoryId: String?, onPet: @escaping () -> Void, initialRotation: Double? = nil) {
+        self.emotion = emotion
+        self.equippedAccessories = equippedAccessories
+        self.previewingAccessoryId = previewingAccessoryId
+        self.onPet = onPet
+        self.initialRotation = initialRotation
+    }
     
     var body: some View {
         ZStack {
@@ -81,6 +91,30 @@ struct Capybara3DView: View {
         }, perform: {})
         .onAppear {
             startPulseAnimation()
+            
+            // Check if we should apply default rotation after onboarding
+            let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+            let hasAppliedRotation = UserDefaults.standard.bool(forKey: "has_applied_initial_capybara_rotation")
+            
+            if hasCompletedOnboarding && !hasAppliedRotation && rotationAngle == 0 {
+                // Apply 45 degree rotation to the right after onboarding
+                withAnimation(.easeOut(duration: 0.5)) {
+                    rotationAngle = 45.0
+                }
+                UserDefaults.standard.set(true, forKey: "has_applied_initial_capybara_rotation")
+                hasAppliedInitialRotation = true
+            } else if let initialRotation = initialRotation, !hasAppliedInitialRotation {
+                // Apply provided initial rotation if available
+                rotationAngle = initialRotation
+                hasAppliedInitialRotation = true
+            }
+        }
+        .onChange(of: initialRotation) { oldValue, newValue in
+            // Apply rotation when it becomes available
+            if let newRotation = newValue, !hasAppliedInitialRotation {
+                rotationAngle = newRotation
+                hasAppliedInitialRotation = true
+            }
         }
     }
     
