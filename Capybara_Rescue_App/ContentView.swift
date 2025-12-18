@@ -248,9 +248,9 @@ struct ContentView: View {
                     onAnimationComplete: {}
                 )
                 
-                // Love hearts overlay (when happiness > 80)
+                // Love hearts overlay (when happiness >= 80)
                 LoveHeartsOverlay(
-                    isActive: gameManager.gameState.happiness > 80,
+                    isActive: gameManager.gameState.happiness >= 80,
                     capybaraPosition: capybaraPosition
                 )
                 
