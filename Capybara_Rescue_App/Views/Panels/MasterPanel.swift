@@ -55,7 +55,6 @@ struct MasterPanel: View {
                 onCategorySelected(.shop)
             }
         }
-        .padding(.horizontal, 16)
         .padding(.bottom, 0)
         .padding(.top, 0)
         .frame(maxWidth: .infinity)

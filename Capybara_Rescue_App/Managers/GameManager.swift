@@ -33,6 +33,16 @@ class GameManager: ObservableObject {
     }
     
     init() {
+        // Initialize gameState first (required before calling any methods)
+        if let data = cloudStore.data(forKey: storageKey),
+           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
+            self.gameState = savedState
+            print("✅ Loaded game state from iCloud")
+        } else {
+            self.gameState = GameState.defaultState
+            print("ℹ️ Using default game state (first launch or no iCloud data)")
+        }
+        
         // Set up iCloud sync notification observer
         NotificationCenter.default.addObserver(
             self,
@@ -40,9 +50,6 @@ class GameManager: ObservableObject {
             name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: cloudStore
         )
-        
-        // Load saved state or use default
-        loadGameState()
         
         // Migrate old UserDefaults values if needed (for backward compatibility)
         migrateFromUserDefaults()

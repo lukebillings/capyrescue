@@ -219,8 +219,8 @@ struct ContentView: View {
                         }
                         .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.leading, geometry.safeAreaInsets.leading > 0 ? geometry.safeAreaInsets.leading + 16 : 20)
-                    .padding(.trailing, geometry.safeAreaInsets.trailing > 0 ? geometry.safeAreaInsets.trailing + 16 : 20)
+                    .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
+                    .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
                     .padding(.vertical, 10)
                     .background(
                         GlassBackground()
@@ -297,6 +297,8 @@ struct ContentView: View {
                                 }
                             }
                         })
+                        .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
+                        .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
                         .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom : 4)
                     }
                 }
