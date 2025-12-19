@@ -1,6 +1,5 @@
 import SwiftUI
-import RealityKit
-import ARKit
+import SceneKit
 
 // MARK: - Items Panel
 struct ItemsPanel: View {
@@ -301,28 +300,11 @@ struct AccessoryItemButton: View {
                         .fill(backgroundColor)
                         .frame(width: 70, height: 70)
                     
-                    if let modelFileName = item.modelFileName, !modelFileName.isEmpty, item.isHat {
-                        // Always show 3D model preview for hats
-                        if #available(iOS 17.0, *) {
-                            HatPreview3DView(fileName: modelFileName)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else {
-                            // Fallback for older iOS versions
-                            Text(item.emoji)
-                                .font(.system(size: 48))
-                        }
-                    } else if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
-                        // Show 3D model for other items with models
-                        if #available(iOS 17.0, *) {
-                            HatPreview3DView(fileName: modelFileName)
-                                .frame(width: 70, height: 70)
-                                .clipShape(Circle())
-                        } else {
-                            // Fallback for older iOS versions
-                            Text(item.emoji)
-                                .font(.system(size: 48))
-                        }
+                    if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
+                        // Show 3D model preview for items with models (hats and others)
+                        HatPreview3DView(fileName: modelFileName)
+                            .frame(width: 70, height: 70)
+                            .clipShape(Circle())
                     } else {
                         // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
@@ -426,205 +408,161 @@ struct AccessoryItemButton: View {
     }
 }
 
-// MARK: - 3D Hat Preview
-@available(iOS 17.0, *)
+// MARK: - 3D Hat Preview using SceneKit (more stable for multiple instances)
 struct HatPreview3DView: View {
     let fileName: String
     
     var body: some View {
-        HatPreviewARView(fileName: fileName)
+        HatPreviewSceneView(fileName: fileName)
     }
 }
 
-@available(iOS 17.0, *)
-struct HatPreviewARView: UIViewRepresentable {
+// SceneKit-based preview - much more stable than RealityKit for multiple simultaneous views
+struct HatPreviewSceneView: UIViewRepresentable {
     let fileName: String
     
-    // Preview-specific scale adjustments for items panel
+    // Preview-specific scale adjustments for items panel (matching original RealityKit values)
     private func previewScale(for fileName: String) -> Float {
         if fileName.contains("Santa") {
             return 1.0
         } else if fileName.contains("Cowboy") {
-            return 0.3 // Slightly smaller
+            return 0.3
         } else if fileName.contains("Wizard") {
-            return 0.15 // Smaller
+            return 0.15
         } else if fileName.contains("Pirate") {
-            return 0.15 // Smaller
+            return 0.15
         } else if fileName.contains("Propeller") {
-            return 0.15 // Smaller
+            return 0.15
         } else if fileName.contains("Fox") {
-            return 0.35 // Bigger
+            return 0.35
         } else if fileName.contains("Frog") {
-            return 0.35 // Bigger
+            return 0.35
+        } else if fileName.contains("Baseball") {
+            return 0.2
+        } else if fileName.contains("Sombrero") {
+            return 0.2
         } else {
             return 0.2 // Default
         }
     }
     
-    // Preview-specific position adjustments for items panel
-    private func previewPosition(for fileName: String) -> SIMD3<Float> {
+    // Preview-specific position adjustments (matching original RealityKit values)
+    private func previewPosition(for fileName: String) -> SCNVector3 {
         if fileName.contains("Baseball") {
-            return [0.1, 0.0, 0.0] // More to the right
+            return SCNVector3(0.1, 0.0, 0.0) // More to the right
         } else if fileName.contains("Santa") {
-            return [0, 0.1, 0]
+            return SCNVector3(0, 0.1, 0)
         } else if fileName.contains("Pirate") {
-            return [0, 0.1, 0] // Move up
+            return SCNVector3(0, 0.1, 0) // Move up
         } else if fileName.contains("Wizard") {
-            return [0, -0.1, 0] // Move down
+            return SCNVector3(0, -0.1, 0) // Move down
         } else {
-            return [0, 0.0, 0.0] // Default centered
+            return SCNVector3(0, 0.0, 0.0) // Default centered
         }
     }
     
-    // Preview-specific rotation adjustments for items panel
-    private func previewRotation(for fileName: String) -> simd_quatf {
+    // Preview-specific Y rotation (in radians)
+    private func previewYRotation(for fileName: String) -> Float {
         if fileName.contains("Frog") {
-            // Rotate 90 degrees around Y axis so frog face faces the user
-            return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
+            return .pi / 2 // 90 degrees so frog faces user
         } else {
-            return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation
+            return 0
         }
     }
     
-    func makeUIView(context: Context) -> ARView {
-        let arView = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
-        arView.backgroundColor = .clear
-        
-        // Disable rendering features for better performance
-        arView.environment.background = .color(.clear)
-        arView.renderOptions = [.disableDepthOfField, .disableMotionBlur, .disableAREnvironmentLighting]
-        
-        // Create anchor
-        let anchor = AnchorEntity(world: [0, 0, 0])
-        arView.scene.addAnchor(anchor)
-        
-        // Set up camera - adjust based on hat type
-        let camera = PerspectiveCamera()
+    // Camera position based on hat type (matching original RealityKit values)
+    private func cameraPosition(for fileName: String) -> SCNVector3 {
         if fileName.contains("Propeller") {
-            // Zoom out more for propeller hat
-            camera.position = [0, 0.1, 1.0]
+            return SCNVector3(0, 0.1, 1.0)
         } else if fileName.contains("Pirate") {
-            // Much more zoomed out for pirate hat
-            camera.position = [0, 0.1, 1.5]
+            return SCNVector3(0, 0.1, 1.5)
         } else if fileName.contains("Cowboy") {
-            // More zoomed out for cowboy hat
-            camera.position = [0, 0.1, 0.8]
+            return SCNVector3(0, 0.1, 0.8)
         } else if fileName.contains("Santa") || fileName.contains("Fox") || fileName.contains("Frog") {
-            // Closer camera for larger hats
-            camera.position = [0, 0.1, 0.3]
+            return SCNVector3(0, 0.1, 0.3)
         } else {
-            camera.position = [0, 0.1, 0.6]
+            return SCNVector3(0, 0.1, 0.6)
         }
-        camera.camera.near = 0.01
-        camera.camera.far = 10.0
-        let cameraAnchor = AnchorEntity(world: [0, 0, 0])
-        cameraAnchor.addChild(camera)
-        arView.scene.addAnchor(cameraAnchor)
+    }
+    
+    func makeUIView(context: Context) -> SCNView {
+        let sceneView = SCNView(frame: .zero)
+        sceneView.backgroundColor = .clear
+        sceneView.autoenablesDefaultLighting = true
+        sceneView.allowsCameraControl = false
         
-        // Add lighting
-        let light = DirectionalLight()
-        light.light.intensity = 1500
-        light.position = [0.5, 1, 1]
-        light.light.isRealWorldProxy = false
-        let lightAnchor = AnchorEntity(world: [0, 0, 0])
-        lightAnchor.addChild(light)
-        arView.scene.addAnchor(lightAnchor)
+        // Create scene
+        let scene = SCNScene()
+        sceneView.scene = scene
+        
+        // Set up camera with position matching original RealityKit implementation
+        let cameraNode = SCNNode()
+        cameraNode.camera = SCNCamera()
+        cameraNode.camera?.zNear = 0.01
+        cameraNode.camera?.zFar = 10.0
+        cameraNode.position = cameraPosition(for: fileName)
+        scene.rootNode.addChildNode(cameraNode)
+        
+        // Add lighting matching original implementation
+        let light = SCNNode()
+        light.light = SCNLight()
+        light.light?.type = .directional
+        light.light?.intensity = 1500
+        light.position = SCNVector3(0.5, 1, 1)
+        light.look(at: SCNVector3(0, 0, 0))
+        scene.rootNode.addChildNode(light)
         
         // Add ambient light
-        let ambientLight = DirectionalLight()
-        ambientLight.light.intensity = 500
-        ambientLight.position = [-0.5, -0.5, -1]
-        ambientLight.light.isRealWorldProxy = false
-        let ambientLightAnchor = AnchorEntity(world: [0, 0, 0])
-        ambientLightAnchor.addChild(ambientLight)
-        arView.scene.addAnchor(ambientLightAnchor)
+        let ambientLight = SCNNode()
+        ambientLight.light = SCNLight()
+        ambientLight.light?.type = .directional
+        ambientLight.light?.intensity = 500
+        ambientLight.position = SCNVector3(-0.5, -0.5, -1)
+        ambientLight.look(at: SCNVector3(0, 0, 0))
+        scene.rootNode.addChildNode(ambientLight)
         
-        // Load hat model - with safety checks
+        // Load hat model
         guard !fileName.isEmpty else {
-            print("⚠️ Empty file name for hat preview")
-            return arView
+            return sceneView
         }
         
         guard let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") else {
-            print("⚠️ Hat file not found in bundle: \(fileName).usdz")
-            return arView
+            print("⚠️ Hat file not found: \(fileName).usdz")
+            return sceneView
         }
         
-        // Helper function to find first model entity (captured for use in Task)
-        func findModel(in entity: Entity) -> ModelEntity? {
-            if let model = entity as? ModelEntity {
-                return model
-            }
-            for child in entity.children {
-                if let model = findModel(in: child) {
-                    return model
-                }
-            }
-            return nil
-        }
-        
-        // Load entity synchronously (Entity.load is synchronous)
         do {
-            let loadedEntity = try Entity.load(contentsOf: usdzURL)
+            let hatScene = try SCNScene(url: usdzURL, options: [.checkConsistency: true])
             
-            // Create a container to hold the model and apply transformations
-            let container = ModelEntity()
+            // Create container node for transformations
+            let containerNode = SCNNode()
             
-            // Handle different entity types
-            if let directModel = loadedEntity as? ModelEntity {
-                container.addChild(directModel)
-            } else {
-                // Clone all children from the loaded entity
-                for child in loadedEntity.children {
-                    container.addChild(child.clone(recursive: true))
-                }
-                
-                // If no children, try to find model in hierarchy
-                if container.children.isEmpty {
-                    if let model = findModel(in: loadedEntity) {
-                        container.addChild(model)
-                    }
-                }
+            // Add all nodes from the loaded scene
+            for child in hatScene.rootNode.childNodes {
+                containerNode.addChildNode(child.clone())
             }
             
-            // Apply transformations if we have a valid model
-            if !container.children.isEmpty || container.components[ModelComponent.self] != nil {
-                // Scale based on hat type - adjust for preview size
-                let scale = previewScale(for: fileName)
-                container.scale = [scale, scale, scale]
-                // Position based on hat type
-                let position = previewPosition(for: fileName)
-                container.position = position
-                // Rotation based on hat type
-                container.orientation = previewRotation(for: fileName)
-                
-                // Add to anchor safely
-                anchor.addChild(container)
-            } else {
-                print("⚠️ No valid model found in hat file: \(fileName)")
-            }
+            // Apply scale (matching original values)
+            let scale = previewScale(for: fileName)
+            containerNode.scale = SCNVector3(scale, scale, scale)
+            
+            // Apply position offset (matching original values)
+            containerNode.position = previewPosition(for: fileName)
+            
+            // Apply rotation
+            containerNode.eulerAngles.y = previewYRotation(for: fileName)
+            
+            scene.rootNode.addChildNode(containerNode)
+            
         } catch {
-            print("❌ Failed to load hat preview: \(error.localizedDescription)")
-            print("   File: \(fileName).usdz")
+            print("❌ Failed to load hat: \(error.localizedDescription)")
         }
         
-        return arView
+        return sceneView
     }
     
-    func updateUIView(_ uiView: ARView, context: Context) {
-        // No updates needed
-    }
-    
-    private func findFirstModelEntity(in entity: Entity) -> ModelEntity? {
-        if let model = entity as? ModelEntity {
-            return model
-        }
-        for child in entity.children {
-            if let model = findFirstModelEntity(in: child) {
-                return model
-            }
-        }
-        return nil
+    func updateUIView(_ uiView: SCNView, context: Context) {
+        // No updates needed for static preview
     }
 }
 
