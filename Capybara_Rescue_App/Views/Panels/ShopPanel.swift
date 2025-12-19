@@ -97,6 +97,35 @@ struct ShopPanel: View {
                     .padding(.top, 4)
                 }
                 
+                // Remove Banner Ads Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.blue, Color.purple],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        
+                        Text("Remove Banner Ads")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    RemoveBannerAdCard(
+                        isPurchased: gameManager.gameState.hasRemovedBannerAds
+                    ) {
+                        handleAdRemovalPurchase()
+                    }
+                    .padding(.horizontal, 16)
+                }
+                
                 Spacer(minLength: 20)
             }
             .padding(.top, 12)
@@ -116,6 +145,11 @@ struct ShopPanel: View {
     private func handleCoinPackPurchase(_ pack: CoinPack) {
         HapticManager.shared.purchaseSuccess()
         gameManager.purchaseCoinPack(pack)
+    }
+    
+    private func handleAdRemovalPurchase() {
+        HapticManager.shared.purchaseSuccess()
+        gameManager.purchaseRemoveBannerAds()
     }
     
     private func watchAd() {
@@ -465,6 +499,130 @@ struct WatchAdCard: View {
         }
         .buttonStyle(ScaleButtonStyle())
         .disabled(isLoading || !isAdReady)
+    }
+}
+
+// MARK: - Remove Banner Ad Card
+struct RemoveBannerAdCard: View {
+    let isPurchased: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: {
+            if !isPurchased {
+                action()
+            }
+        }) {
+            HStack(spacing: 16) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.blue.opacity(0.3),
+                                    Color.purple.opacity(0.3)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 56, height: 56)
+                    
+                    Image(systemName: isPurchased ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundStyle(
+                            isPurchased ? 
+                            LinearGradient(
+                                colors: [Color.green, Color.green.opacity(0.8)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ) :
+                            LinearGradient(
+                                colors: [Color.blue, Color.purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                
+                // Details
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text("Remove Banner Ads")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        if isPurchased {
+                            Text("Purchased")
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.green.opacity(0.3))
+                                )
+                        }
+                    }
+                    
+                    if isPurchased {
+                        Text("Banner ads have been removed")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.6))
+                    } else {
+                        Text("One-time purchase. No subscriptions.")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.6))
+                    }
+                }
+                
+                Spacer()
+                
+                // Price Button
+                if !isPurchased {
+                    Text("£3.99")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(width: 80, height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.purple],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .shadow(color: Color.blue.opacity(0.4), radius: 6, y: 3)
+                        )
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.blue.opacity(isPurchased ? 0.1 : 0.15),
+                                Color.purple.opacity(isPurchased ? 0.05 : 0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(
+                                isPurchased ? Color.green.opacity(0.3) : Color.blue.opacity(0.3),
+                                lineWidth: 1
+                            )
+                    )
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .disabled(isPurchased)
+        .opacity(isPurchased ? 0.7 : 1.0)
     }
 }
 

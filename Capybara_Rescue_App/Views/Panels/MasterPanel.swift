@@ -35,7 +35,7 @@ struct MasterPanel: View {
             CategoryCard(
                 icon: "tshirt.fill",
                 title: "Items",
-                subtitle: "Accessories & more",
+                subtitle: "Capybara items",
                 color: .purple,
                 emoji: "👕",
                 tutorialKey: "items_button"
@@ -55,7 +55,6 @@ struct MasterPanel: View {
                 onCategorySelected(.shop)
             }
         }
-        .padding(.horizontal, 16)
         .padding(.bottom, 0)
         .padding(.top, 0)
         .frame(maxWidth: .infinity)

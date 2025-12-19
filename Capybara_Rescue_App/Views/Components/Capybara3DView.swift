@@ -9,6 +9,7 @@ struct Capybara3DView: View {
     let equippedAccessories: [String]
     let previewingAccessoryId: String?
     let onPet: () -> Void
+    let initialRotation: Double?
     
     @State private var isPressed = false
     @State private var pulseScale: CGFloat = 1.0
@@ -18,6 +19,15 @@ struct Capybara3DView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var lastDragValue: CGFloat = 0
     @State private var useProceduralModel = false // Try to load USDZ model first
+    @State private var hasAppliedInitialRotation = false
+    
+    init(emotion: CapybaraEmotion, equippedAccessories: [String], previewingAccessoryId: String?, onPet: @escaping () -> Void, initialRotation: Double? = nil) {
+        self.emotion = emotion
+        self.equippedAccessories = equippedAccessories
+        self.previewingAccessoryId = previewingAccessoryId
+        self.onPet = onPet
+        self.initialRotation = initialRotation
+    }
     
     var body: some View {
         ZStack {
@@ -81,6 +91,25 @@ struct Capybara3DView: View {
         }, perform: {})
         .onAppear {
             startPulseAnimation()
+            
+            // Apply initial rotation on first load
+            if !hasAppliedInitialRotation {
+                if let initialRotation = initialRotation {
+                    // Use provided initial rotation if available
+                    rotationAngle = initialRotation
+                } else {
+                    // Default to 30 degrees angle when first loading the main screen
+                    rotationAngle = 30
+                }
+                hasAppliedInitialRotation = true
+            }
+        }
+        .onChange(of: initialRotation) { oldValue, newValue in
+            // Apply rotation when it becomes available
+            if let newRotation = newValue, !hasAppliedInitialRotation {
+                rotationAngle = newRotation
+                hasAppliedInitialRotation = true
+            }
         }
     }
     

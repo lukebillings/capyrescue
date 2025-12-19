@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 // MARK: - Main Content View
 struct ContentView: View {
@@ -11,34 +12,92 @@ struct ContentView: View {
     @State private var showAchievementsSheet = false
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
-    @State private var showOnboarding = !UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+    @State private var showOnboarding = false
+    @State private var showNotificationPermission = false
     @State private var currentTutorialStep: TutorialStep? = nil
+    @State private var showAdRemovalPromo = false
+    @State private var shouldApplyInitialRotation = false
+    
+    // Device-specific key for notification permission request (not synced)
+    private let hasRequestedNotificationsOnThisDeviceKey = "has_requested_notifications_on_this_device"
     
     private func checkTutorialStatus() {
-        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
-        let hasCompletedTutorial = UserDefaults.standard.bool(forKey: "has_completed_tutorial")
+        let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
+        let hasCompletedTutorial = gameManager.gameState.hasCompletedTutorial
         if hasCompletedOnboarding && !hasCompletedTutorial && currentTutorialStep == nil {
             currentTutorialStep = .food
         }
     }
     
+    private func checkOnboardingStatus() {
+        showOnboarding = !gameManager.gameState.hasCompletedOnboarding
+    }
+    
+    private func checkNotificationPermissionStatus() {
+        // Check if onboarding is complete (synced) but notifications haven't been requested on THIS device
+        let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
+        let hasRequestedOnThisDevice = UserDefaults.standard.bool(forKey: hasRequestedNotificationsOnThisDeviceKey)
+        
+        // Check current notification authorization status
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                // Show notification permission screen if:
+                // 1. Onboarding is complete (user has used app before on another device)
+                // 2. Notifications haven't been requested on THIS device yet
+                // 3. Permission status is not determined (not yet asked)
+                if hasCompletedOnboarding && !hasRequestedOnThisDevice && settings.authorizationStatus == .notDetermined {
+                    showNotificationPermission = true
+                }
+            }
+        }
+    }
+    
     var body: some View {
-        if showOnboarding {
-            OnboardingView(isPresented: $showOnboarding)
-                .environmentObject(gameManager)
-                .onChange(of: showOnboarding) { oldValue, newValue in
-                    if !newValue {
-                        // Onboarding completed, check if tutorial should show
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            checkTutorialStatus()
+        Group {
+            if showOnboarding {
+                OnboardingView(isPresented: $showOnboarding)
+                    .environmentObject(gameManager)
+                    .onChange(of: showOnboarding) { oldValue, newValue in
+                        if !newValue {
+                            // Onboarding completed, apply initial rotation and check if tutorial should show
+                            shouldApplyInitialRotation = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                checkTutorialStatus()
+                            }
+                            // Reset after a short delay so it only applies once
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                shouldApplyInitialRotation = false
+                            }
                         }
                     }
-                }
-        } else {
-            mainContentView
-                .onAppear {
-                    checkTutorialStatus()
-                }
+            } else if showNotificationPermission {
+                NotificationPermissionView(isPresented: $showNotificationPermission)
+                    .environmentObject(gameManager)
+            } else {
+                mainContentView
+                    .onAppear {
+                        checkTutorialStatus()
+                        // Track app open and check if we should show ad removal promo
+                        gameManager.incrementAppOpenCount()
+                        if gameManager.shouldShowAdRemovalPromo() {
+                            // Small delay to ensure UI is ready
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                                showAdRemovalPromo = true
+                            }
+                        }
+                    }
+            }
+        }
+        .onAppear {
+            checkOnboardingStatus()
+            checkNotificationPermissionStatus()
+        }
+        .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
+            checkOnboardingStatus()
+            // Check notification permission when onboarding status changes
+            if newValue {
+                checkNotificationPermissionStatus()
+            }
         }
     }
     
@@ -51,8 +110,8 @@ struct ContentView: View {
                 
                 // Main content
                 VStack(spacing: 0) {
-                    // Banner Ad at the top (only show if consent allows)
-                    if consentManager.canRequestAds {
+                    // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
+                    if consentManager.canRequestAds && !gameManager.gameState.hasRemovedBannerAds {
                         BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
                             .frame(height: 50)
                     }
@@ -160,7 +219,8 @@ struct ContentView: View {
                         }
                         .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
+                    .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
                     .padding(.vertical, 10)
                     .background(
                         GlassBackground()
@@ -185,7 +245,8 @@ struct ContentView: View {
                         previewingAccessoryId: gameManager.previewingAccessoryId,
                         onPet: {
                             gameManager.petCapybara()
-                        }
+                        },
+                        initialRotation: shouldApplyInitialRotation ? 45 : nil
                     )
                     .frame(height: 320) // Increased height to show full capybara including head
                     .offset(y: -40) // Move up higher on the page
@@ -236,6 +297,8 @@ struct ContentView: View {
                                 }
                             }
                         })
+                        .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
+                        .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
                         .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom : 4)
                     }
                 }
@@ -248,9 +311,9 @@ struct ContentView: View {
                     onAnimationComplete: {}
                 )
                 
-                // Love hearts overlay (when happiness > 80)
+                // Love hearts overlay (when happiness >= 80)
                 LoveHeartsOverlay(
-                    isActive: gameManager.gameState.happiness > 80,
+                    isActive: gameManager.gameState.happiness >= 80,
                     capybaraPosition: capybaraPosition
                 )
                 
@@ -289,6 +352,12 @@ struct ContentView: View {
                             .padding(.bottom, 100)
                     }
                     .zIndex(201) // Above everything including tutorial
+                }
+                
+                // Ad removal promo popup
+                if showAdRemovalPromo {
+                    RemoveBannerAdPromoView(isPresented: $showAdRemovalPromo)
+                        .zIndex(202) // Above everything
                 }
             }
         }
@@ -523,6 +592,84 @@ struct ToastView: View {
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             )
             .transition(.scale.combined(with: .opacity))
+    }
+}
+
+// MARK: - Notification Permission View (for new devices)
+struct NotificationPermissionView: View {
+    @EnvironmentObject var gameManager: GameManager
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        ZStack {
+            // Background
+            AppColors.background
+                .ignoresSafeArea()
+            
+            VStack(spacing: 32) {
+                Spacer()
+                
+                Image(systemName: "bell.fill")
+                    .font(.system(size: 80))
+                    .foregroundStyle(AppColors.accent)
+                
+                Text("Stay Connected")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                
+                Text("Enable notifications to get reminders to feed and care for your capybara!")
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                
+                Spacer()
+                
+                // Enable notifications button
+                Button(action: {
+                    requestNotificationPermission()
+                }) {
+                    Text("Enable Notifications")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(AppColors.accent)
+                        )
+                }
+                .padding(.horizontal, 32)
+                
+                // Skip button
+                Button(action: {
+                    // Mark as requested on this device (even if skipped)
+                    UserDefaults.standard.set(true, forKey: "has_requested_notifications_on_this_device")
+                    withAnimation {
+                        isPresented = false
+                    }
+                }) {
+                    Text("Skip")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
+                .padding(.bottom, 40)
+            }
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                // Mark as requested on this device
+                UserDefaults.standard.set(true, forKey: "has_requested_notifications_on_this_device")
+                withAnimation {
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

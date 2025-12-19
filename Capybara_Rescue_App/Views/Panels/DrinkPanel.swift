@@ -46,9 +46,19 @@ struct DrinkPanel: View {
                 
                 Spacer()
                 
-                Text("Hydrate Your Capybara")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                HStack(spacing: 8) {
+                    Text("Hydrate Your Capybara")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Text("·")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.4))
+                    
+                    Text("Drinks are one time use")
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
                 
                 Spacer()
                 
@@ -62,7 +72,7 @@ struct DrinkPanel: View {
             .padding(.horizontal, 16)
         }
         .padding(.top, 80)
-        .padding(.bottom, 8) // Add bottom padding
+        .padding(.bottom, 16) // Add bottom padding
     }
     
     private func handleDrinkSelection(_ item: DrinkItem) {

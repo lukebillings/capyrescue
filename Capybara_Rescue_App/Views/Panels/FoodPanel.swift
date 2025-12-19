@@ -47,9 +47,19 @@ struct FoodPanel: View {
                 
                 Spacer()
                 
-                Text("Feed Your Capybara")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                HStack(spacing: 8) {
+                    Text("Feed Your Capybara")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                    
+                    Text("·")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(.white.opacity(0.4))
+                    
+                    Text("Foods are one time use")
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                }
                 
                 Spacer()
                 
@@ -63,7 +73,7 @@ struct FoodPanel: View {
             .padding(.horizontal, 16)
         }
         .padding(.top, 80)
-        .padding(.bottom, 8) // Add bottom padding
+        .padding(.bottom, 16) // Add bottom padding
     }
     
     private func handleFoodSelection(_ item: FoodItem) {
