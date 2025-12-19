@@ -84,7 +84,7 @@ struct ItemsPanel: View {
             .padding(.horizontal, 16)
         }
         .padding(.top, 80)
-        .padding(.bottom, 8) // Add bottom padding
+        .padding(.bottom, 36) // Match Food/Drink panel vertical position on iPad
         .onChange(of: gameManager.gameState.capycoins) { oldValue, newValue in
             // Update preview state when coins change (e.g., after buying coins)
             guard let previewId = previewingItemId, !previewId.isEmpty else { return }
