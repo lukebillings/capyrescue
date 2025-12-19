@@ -37,15 +37,15 @@ enum TutorialStep: Int, CaseIterable {
     var message: String {
         switch self {
         case .food:
-            return "Try to keep this over 80. You can give it food."
+            return "Try to keep food score over 80 points.\nIncrease food score by feeding it foods.\nMax food score is 100 points.\nFood score decrease 1 point per hour."
         case .drink:
-            return "Try to keep this over 80. You can give it drinks."
+            return "Try to keep drink score over 80 points.\nIncrease drink score by giving it drinks.\nMax drink score is 100 points.\nDrink score decrease 1 point per hour."
         case .happy:
-            return "Try to keep this over 80. Increase its happiness by petting it."
+            return "Try to keep happy score over 80 points.\nIncrease happy score by petting it.\nMax happy score is 100 points.\nHappy score decrease 1 point per hour."
         case .statsWarning:
             return "⚠️ If all stats reach 0, your capybara will run away!"
         case .items:
-            return "Your capybara would love to have some accessories. Buy an item."
+            return "Your capybara might like to have some accessories.\nYou can buy them using coins in the Items menu."
         case .shop:
             return "You can buy more coins from the shop."
         case .achievements:
