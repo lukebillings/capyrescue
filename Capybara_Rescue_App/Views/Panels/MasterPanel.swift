@@ -35,7 +35,7 @@ struct MasterPanel: View {
             CategoryCard(
                 icon: "tshirt.fill",
                 title: "Items",
-                subtitle: "Accessories & more",
+                subtitle: "Capybara items",
                 color: .purple,
                 emoji: "👕",
                 tutorialKey: "items_button"
