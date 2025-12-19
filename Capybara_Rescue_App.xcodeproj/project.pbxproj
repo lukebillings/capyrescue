@@ -13,7 +13,6 @@
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
 		23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */; };
 		2379E584C1E32E56C84434C8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE772C5EE05A58130807151 /* GameState.swift */; };
-		F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */; };
 		256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BDABA03E65FB27F57C697 /* TrackingManager.swift */; };
 		3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
@@ -49,6 +48,7 @@
 		D5D367EF79E4A56FA344338B /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DC24A7428511F72A1DDEED /* GameManager.swift */; };
 		DCD78B01254A8CD1A53B9C1C /* Capybara_Rescue_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */; };
 		DFAD2A25B8C9CB20A66212A6 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB93563846587619659B7D5E /* HapticManager.swift */; };
+		F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */; };
 		FE8F2C04A76B19DDB0874226 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */; };
 /* End PBXBuildFile section */
 
@@ -68,7 +68,6 @@
 		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Capybara.usdz; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveBannerAdPromoView.swift; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
@@ -86,6 +85,7 @@
 		98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraViewSwitch.swift; sourceTree = "<group>"; };
 		9C2351377F437F65D65ABCCD /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Santahat.usdz; sourceTree = "<group>"; };
 		A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlay.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveBannerAdPromoView.swift; sourceTree = "<group>"; };
 		C2C3AEDFBE8014685F7D5827 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidMenuBar.swift; sourceTree = "<group>"; };
 		C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -353,7 +353,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.01;
+				CURRENT_PROJECT_VERSION = 1.02;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -386,7 +386,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.01;
+				CURRENT_PROJECT_VERSION = 1.02;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
