@@ -46,14 +46,10 @@ struct DrinkPanel: View {
                 
                 Spacer()
                 
-                HStack(spacing: 8) {
+                VStack(spacing: 4) {
                     Text("Hydrate Your Capybara")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
-                    
-                    Text("·")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.white.opacity(0.4))
                     
                     Text("Drinks are one time use")
                         .font(.system(size: 12, weight: .regular, design: .rounded))
