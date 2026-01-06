@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var showAdRemovalPromo = false
     @State private var shouldApplyInitialRotation = false
+
+    private let capybaraVisualOffsetY: CGFloat = -40
     
     // Device-specific key for notification permission request (not synced)
     private let hasRequestedNotificationsOnThisDeviceKey = "has_requested_notifications_on_this_device"
@@ -249,18 +251,14 @@ struct ContentView: View {
                         initialRotation: shouldApplyInitialRotation ? 45 : nil
                     )
                     .frame(height: 320) // Increased height to show full capybara including head
-                    .offset(y: -40) // Move up higher on the page
+                    .offset(y: capybaraVisualOffsetY) // Move up higher on the page
                     .tutorialHighlight(key: "capybara_tap")
                     .background(
                         GeometryReader { capyGeometry in
-                            Color.clear
-                                .onAppear {
-                                    let frame = capyGeometry.frame(in: .global)
-                                    capybaraPosition = CGPoint(
-                                        x: frame.midX,
-                                        y: frame.midY
-                                    )
-                                }
+                            Color.clear.preference(
+                                key: CapybaraFramePreferenceKey.self,
+                                value: capyGeometry.frame(in: .global)
+                            )
                         }
                     )
                     
@@ -360,6 +358,13 @@ struct ContentView: View {
                         .zIndex(202) // Above everything
                 }
             }
+            .onPreferenceChange(CapybaraFramePreferenceKey.self) { frame in
+                guard frame != .zero else { return }
+                capybaraPosition = CGPoint(
+                    x: frame.midX,
+                    y: frame.midY
+                )
+            }
         }
         .sheet(isPresented: $showRenameSheet) {
             RenameSheet(
@@ -446,6 +451,14 @@ struct ContentView: View {
         case .shop:
             EmptyView()
         }
+    }
+}
+
+// MARK: - Preferences
+private struct CapybaraFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
     }
 }
 

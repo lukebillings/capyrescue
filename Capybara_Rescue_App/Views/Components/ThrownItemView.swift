@@ -447,6 +447,7 @@ struct SpeechBubbleView: View {
     let capybaraPosition: CGPoint
     let isLeft: Bool // true for left side, false for right side
     let screenWidth: CGFloat
+    let safeAreaTop: CGFloat
     
     @State private var scale: CGFloat = 0.8
     @State private var opacity: Double = 0
@@ -461,7 +462,9 @@ struct SpeechBubbleView: View {
     }
     
     private var bubbleY: CGFloat {
-        capybaraPosition.y - 250 // Slightly down from before
+        // Anchor near the capybara, but prevent drifting too high near the status bar.
+        let desired = capybaraPosition.y - 80
+        return max(desired, safeAreaTop + 220)
     }
     
     var body: some View {
@@ -536,7 +539,8 @@ struct CapybaraSpeechBubbleOverlay: View {
                             color: AppColors.foodGreen,
                             capybaraPosition: capybaraPosition,
                             isLeft: true,
-                            screenWidth: geometry.size.width
+                            screenWidth: geometry.size.width,
+                            safeAreaTop: geometry.safeAreaInsets.top
                         )
                         .transition(.scale.combined(with: .opacity))
                     }
@@ -548,7 +552,8 @@ struct CapybaraSpeechBubbleOverlay: View {
                             color: AppColors.drinkBlue,
                             capybaraPosition: capybaraPosition,
                             isLeft: false,
-                            screenWidth: geometry.size.width
+                            screenWidth: geometry.size.width,
+                            safeAreaTop: geometry.safeAreaInsets.top
                         )
                         .transition(.scale.combined(with: .opacity))
                     }

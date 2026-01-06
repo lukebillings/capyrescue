@@ -13,7 +13,7 @@ struct FoodPanel: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             // Food items - horizontal scrolling row
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
@@ -30,9 +30,7 @@ struct FoodPanel: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8) // Add vertical padding to prevent cutoff
             }
-            .frame(height: 70) // Reduced height to push header down more
-            
-            Spacer(minLength: 0) // Push header to bottom
+            .frame(maxHeight: .infinity) // Match ItemsPanel: fill space so header sits lower
             
             // Header with back button - moved below items
             HStack {
@@ -69,10 +67,10 @@ struct FoodPanel: View {
                 }
             }
             .padding(.horizontal, 16)
-            .frame(height: 55) // Ensure header has fixed height
         }
-        .padding(.top, 5) // Minimal top padding
-        .padding(.bottom, 8) // Reduced bottom padding to push header down
+        // Match ItemsPanel vertical positioning so the submenu row sits lower on screen
+        .padding(.top, 80)
+        .padding(.bottom, 36)
     }
     
     private func handleFoodSelection(_ item: FoodItem) {
