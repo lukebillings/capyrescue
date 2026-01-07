@@ -26,6 +26,7 @@
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		7AF44475E591A27725D43264 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */; };
 		812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */; };
+		815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 815001F62F0EC7DE00CFB91C /* StoreKit.framework */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */; };
 		81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */; };
@@ -72,6 +73,8 @@
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
 		8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cowboy Hat 2.usdz"; sourceTree = "<group>"; };
+		815001F62F0EC7DE00CFB91C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capybara_Rescue_App.entitlements; sourceTree = "<group>"; };
 		81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Baseball cap.usdz"; sourceTree = "<group>"; };
 		81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fox Hat.usdz"; sourceTree = "<group>"; };
 		81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Frog Hat.usdz"; sourceTree = "<group>"; };
@@ -103,6 +106,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */,
 				79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */,
 				ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */,
 			);
@@ -132,6 +136,7 @@
 			children = (
 				6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */,
 				51B8B10BBCE80BDC008B76E2 /* Products */,
+				815001F52F0EC7DE00CFB91C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -162,6 +167,7 @@
 		6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */ = {
 			isa = PBXGroup;
 			children = (
+				815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */,
 				8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */,
 				81FA1C3A2EF1C0660060CEF1 /* Sombrero2hat.usdz */,
 				81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */,
@@ -198,6 +204,14 @@
 				C9AA95A7B71D7CCD55EC0557 /* Panels */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		815001F52F0EC7DE00CFB91C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				815001F62F0EC7DE00CFB91C /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		9BEDE4BB3DECEF702C4B0BCD /* Managers */ = {
@@ -259,6 +273,11 @@
 				TargetAttributes = {
 					4545D64289BB1BF349F343AC = {
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -351,6 +370,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1.02;
@@ -384,6 +404,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1.02;

@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import Combine
 import UserNotifications
+import StoreKit
 
 // MARK: - Game Manager
 @MainActor
@@ -25,6 +26,12 @@ class GameManager: ObservableObject {
     private let storageKey = "capybara_rescue_game_state"
     private var isSaving = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
+
+    // MARK: - StoreKit (IAP)
+    static let removeBannerAdsProductId = "remove_banner_ads"
+    @Published private(set) var iapProducts: [String: Product] = [:]
+    @Published private(set) var isIAPLoading: Bool = false
+    @Published var iapLastErrorMessage: String? = nil
     
     struct ThrownItem: Identifiable {
         let id = UUID()
@@ -71,6 +78,12 @@ class GameManager: ObservableObject {
         
         // Start decay timer
         startDecayTimer()
+
+        // Load StoreKit products + sync non-consumable entitlements (e.g. Remove Ads)
+        Task {
+            await loadIAPProducts()
+            await syncNonConsumableEntitlements()
+        }
     }
     
     deinit {
@@ -372,17 +385,162 @@ class GameManager: ObservableObject {
         gameState.capycoins += 10
     }
     
-    func purchaseCoinPack(_ pack: CoinPack) {
-        // In a real app, this would integrate with StoreKit
-        // For now, we'll just add the coins directly
-        gameState.capycoins += pack.coins
+    func displayPrice(forProductId productId: String, fallback: String) -> String {
+        if let product = iapProducts[productId] {
+            return product.displayPrice
+        }
+        return fallback
+    }
+
+    func purchaseCoinPack(_ pack: CoinPack) async -> Bool {
+        do {
+            let product = try await product(for: pack.productId)
+            let transaction = try await purchase(product: product)
+
+            // Deliver goods for consumable
+            if transaction.productID == pack.productId {
+                gameState.capycoins += pack.coins
+                showToast("\(pack.coins) coins added! 🎉")
+                return true
+            }
+            iapLastErrorMessage = "Purchase completed but product ID didn’t match. Expected \(pack.productId)."
+            return false
+        } catch is CancellationError {
+            // User cancelled / task cancelled; no toast needed
+            return false
+        } catch {
+            let message = "Purchase failed: \(error.localizedDescription)"
+            iapLastErrorMessage = message
+            showToast(message)
+            return false
+        }
     }
     
-    func purchaseRemoveBannerAds() {
-        // In a real app, this would integrate with StoreKit
-        // For now, we'll just set the flag directly
-        gameState.hasRemovedBannerAds = true
-        showToast("Banner ads removed! 🎉")
+    func purchaseRemoveBannerAds() async -> Bool {
+        do {
+            let product = try await product(for: Self.removeBannerAdsProductId)
+            _ = try await purchase(product: product)
+
+            // Unlock non-consumable
+            gameState.hasRemovedBannerAds = true
+            showToast("Banner ads removed! 🎉")
+            return true
+        } catch is CancellationError {
+            // no-op
+            return false
+        } catch {
+            let message = "Purchase failed: \(error.localizedDescription)"
+            iapLastErrorMessage = message
+            showToast(message)
+            return false
+        }
+    }
+
+    func restorePurchases() async -> Bool {
+        do {
+            try await AppStore.sync()
+            await syncNonConsumableEntitlements()
+
+            if gameState.hasRemovedBannerAds {
+                showToast("Purchases restored ✅")
+                return true
+            } else {
+                showToast("No purchases found to restore.")
+                iapLastErrorMessage = "No purchases found to restore for this Apple ID / Sandbox tester."
+                return false
+            }
+        } catch is CancellationError {
+            // no-op
+            return false
+        } catch {
+            let message = "Restore failed: \(error.localizedDescription)"
+            iapLastErrorMessage = message
+            showToast(message)
+            return false
+        }
+    }
+
+    // MARK: - StoreKit helpers
+    private func loadIAPProducts() async {
+        guard !isIAPLoading else { return }
+        isIAPLoading = true
+        defer { isIAPLoading = false }
+
+        let ids = Set(CoinPack.packs.map(\.productId) + [Self.removeBannerAdsProductId])
+
+        do {
+            let products = try await Product.products(for: Array(ids))
+            var dict: [String: Product] = [:]
+            for product in products {
+                dict[product.id] = product
+            }
+            iapProducts = dict
+        } catch {
+            // Keep fallbacks if StoreKit is unavailable
+        }
+    }
+
+    private func product(for productId: String) async throws -> Product {
+        if let cached = iapProducts[productId] {
+            return cached
+        }
+
+        let products = try await Product.products(for: [productId])
+        guard let product = products.first else {
+            throw NSError(
+                domain: "IAP",
+                code: 404,
+                userInfo: [NSLocalizedDescriptionKey: "Product not found (\(productId)). Check App Store Connect product IDs + bundle ID match."]
+            )
+        }
+        iapProducts[product.id] = product
+        return product
+    }
+
+    private func purchase(product: Product) async throws -> StoreKit.Transaction {
+        let result = try await product.purchase()
+
+        switch result {
+        case .success(let verification):
+            let transaction = try checkVerified(verification)
+            await transaction.finish()
+            return transaction
+        case .userCancelled:
+            throw CancellationError()
+        case .pending:
+            // Pending (e.g. Ask to Buy) — don't grant items yet.
+            throw NSError(domain: "IAP", code: 102, userInfo: [NSLocalizedDescriptionKey: "Purchase pending (Ask to Buy / approval needed)."])
+        @unknown default:
+            throw NSError(domain: "IAP", code: 999, userInfo: [NSLocalizedDescriptionKey: "Unknown purchase result"])
+        }
+    }
+
+    private func syncNonConsumableEntitlements() async {
+        var hasRemoveAds = false
+
+        for await result in StoreKit.Transaction.currentEntitlements {
+            do {
+                let transaction = try checkVerified(result)
+                if transaction.productID == Self.removeBannerAdsProductId {
+                    hasRemoveAds = true
+                }
+            } catch {
+                // Ignore unverified entitlements
+            }
+        }
+
+        if hasRemoveAds && !gameState.hasRemovedBannerAds {
+            gameState.hasRemovedBannerAds = true
+        }
+    }
+
+    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+        switch result {
+        case .unverified:
+            throw NSError(domain: "IAP", code: 401, userInfo: [NSLocalizedDescriptionKey: "Transaction unverified"])
+        case .verified(let safe):
+            return safe
+        }
     }
     
     func incrementAppOpenCount() {

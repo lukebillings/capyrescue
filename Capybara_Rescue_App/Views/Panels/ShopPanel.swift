@@ -5,6 +5,8 @@ struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @StateObject private var rewardedAdViewModel = RewardedAdViewModel()
     @StateObject private var trackingManager = TrackingManager.shared
+    @State private var isPurchasing: Bool = false
+    @State private var showIAPError: Bool = false
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -69,7 +71,8 @@ struct ShopPanel: View {
                     
                     VStack(spacing: 8) {
                         ForEach(Array(CoinPack.packs.sorted(by: { $0.coins < $1.coins }).enumerated()), id: \.element.id) { index, pack in
-                            CoinPackCard(pack: pack, tier: index) {
+                            let priceText = gameManager.displayPrice(forProductId: pack.productId, fallback: pack.price)
+                            CoinPackCard(pack: pack, tier: index, priceText: priceText, isPurchasing: isPurchasing) {
                                 handleCoinPackPurchase(pack)
                             }
                         }
@@ -124,11 +127,33 @@ struct ShopPanel: View {
                         handleAdRemovalPurchase()
                     }
                     .padding(.horizontal, 16)
+
+                    Button(action: {
+                        HapticManager.shared.buttonPress()
+                        Task {
+                            isPurchasing = true
+                            _ = await gameManager.restorePurchases()
+                            isPurchasing = false
+                        }
+                    }) {
+                        Text(isPurchasing ? "Restoring..." : "Restore Purchases")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.7))
+                            .padding(.top, 6)
+                    }
+                    .disabled(isPurchasing)
                 }
                 
                 Spacer(minLength: 20)
             }
             .padding(.top, 12)
+        }
+        .alert("Purchase Issue", isPresented: $showIAPError) {
+            Button("OK") {
+                gameManager.iapLastErrorMessage = nil
+            }
+        } message: {
+            Text(gameManager.iapLastErrorMessage ?? "Unknown error")
         }
         .onAppear {
             // Update tracking status
@@ -140,16 +165,33 @@ struct ShopPanel: View {
                 HapticManager.shared.purchaseSuccess()
             }
         }
+        .onChange(of: gameManager.iapLastErrorMessage) { _, newValue in
+            showIAPError = (newValue != nil)
+        }
     }
     
     private func handleCoinPackPurchase(_ pack: CoinPack) {
-        HapticManager.shared.purchaseSuccess()
-        gameManager.purchaseCoinPack(pack)
+        HapticManager.shared.buttonPress()
+        Task {
+            isPurchasing = true
+            let success = await gameManager.purchaseCoinPack(pack)
+            isPurchasing = false
+            if success {
+                HapticManager.shared.purchaseSuccess()
+            }
+        }
     }
     
     private func handleAdRemovalPurchase() {
-        HapticManager.shared.purchaseSuccess()
-        gameManager.purchaseRemoveBannerAds()
+        HapticManager.shared.buttonPress()
+        Task {
+            isPurchasing = true
+            let success = await gameManager.purchaseRemoveBannerAds()
+            isPurchasing = false
+            if success {
+                HapticManager.shared.purchaseSuccess()
+            }
+        }
     }
     
     private func watchAd() {
@@ -299,6 +341,8 @@ struct CoinIcon: View {
 struct CoinPackCard: View {
     let pack: CoinPack
     let tier: Int
+    let priceText: String
+    let isPurchasing: Bool
     let action: () -> Void
     
     private var tierGradient: [Color] {
@@ -362,7 +406,22 @@ struct CoinPackCard: View {
                 Spacer()
                 
                 // Price Button
-                Text(pack.price)
+                if isPurchasing {
+                    ProgressView()
+                        .tint(.white)
+                        .frame(width: 80, height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(
+                                    LinearGradient(
+                                        colors: priceButtonGradient,
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        )
+                } else {
+                    Text(priceText)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .frame(width: 80, height: 44)
@@ -377,6 +436,7 @@ struct CoinPackCard: View {
                             )
                             .shadow(color: priceButtonGradient[0].opacity(0.4), radius: 6, y: 3)
                     )
+                }
             }
             .padding(12)
             .background(
@@ -398,6 +458,7 @@ struct CoinPackCard: View {
             )
         }
         .buttonStyle(ScaleButtonStyle())
+        .disabled(isPurchasing)
     }
     
     private func formatCoins(_ coins: Int) -> String {
@@ -506,6 +567,7 @@ struct WatchAdCard: View {
 struct RemoveBannerAdCard: View {
     let isPurchased: Bool
     let action: () -> Void
+    @EnvironmentObject private var gameManager: GameManager
     
     var body: some View {
         Button(action: {
@@ -581,7 +643,11 @@ struct RemoveBannerAdCard: View {
                 
                 // Price Button
                 if !isPurchased {
-                    Text("£3.99")
+                    let priceText = gameManager.displayPrice(
+                        forProductId: GameManager.removeBannerAdsProductId,
+                        fallback: "£3.99"
+                    )
+                    Text(priceText)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .frame(width: 80, height: 44)

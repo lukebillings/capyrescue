@@ -4,6 +4,8 @@ import SwiftUI
 struct RemoveBannerAdPromoView: View {
     @EnvironmentObject var gameManager: GameManager
     @Binding var isPresented: Bool
+    @State private var isPurchasing: Bool = false
+    @State private var showIAPError: Bool = false
     
     var body: some View {
         ZStack {
@@ -36,7 +38,11 @@ struct RemoveBannerAdPromoView: View {
                     .multilineTextAlignment(.center)
                 
                 // Description
-                Text("Remove banner ads for £3.99")
+                let priceText = gameManager.displayPrice(
+                    forProductId: GameManager.removeBannerAdsProductId,
+                    fallback: "£3.99"
+                )
+                Text("Remove banner ads for \(priceText)")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
                 
@@ -65,11 +71,18 @@ struct RemoveBannerAdPromoView: View {
                     
                     // Purchase button
                     Button(action: {
-                        HapticManager.shared.purchaseSuccess()
-                        gameManager.purchaseRemoveBannerAds()
-                        isPresented = false
+                        HapticManager.shared.buttonPress()
+                        Task {
+                            isPurchasing = true
+                            let success = await gameManager.purchaseRemoveBannerAds()
+                            isPurchasing = false
+                            if success {
+                                HapticManager.shared.purchaseSuccess()
+                                isPresented = false
+                            }
+                        }
                     }) {
-                        Text("Remove Banner Ads")
+                        Text(isPurchasing ? "Processing..." : "Remove Banner Ads")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
@@ -86,6 +99,7 @@ struct RemoveBannerAdPromoView: View {
                             )
                             .shadow(color: Color.blue.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
+                    .disabled(isPurchasing)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
@@ -110,6 +124,16 @@ struct RemoveBannerAdPromoView: View {
             )
             .padding(.horizontal, 32)
             .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
+        }
+        .alert("Purchase Issue", isPresented: $showIAPError) {
+            Button("OK") {
+                gameManager.iapLastErrorMessage = nil
+            }
+        } message: {
+            Text(gameManager.iapLastErrorMessage ?? "Unknown error")
+        }
+        .onChange(of: gameManager.iapLastErrorMessage) { _, newValue in
+            showIAPError = (newValue != nil)
         }
     }
 }

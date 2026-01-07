@@ -273,6 +273,7 @@ struct CoinPack: Identifiable {
     let id = UUID()
     let name: String
     let coins: Int
+    let productId: String
     let price: String
     let description: String
     let badge: String? // Optional badge like "BEST VALUE" or "POPULAR"
@@ -281,6 +282,7 @@ struct CoinPack: Identifiable {
         CoinPack(
             name: "Ultra Pack",
             coins: 25000,
+            productId: "coins_25000",
             price: "£99.99",
             description: "Maximum coins for serious players",
             badge: nil
@@ -288,6 +290,7 @@ struct CoinPack: Identifiable {
         CoinPack(
             name: "Mega Pack",
             coins: 10000,
+            productId: "coins_10000",
             price: "£49.99",
             description: "Best value - save 33%",
             badge: nil
@@ -295,6 +298,7 @@ struct CoinPack: Identifiable {
         CoinPack(
             name: "Super Pack",
             coins: 1500,
+            productId: "coins_1500",
             price: "£9.99",
             description: "Great value for regular players",
             badge: nil
@@ -302,6 +306,7 @@ struct CoinPack: Identifiable {
         CoinPack(
             name: "Starter Pack",
             coins: 500,
+            productId: "coins_500",
             price: "£4.99",
             description: "Perfect for trying out new items",
             badge: nil
@@ -309,6 +314,7 @@ struct CoinPack: Identifiable {
         CoinPack(
             name: "Mini Pack",
             coins: 50,
+            productId: "coins_50",
             price: "£0.99",
             description: "Small pack to get started",
             badge: nil
