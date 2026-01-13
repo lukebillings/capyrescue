@@ -91,10 +91,23 @@ struct ShopPanel: View {
                             .foregroundStyle(.white.opacity(0.5))
                             .multilineTextAlignment(.center)
                         
-                        Text("Terms of Service  •  Privacy Policy")
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.5))
-                            .multilineTextAlignment(.center)
+                        HStack(spacing: 8) {
+                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/termsandconditions/")!) {
+                                Text("Terms of Service")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(.white.opacity(0.5))
+                            }
+                            
+                            Text("•")
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.white.opacity(0.5))
+                            
+                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/privacypolicy/")!) {
+                                Text("Privacy Policy")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(.white.opacity(0.5))
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
