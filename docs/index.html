@@ -1,97 +1,84 @@
----
-title: Capybara Rescue Universe
----
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Capybara Rescue Universe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="min-h-screen bg-white text-black antialiased">
+    <main class="mx-auto max-w-3xl px-6 py-12">
+      <nav class="mb-10 flex flex-wrap gap-3 text-sm">
+        <a
+          class="rounded-full border border-black/10 bg-black/[0.03] px-4 py-2 hover:bg-black/[0.06]"
+          href="./privacypolicy/"
+          >Privacy Policy</a
+        >
+        <a
+          class="rounded-full border border-black/10 bg-black/[0.03] px-4 py-2 hover:bg-black/[0.06]"
+          href="./termsandconditions/"
+          >Terms &amp; Conditions</a
+        >
+        <a
+          class="rounded-full border border-black/10 bg-black/[0.03] px-4 py-2 hover:bg-black/[0.06]"
+          href="./attributions/"
+          >Attributions</a
+        >
+      </nav>
 
-<style>
-  :root {
-    color-scheme: light dark;
-  }
+      <header class="space-y-4">
+        <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Capybara Rescue Universe
+        </h1>
+        <p class="text-lg leading-8 text-black/80">
+          A cozy capybara rescue + care game for iOS.
+        </p>
+        <p class="text-base leading-7 text-black/80">
+          Take care of your capybara, earn coins, and dress them up with fun hats
+          and items.
+        </p>
+        <div class="flex flex-wrap gap-3 pt-2">
+          <a
+            class="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-black/90"
+            href="./termsandconditions/"
+            >Read Terms &amp; Conditions</a
+          >
+          <a
+            class="rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold hover:bg-black/[0.03]"
+            href="./privacypolicy/"
+            >Read Privacy Policy</a
+          >
+        </div>
+      </header>
 
-  .wrap {
-    max-width: 920px;
-    margin: 48px auto;
-    padding: 0 18px;
-    line-height: 1.65;
-    font-size: 16px;
-  }
-
-  .topnav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 0 0 22px;
-    padding: 12px 14px;
-    border: 1px solid rgba(127, 127, 127, 0.25);
-    border-radius: 12px;
-    background: rgba(127, 127, 127, 0.08);
-  }
-  .topnav a {
-    text-decoration: none;
-  }
-  .topnav a:hover {
-    text-decoration: underline;
-  }
-
-  h1 {
-    margin-top: 10px;
-  }
-  h2 {
-    margin-top: 28px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(127, 127, 127, 0.2);
-  }
-  h3 {
-    margin-top: 18px;
-  }
-  hr {
-    margin: 22px 0;
-    border: 0;
-    border-top: 1px solid rgba(127, 127, 127, 0.2);
-  }
-
-  code {
-    padding: 2px 6px;
-    border-radius: 8px;
-    background: rgba(127, 127, 127, 0.15);
-  }
-  pre code {
-    display: block;
-    padding: 14px;
-    overflow: auto;
-  }
-
-  a {
-    word-break: break-word;
-  }
-
-  .cta {
-    display: inline-block;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(127, 127, 127, 0.25);
-    background: rgba(127, 127, 127, 0.1);
-    text-decoration: none;
-  }
-  .cta:hover {
-    text-decoration: underline;
-  }
-</style>
-
-<div class="wrap" markdown="1">
-  <nav class="topnav">
-    <a href="./privacypolicy/">Privacy Policy</a>
-    <a href="./termsandconditions/">Terms &amp; Conditions</a>
-    <a href="./attributions/">Attributions</a>
-  </nav>
-
-  # Capybara Rescue Universe **A cozy capybara rescue + care game for iOS.**
-  Take care of your capybara, earn coins, and dress them up with fun hats and
-  items.
-
-  <a class="cta" href="./termsandconditions/">Read Terms &amp; Conditions</a>
-  <a class="cta" href="./privacypolicy/">Read Privacy Policy</a>
-
-  --- ## Support - **Email:** capybara.rescue.universe@outlook.com --- ## Legal
-  - **Privacy Policy:** [View](./privacypolicy/) - **Terms &amp; Conditions:**
-  [View](./termsandconditions/) - **Attributions:** [View](./attributions/)
-</div>
+      <section class="mt-12 grid gap-8 border-t border-black/10 pt-10">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">Support</h2>
+          <p class="mt-3 text-base leading-7">
+            <span class="font-semibold">Email:</span>
+            <a class="text-blue-600 hover:underline" href="mailto:capybara.rescue.universe@outlook.com"
+              >capybara.rescue.universe@outlook.com</a
+            >
+          </p>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">Legal</h2>
+          <ul class="mt-3 list-disc space-y-2 pl-6 text-base leading-7">
+            <li>
+              <span class="font-semibold">Privacy Policy:</span>
+              <a class="text-blue-600 hover:underline" href="./privacypolicy/">View</a>
+            </li>
+            <li>
+              <span class="font-semibold">Terms &amp; Conditions:</span>
+              <a class="text-blue-600 hover:underline" href="./termsandconditions/">View</a>
+            </li>
+            <li>
+              <span class="font-semibold">Attributions:</span>
+              <a class="text-blue-600 hover:underline" href="./attributions/">View</a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
