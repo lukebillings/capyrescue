@@ -257,7 +257,7 @@ struct ContentView: View {
                         GeometryReader { capyGeometry in
                             Color.clear.preference(
                                 key: CapybaraFramePreferenceKey.self,
-                                value: capyGeometry.frame(in: .global)
+                                value: capyGeometry.frame(in: .named("main"))
                             )
                         }
                     )
@@ -358,6 +358,7 @@ struct ContentView: View {
                         .zIndex(202) // Above everything
                 }
             }
+            .coordinateSpace(name: "main")
             .onPreferenceChange(CapybaraFramePreferenceKey.self) { frame in
                 guard frame != .zero else { return }
                 capybaraPosition = CGPoint(

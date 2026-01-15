@@ -207,42 +207,58 @@ struct LoveHeartsOverlay: View {
     }
     
     var body: some View {
-        ZStack {
-            if isActive && capybaraPosition != .zero {
-                ForEach(hearts) { heartData in
-                    LoveHeartView(
-                        id: heartData.id,
-                        startPosition: capybaraPosition,
-                        angle: heartData.angle,
-                        distance: heartData.distance
-                    )
+        GeometryReader { geometry in
+            // If we don't have a measured capybara position yet, fall back to center so the effect
+            // is still visible (prevents "no hearts" failures due to coordinate issues).
+            let startPosition: CGPoint = (capybaraPosition != .zero)
+                ? capybaraPosition
+                : CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
+
+            ZStack {
+                if isActive {
+                    ForEach(hearts) { heartData in
+                        LoveHeartView(
+                            id: heartData.id,
+                            startPosition: startPosition,
+                            angle: heartData.angle,
+                            distance: heartData.distance
+                        )
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .allowsHitTesting(false)
         .onChange(of: isActive) { oldValue, newValue in
-            if newValue && capybaraPosition != .zero {
-                startHeartGeneration()
-            } else {
-                stopHeartGeneration()
-            }
+            updateHeartGeneration()
         }
         .onChange(of: capybaraPosition) { oldValue, newValue in
-            if isActive && newValue != .zero && oldValue == .zero {
-                startHeartGeneration()
-            }
+            updateHeartGeneration()
         }
         .onAppear {
-            if isActive && capybaraPosition != .zero {
-                startHeartGeneration()
-            }
+            updateHeartGeneration()
         }
         .onDisappear {
             stopHeartGeneration()
         }
     }
+
+    private func updateHeartGeneration() {
+        if isActive {
+            // If we're active and haven't started a timer yet, start generating.
+            if heartTimer == nil {
+                startHeartGeneration()
+            }
+        } else {
+            stopHeartGeneration()
+        }
+    }
     
     private func startHeartGeneration() {
+        // Always reset any previous timer first (prevents duplicates after view refreshes).
+        heartTimer?.invalidate()
+        heartTimer = nil
+
         // Clear existing hearts
         hearts.removeAll()
         
@@ -250,9 +266,14 @@ struct LoveHeartsOverlay: View {
         generateHeartBatch()
         
         // Create timer to continuously generate hearts (50% less frequent: 0.4 -> 0.8 seconds)
-        heartTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { _ in
-            generateHeartBatch()
+        let timer = Timer(timeInterval: 0.8, repeats: true) { _ in
+            // Ensure state mutations happen on the main thread.
+            DispatchQueue.main.async {
+                generateHeartBatch()
+            }
         }
+        RunLoop.main.add(timer, forMode: .common)
+        heartTimer = timer
     }
     
     private func stopHeartGeneration() {
@@ -369,6 +390,8 @@ struct UnhappyEmojisOverlay: View {
                 }
             }
         }
+        // Ensure the overlay fills the container so `.position(...)` coordinates match the screen.
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .allowsHitTesting(false)
         .onChange(of: isActive) { oldValue, newValue in
             if newValue && capybaraPosition != .zero {

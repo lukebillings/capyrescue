@@ -159,7 +159,7 @@ struct GameState: Codable {
     }
     
     var capybaraEmotion: CapybaraEmotion {
-        if happiness > 80 {
+        if happiness >= 80 {
             return .happy
         } else if happiness >= 50 {
             return .neutral
