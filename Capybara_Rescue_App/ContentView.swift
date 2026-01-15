@@ -302,7 +302,7 @@ struct ContentView: View {
                 }
                 .zIndex(100) // Ensure master panel is always on top
                 
-                // Thrown item animation overlay
+                // Thrown item animation overlay    
                 FoodThrowingOverlay(
                     item: gameManager.thrownItem,
                     capybaraPosition: capybaraPosition,
