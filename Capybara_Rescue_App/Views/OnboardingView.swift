@@ -141,7 +141,7 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
-            Text("Enable notifications to get reminders to feed and care for your capybara!")
+            Text("Enable notifications to get notifications, including reminders to feed and care for your capybara!")
                 .font(.system(size: 18, weight: .medium, design: .rounded))
                 .foregroundStyle(.white.opacity(0.7))
                 .multilineTextAlignment(.center)

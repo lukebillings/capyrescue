@@ -15,7 +15,6 @@ class RewardedAdViewModel: NSObject, ObservableObject, FullScreenContentDelegate
     
     override init() {
         super.init()
-        loadAd()
     }
     
     func loadAd() {

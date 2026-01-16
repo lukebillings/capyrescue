@@ -1,10 +1,10 @@
 import SwiftUI
-import UserNotifications
 
 // MARK: - Main Content View
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject private var consentManager = ConsentManager.shared
+    @ObservedObject private var trackingManager = TrackingManager.shared
     
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false
@@ -13,15 +13,11 @@ struct ContentView: View {
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = false
-    @State private var showNotificationPermission = false
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var showAdRemovalPromo = false
     @State private var shouldApplyInitialRotation = false
 
     private let capybaraVisualOffsetY: CGFloat = -40
-    
-    // Device-specific key for notification permission request (not synced)
-    private let hasRequestedNotificationsOnThisDeviceKey = "has_requested_notifications_on_this_device"
     
     private func checkTutorialStatus() {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
@@ -33,25 +29,6 @@ struct ContentView: View {
     
     private func checkOnboardingStatus() {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
-    }
-    
-    private func checkNotificationPermissionStatus() {
-        // Check if onboarding is complete (synced) but notifications haven't been requested on THIS device
-        let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
-        let hasRequestedOnThisDevice = UserDefaults.standard.bool(forKey: hasRequestedNotificationsOnThisDeviceKey)
-        
-        // Check current notification authorization status
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                // Show notification permission screen if:
-                // 1. Onboarding is complete (user has used app before on another device)
-                // 2. Notifications haven't been requested on THIS device yet
-                // 3. Permission status is not determined (not yet asked)
-                if hasCompletedOnboarding && !hasRequestedOnThisDevice && settings.authorizationStatus == .notDetermined {
-                    showNotificationPermission = true
-                }
-            }
-        }
     }
     
     var body: some View {
@@ -72,9 +49,6 @@ struct ContentView: View {
                             }
                         }
                     }
-            } else if showNotificationPermission {
-                NotificationPermissionView(isPresented: $showNotificationPermission)
-                    .environmentObject(gameManager)
             } else {
                 mainContentView
                     .onAppear {
@@ -92,14 +66,9 @@ struct ContentView: View {
         }
         .onAppear {
             checkOnboardingStatus()
-            checkNotificationPermissionStatus()
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
             checkOnboardingStatus()
-            // Check notification permission when onboarding status changes
-            if newValue {
-                checkNotificationPermissionStatus()
-            }
         }
     }
     
@@ -113,7 +82,9 @@ struct ContentView: View {
                 // Main content
                 VStack(spacing: 0) {
                     // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
-                    if consentManager.canRequestAds && !gameManager.gameState.hasRemovedBannerAds {
+                    if consentManager.canRequestAds &&
+                        !gameManager.gameState.hasRemovedBannerAds &&
+                        trackingManager.trackingAuthorizationStatus != .notDetermined {
                         BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
                             .frame(height: 50)
                     }
@@ -606,84 +577,6 @@ struct ToastView: View {
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             )
             .transition(.scale.combined(with: .opacity))
-    }
-}
-
-// MARK: - Notification Permission View (for new devices)
-struct NotificationPermissionView: View {
-    @EnvironmentObject var gameManager: GameManager
-    @Binding var isPresented: Bool
-    
-    var body: some View {
-        ZStack {
-            // Background
-            AppColors.background
-                .ignoresSafeArea()
-            
-            VStack(spacing: 32) {
-                Spacer()
-                
-                Image(systemName: "bell.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(AppColors.accent)
-                
-                Text("Stay Connected")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                
-                Text("Enable notifications to get reminders to feed and care for your capybara!")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
-                
-                Spacer()
-                
-                // Enable notifications button
-                Button(action: {
-                    requestNotificationPermission()
-                }) {
-                    Text("Enable Notifications")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(AppColors.accent)
-                        )
-                }
-                .padding(.horizontal, 32)
-                
-                // Skip button
-                Button(action: {
-                    // Mark as requested on this device (even if skipped)
-                    UserDefaults.standard.set(true, forKey: "has_requested_notifications_on_this_device")
-                    withAnimation {
-                        isPresented = false
-                    }
-                }) {
-                    Text("Skip")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-                .padding(.bottom, 40)
-            }
-        }
-    }
-    
-    private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            DispatchQueue.main.async {
-                // Mark as requested on this device
-                UserDefaults.standard.set(true, forKey: "has_requested_notifications_on_this_device")
-                withAnimation {
-                    isPresented = false
-                }
-            }
-        }
     }
 }
 

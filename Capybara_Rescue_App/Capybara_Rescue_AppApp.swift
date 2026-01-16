@@ -41,6 +41,8 @@ struct AppStartupView: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject var consentManager: ConsentManager
     @State private var hasRequestedConsent = false
+    @StateObject private var trackingManager = TrackingManager.shared
+    @State private var hasStartedMobileAds = false
     
     var body: some View {
         ZStack {
@@ -61,12 +63,6 @@ struct AppStartupView: View {
             } else {
                 // Show main content after consent is handled
                 ContentView()
-                    .onAppear {
-                        // Initialize Google Mobile Ads SDK after consent is obtained
-                        if consentManager.canRequestAds {
-                            MobileAds.shared.start()
-                        }
-                    }
             }
         }
         .onAppear {
@@ -78,6 +74,20 @@ struct AppStartupView: View {
                     consentManager.requestConsentInfoUpdate()
                 }
             }
+        }
+        .task(id: consentManager.isLoading) {
+            // Start ads only after:
+            // - Consent flow finishes (loading ends)
+            // - ATT prompt is requested (if needed)
+            // This ensures the ATT prompt is discoverable during review and occurs
+            // before ad-related tracking signals (e.g., IDFA) could be accessed.
+            guard !consentManager.isLoading else { return }
+            guard consentManager.canRequestAds else { return }
+            guard !hasStartedMobileAds else { return }
+
+            await trackingManager.requestTrackingAuthorizationIfNeeded()
+            await MobileAds.shared.start()
+            hasStartedMobileAds = true
         }
     }
 }

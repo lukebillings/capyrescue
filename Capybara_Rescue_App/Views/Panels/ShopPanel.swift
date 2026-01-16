@@ -5,6 +5,7 @@ struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @StateObject private var rewardedAdViewModel = RewardedAdViewModel()
     @StateObject private var trackingManager = TrackingManager.shared
+    @ObservedObject private var consentManager = ConsentManager.shared
     @State private var isPurchasing: Bool = false
     @State private var showIAPError: Bool = false
     
@@ -171,6 +172,12 @@ struct ShopPanel: View {
         .onAppear {
             // Update tracking status
             trackingManager.updateTrackingStatus()
+
+            // Preload rewarded ad only after consent is done and ATT has been decided.
+            // (Avoids loading ad inventory while ATT is still .notDetermined.)
+            if consentManager.canRequestAds && trackingManager.trackingAuthorizationStatus != .notDetermined {
+                rewardedAdViewModel.loadAd()
+            }
             
             // Set up reward handler
             rewardedAdViewModel.onRewardEarned = {
