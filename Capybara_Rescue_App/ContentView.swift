@@ -85,7 +85,7 @@ struct ContentView: View {
                     if consentManager.canRequestAds &&
                         !gameManager.gameState.hasRemovedBannerAds &&
                         trackingManager.trackingAuthorizationStatus != .notDetermined {
-                        BannerAdView(adUnitID: "ca-app-pub-3940256099942544/2435281174")
+                        BannerAdView(adUnitID: AdMobIDs.bannerTop)
                             .frame(height: 50)
                     }
                     

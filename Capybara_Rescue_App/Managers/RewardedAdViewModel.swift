@@ -9,7 +9,7 @@ class RewardedAdViewModel: NSObject, ObservableObject, FullScreenContentDelegate
     @Published var isShowingAd = false
     
     private var rewardedAd: RewardedAd?
-    private let adUnitID = "ca-app-pub-3940256099942544/1712485313"
+    private var adUnitID: String { AdMobIDs.rewardedFreeCoins }
     
     var onRewardEarned: (() -> Void)?
     
