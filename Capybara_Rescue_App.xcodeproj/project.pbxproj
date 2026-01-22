@@ -377,7 +377,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.05;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -395,7 +395,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -411,7 +411,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.05;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -429,7 +429,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
