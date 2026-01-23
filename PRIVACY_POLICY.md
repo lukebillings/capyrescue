@@ -156,7 +156,7 @@ We use reasonable administrative, technical, and organizational measures to prot
 
 ## 11) Children
 
-The App is not intended for children under **13** (or under the applicable age of digital consent in your country). We do not knowingly collect personal data from children without appropriate consent where required.
+Children: The App is not directed to children under **13**. We do not knowingly collect personal information from children under 13; if we learn we have, we will delete it. If you are a parent/guardian and believe your child provided personal information, contact us at capybara.rescue.universe@outlook.com.
 
 If you believe a child has provided personal data, contact us and we will take appropriate steps to delete it.
 
