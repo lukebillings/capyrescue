@@ -22,13 +22,23 @@ struct AdMobIDs {
     private static let productionRewarded: String? = "ca-app-pub-4955072757491395/8048350052"
 
     static var bannerTop: String {
-        let id = productionBanner ?? testBanner
+        let id: String
+        if AdsConfig.useTestAdUnits {
+            id = testBanner
+        } else {
+            id = productionBanner ?? testBanner
+        }
         assert(id.contains("/"), "Banner Ad Unit ID must contain '/'. Did you paste the App ID (~) by mistake?")
         return id
     }
 
     static var rewardedFreeCoins: String {
-        let id = productionRewarded ?? testRewarded
+        let id: String
+        if AdsConfig.useTestAdUnits {
+            id = testRewarded
+        } else {
+            id = productionRewarded ?? testRewarded
+        }
         assert(id.contains("/"), "Rewarded Ad Unit ID must contain '/'. Did you paste the App ID (~) by mistake?")
         return id
     }

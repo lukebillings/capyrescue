@@ -18,9 +18,20 @@ enum AdsConfig {
         if isRunningForPreviews { return false }
 
         #if DEBUG
-        return false
+        return true
         #else
         return true
+        #endif
+    }
+
+    /// Use Google-provided test ad unit IDs in Debug builds.
+    ///
+    /// This avoids generating invalid traffic while testing locally.
+    static var useTestAdUnits: Bool {
+        #if DEBUG
+        return true
+        #else
+        return false
         #endif
     }
 }
