@@ -97,9 +97,9 @@ struct AppStartupView: View {
             await trackingManager.requestTrackingAuthorizationIfNeeded()
             
             // Configure test devices before starting/loading ads.
-            // - Simulator uses the built-in `GADSimulatorID`
+            // - Simulator uses the special `"SIMULATOR"` identifier (works across SDK versions)
             // - Physical devices: add the hashed ID printed by the SDK to `AdMobIDs.testDeviceIdentifiers`
-            let configuredTestDevices = Array(Set(AdMobIDs.testDeviceIdentifiers + [GADSimulatorID]))
+            let configuredTestDevices = Array(Set(AdMobIDs.testDeviceIdentifiers + ["SIMULATOR"]))
             if !configuredTestDevices.isEmpty {
                 MobileAds.shared.requestConfiguration.testDeviceIdentifiers = configuredTestDevices
             }
