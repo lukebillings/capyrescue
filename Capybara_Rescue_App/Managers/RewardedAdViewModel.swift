@@ -18,6 +18,12 @@ class RewardedAdViewModel: NSObject, ObservableObject, FullScreenContentDelegate
     }
     
     func loadAd() {
+        guard AdsConfig.adsEnabled else {
+            isLoading = false
+            isAdReady = false
+            rewardedAd = nil
+            return
+        }
         guard !isLoading else { return }
         
         isLoading = true
@@ -42,6 +48,7 @@ class RewardedAdViewModel: NSObject, ObservableObject, FullScreenContentDelegate
     }
     
     func showAd(from rootViewController: UIViewController? = nil) {
+        guard AdsConfig.adsEnabled else { return }
         guard let rewardedAd = rewardedAd else {
             print("⚠️ Rewarded ad not ready")
             // Try to reload if ad is not ready

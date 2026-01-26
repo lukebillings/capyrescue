@@ -82,7 +82,8 @@ struct ContentView: View {
                 // Main content
                 VStack(spacing: 0) {
                     // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
-                    if consentManager.canRequestAds &&
+                    if AdsConfig.adsEnabled &&
+                        consentManager.canRequestAds &&
                         !gameManager.gameState.hasRemovedBannerAds &&
                         trackingManager.trackingAuthorizationStatus != .notDetermined {
                         BannerAdView(adUnitID: AdMobIDs.bannerTop)

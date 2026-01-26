@@ -45,28 +45,36 @@ struct AppStartupView: View {
     @State private var hasStartedMobileAds = false
     
     var body: some View {
-        ZStack {
-            if consentManager.isLoading {
-                // Show loading screen while consent is being handled
-                Color(hex: "0f0c29")
-                    .ignoresSafeArea()
-                    .overlay {
-                        VStack(spacing: 20) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .tint(.white)
-                            Text("Loading...")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                        }
-                    }
-            } else {
-                // Show main content after consent is handled
+        Group {
+            if !AdsConfig.adsEnabled {
+                // Ads disabled (e.g. local testing) — skip consent/ad startup entirely.
                 ContentView()
+            } else {
+                ZStack {
+                    if consentManager.isLoading {
+                        // Show loading screen while consent is being handled
+                        Color(hex: "0f0c29")
+                            .ignoresSafeArea()
+                            .overlay {
+                                VStack(spacing: 20) {
+                                    ProgressView()
+                                        .scaleEffect(1.5)
+                                        .tint(.white)
+                                    Text("Loading...")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                    } else {
+                        // Show main content after consent is handled
+                        ContentView()
+                    }
+                }
             }
         }
         .onAppear {
             // Request consent info update on first launch
+            guard AdsConfig.adsEnabled else { return }
             if !hasRequestedConsent {
                 hasRequestedConsent = true
                 // Small delay to ensure view hierarchy is ready
@@ -81,6 +89,7 @@ struct AppStartupView: View {
             // - ATT prompt is requested (if needed)
             // This ensures the ATT prompt is discoverable during review and occurs
             // before ad-related tracking signals (e.g., IDFA) could be accessed.
+            guard AdsConfig.adsEnabled else { return }
             guard !consentManager.isLoading else { return }
             guard consentManager.canRequestAds else { return }
             guard !hasStartedMobileAds else { return }

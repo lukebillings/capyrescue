@@ -175,7 +175,9 @@ struct ShopPanel: View {
 
             // Preload rewarded ad only after consent is done and ATT has been decided.
             // (Avoids loading ad inventory while ATT is still .notDetermined.)
-            if consentManager.canRequestAds && trackingManager.trackingAuthorizationStatus != .notDetermined {
+            if AdsConfig.adsEnabled &&
+                consentManager.canRequestAds &&
+                trackingManager.trackingAuthorizationStatus != .notDetermined {
                 rewardedAdViewModel.loadAd()
             }
             
@@ -216,6 +218,7 @@ struct ShopPanel: View {
     
     private func watchAd() {
         HapticManager.shared.buttonPress()
+        guard AdsConfig.adsEnabled else { return }
         
         // Request tracking authorization if needed before showing ad
         Task {

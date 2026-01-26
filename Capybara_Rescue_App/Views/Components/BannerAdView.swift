@@ -11,6 +11,10 @@ struct BannerAdView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> BannerView {
         let bannerView = BannerView(adSize: AdSizeBanner)
+        guard AdsConfig.adsEnabled else {
+            // Ads disabled (e.g. during local testing) — don't configure/load AdMob.
+            return bannerView
+        }
         bannerView.adUnitID = adUnitID
         bannerView.delegate = context.coordinator
         context.coordinator.bannerView = bannerView
@@ -27,6 +31,7 @@ struct BannerAdView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: BannerView, context: Context) {
+        guard AdsConfig.adsEnabled else { return }
         // Set root view controller if not already set
         if uiView.rootViewController == nil {
             setRootViewController(for: uiView)
@@ -37,6 +42,7 @@ struct BannerAdView: UIViewRepresentable {
     }
     
     private func attemptLoadAd(for bannerView: BannerView, coordinator: Coordinator) {
+        guard AdsConfig.adsEnabled else { return }
         // Ensure root view controller is set
         if bannerView.rootViewController == nil {
             setRootViewController(for: bannerView)

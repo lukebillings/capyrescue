@@ -43,6 +43,7 @@
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
 		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */; };
+		0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */; };
 		B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 9C2351377F437F65D65ABCCD /* Santahat.usdz */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
 		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
@@ -91,6 +92,7 @@
 		A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlay.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveBannerAdPromoView.swift; sourceTree = "<group>"; };
 		A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobIDs.swift; sourceTree = "<group>"; };
+		F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsConfig.swift; sourceTree = "<group>"; };
 		C2C3AEDFBE8014685F7D5827 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidMenuBar.swift; sourceTree = "<group>"; };
 		C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */,
+				F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */,
 				664E587C6368CC37B1D7089B /* ConsentManager.swift */,
 				27DC24A7428511F72A1DDEED /* GameManager.swift */,
 				EB93563846587619659B7D5E /* HapticManager.swift */,
@@ -335,6 +338,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */,
+				0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */,
 				23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */,
 				F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */,
 				66DBD658C0076D4EBCE2E550 /* BannerAdView.swift in Sources */,
