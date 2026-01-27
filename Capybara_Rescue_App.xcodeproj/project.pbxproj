@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A995BB7DDA4D6B0A767124 /* ThrownItemView.swift */; };
+		0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */; };
 		0D61A085AA202EF5EB913E5B /* MasterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C99258A5050BE2B6E7997BB /* MasterPanel.swift */; };
 		1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */; };
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
@@ -43,7 +44,6 @@
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
 		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
 		B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */; };
-		0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */; };
 		B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 9C2351377F437F65D65ABCCD /* Santahat.usdz */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
 		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
@@ -92,7 +92,6 @@
 		A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlay.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoveBannerAdPromoView.swift; sourceTree = "<group>"; };
 		A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobIDs.swift; sourceTree = "<group>"; };
-		F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsConfig.swift; sourceTree = "<group>"; };
 		C2C3AEDFBE8014685F7D5827 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidMenuBar.swift; sourceTree = "<group>"; };
 		C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -103,6 +102,7 @@
 		E35BDABA03E65FB27F57C697 /* TrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManager.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -381,11 +381,11 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
+				INFOPLIST_KEY_CFBundleDisplayName = Capyrescue;
 				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
 				INFOPLIST_KEY_CFBundleVersion = 1;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
@@ -399,7 +399,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.02;
+				MARKETING_VERSION = 1.04;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -415,11 +415,11 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
+				INFOPLIST_KEY_CFBundleDisplayName = Capyrescue;
 				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
 				INFOPLIST_KEY_CFBundleVersion = 1;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
@@ -433,7 +433,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.02;
+				MARKETING_VERSION = 1.04;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
