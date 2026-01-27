@@ -16,37 +16,39 @@ struct ShopPanel: View {
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
                 
                 // Free Coins Section
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "gift.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(.green)
-                        
-                        Text("Free Coins")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    WatchAdCard(
-                        isLoading: rewardedAdViewModel.isLoading || rewardedAdViewModel.isShowingAd,
-                        progress: 0,
-                        isAdReady: rewardedAdViewModel.isAdReady,
-                        showReward: trackingManager.hasRequestedTracking
-                    ) {
-                        watchAd()
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    // Tracking disclaimer
-                    Text("Ads may use tracking. Manage in Settings.")
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.5))
-                        .multilineTextAlignment(.center)
+                if AdsConfig.adsEnabled {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "gift.fill")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(.green)
+                            
+                            Text("Free Coins")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                            
+                            Spacer()
+                        }
                         .padding(.horizontal, 20)
-                        .padding(.top, 4)
+                        
+                        WatchAdCard(
+                            isLoading: rewardedAdViewModel.isLoading || rewardedAdViewModel.isShowingAd,
+                            progress: 0,
+                            isAdReady: rewardedAdViewModel.isAdReady,
+                            showReward: trackingManager.hasRequestedTracking
+                        ) {
+                            watchAd()
+                        }
+                        .padding(.horizontal, 16)
+                        
+                        // Tracking disclaimer
+                        Text("Ads may use tracking. Manage in Settings.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 4)
+                    }
                 }
                 
                 // Coin Packs Section
@@ -115,47 +117,49 @@ struct ShopPanel: View {
                 }
                 
                 // Remove Banner Ads Section
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.blue, Color.purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+                if AdsConfig.adsEnabled {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color.blue, Color.purple],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                        
-                        Text("Remove Banner Ads")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    RemoveBannerAdCard(
-                        isPurchased: gameManager.gameState.hasRemovedBannerAds
-                    ) {
-                        handleAdRemovalPurchase()
-                    }
-                    .padding(.horizontal, 16)
-
-                    Button(action: {
-                        HapticManager.shared.buttonPress()
-                        Task {
-                            isPurchasing = true
-                            _ = await gameManager.restorePurchases()
-                            isPurchasing = false
+                            
+                            Text("Remove Banner Ads")
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                            
+                            Spacer()
                         }
-                    }) {
-                        Text(isPurchasing ? "Restoring..." : "Restore Purchases")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.7))
-                            .padding(.top, 6)
+                        .padding(.horizontal, 20)
+                        
+                        RemoveBannerAdCard(
+                            isPurchased: gameManager.gameState.hasRemovedBannerAds
+                        ) {
+                            handleAdRemovalPurchase()
+                        }
+                        .padding(.horizontal, 16)
+
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            Task {
+                                isPurchasing = true
+                                _ = await gameManager.restorePurchases()
+                                isPurchasing = false
+                            }
+                        }) {
+                            Text(isPurchasing ? "Restoring..." : "Restore Purchases")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .padding(.top, 6)
+                        }
+                        .disabled(isPurchasing)
                     }
-                    .disabled(isPurchasing)
                 }
                 
                 Spacer(minLength: 20)

@@ -55,7 +55,7 @@ struct ContentView: View {
                         checkTutorialStatus()
                         // Track app open and check if we should show ad removal promo
                         gameManager.incrementAppOpenCount()
-                        if gameManager.shouldShowAdRemovalPromo() {
+                        if AdsConfig.adsEnabled && gameManager.shouldShowAdRemovalPromo() {
                             // Small delay to ensure UI is ready
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                 showAdRemovalPromo = true

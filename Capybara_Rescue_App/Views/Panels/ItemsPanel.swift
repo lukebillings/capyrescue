@@ -6,6 +6,7 @@ struct ItemsPanel: View {
     @EnvironmentObject var gameManager: GameManager
     let onBack: (() -> Void)?
     let onOpenShop: (() -> Void)?
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     @State private var previewingItemId: String? = nil
     @State private var showInsufficientCoinsMessage: Bool = false
@@ -25,70 +26,137 @@ struct ItemsPanel: View {
     }
     
     private var mainContent: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 12) {
-                // Items - horizontal scrolling row
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(filteredItems) { item in
-                            AccessoryItemButton(
-                                item: item,
-                                isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
-                                isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
-                                canAfford: gameManager.canAfford(item.cost),
-                                isPreviewing: previewingItemId == item.id
-                            ) {
-                                handleItemAction(item)
+        Group {
+            // Keep iPhone (compact width) submenu layout unchanged.
+            if horizontalSizeClass == .compact {
+                VStack(spacing: 16) {
+                    // Items - horizontal scrolling row
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(filteredItems) { item in
+                                AccessoryItemButton(
+                                    item: item,
+                                    isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                    isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                    canAfford: gameManager.canAfford(item.cost),
+                                    isPreviewing: previewingItemId == item.id
+                                ) {
+                                    handleItemAction(item)
+                                }
+                                .frame(width: 100) // Fixed width for horizontal scroll
                             }
-                            .frame(width: 100) // Fixed width for horizontal scroll
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8) // Add vertical padding to prevent cutoff
+                    }
+                    .frame(maxHeight: .infinity) // Fill space so header sits lower
+                    
+                    // Header with back button - moved below items
+                    HStack {
+                        if let onBack = onBack {
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                // Clear preview if unpurchased item is being previewed
+                                if let previewId = previewingItemId,
+                                   !gameManager.gameState.ownedAccessories.contains(previewId) {
+                                    previewingItemId = nil
+                                    gameManager.clearPreview()
+                                }
+                                onBack()
+                            }) {
+                                Image(systemName: "chevron.left.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Text("Accessorise Your Capybara")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Spacer()
+                        
+                        // Spacer for symmetry
+                        if onBack != nil {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.clear)
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
                 }
-                .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
-                
-                // Header with back button - moved below items
-                HStack {
-                    if let onBack = onBack {
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            // Clear preview if unpurchased item is being previewed
-                            if let previewId = previewingItemId,
-                               !gameManager.gameState.ownedAccessories.contains(previewId) {
-                                previewingItemId = nil
-                                gameManager.clearPreview()
+                .padding(.top, 80)
+                .padding(.bottom, 36)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 12) {
+                        // Items - horizontal scrolling row
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 16) {
+                                ForEach(filteredItems) { item in
+                                    AccessoryItemButton(
+                                        item: item,
+                                        isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                        isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                        canAfford: gameManager.canAfford(item.cost),
+                                        isPreviewing: previewingItemId == item.id
+                                    ) {
+                                        handleItemAction(item)
+                                    }
+                                    .frame(width: 100) // Fixed width for horizontal scroll
+                                }
                             }
-                            onBack()
-                        }) {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.white.opacity(0.7))
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                         }
+                        .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
+                        
+                        // Header with back button - moved below items
+                        HStack {
+                            if let onBack = onBack {
+                                Button(action: {
+                                    HapticManager.shared.buttonPress()
+                                    // Clear preview if unpurchased item is being previewed
+                                    if let previewId = previewingItemId,
+                                       !gameManager.gameState.ownedAccessories.contains(previewId) {
+                                        previewingItemId = nil
+                                        gameManager.clearPreview()
+                                    }
+                                    onBack()
+                                }) {
+                                    Image(systemName: "chevron.left.circle.fill")
+                                        .font(.system(size: 28))
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            Text("Accessorise Your Capybara")
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                            
+                            Spacer()
+                            
+                            // Spacer for symmetry
+                            if onBack != nil {
+                                Image(systemName: "chevron.left.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.clear)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(height: 60) // Fixed height for header to prevent cutoff
                     }
-                    
-                    Spacer()
-                    
-                    Text("Accessorise Your Capybara")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    
-                    Spacer()
-                    
-                    // Spacer for symmetry
-                    if onBack != nil {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.clear)
-                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 16)
-                .frame(height: 60) // Fixed height for header to prevent cutoff
             }
-            .padding(.top, 8)
-            .padding(.bottom, 8)
         }
         .onChange(of: gameManager.gameState.capycoins) { oldValue, newValue in
             // Update preview state when coins change (e.g., after buying coins)

@@ -6,6 +6,7 @@ struct FoodPanel: View {
     let onFoodSelected: (FoodItem) -> Void
     let onBack: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     init(onFoodSelected: @escaping (FoodItem) -> Void, onBack: (() -> Void)? = nil) {
         self.onFoodSelected = onFoodSelected
@@ -13,69 +14,133 @@ struct FoodPanel: View {
     }
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 12) {
-                // Food items - horizontal scrolling row
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 16) {
-                        ForEach(FoodItem.allItems) { item in
-                            FoodItemButton(
-                                item: item,
-                                canAfford: gameManager.canAfford(item.cost)
-                            ) {
-                                handleFoodSelection(item)
+        Group {
+            // Keep iPhone (compact width) submenu layout unchanged.
+            if horizontalSizeClass == .compact {
+                VStack(spacing: 16) {
+                    // Food items - horizontal scrolling row
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 16) {
+                            ForEach(FoodItem.allItems) { item in
+                                FoodItemButton(
+                                    item: item,
+                                    canAfford: gameManager.canAfford(item.cost)
+                                ) {
+                                    handleFoodSelection(item)
+                                }
+                                .frame(width: 100) // Fixed width for horizontal scroll
                             }
-                            .frame(width: 100) // Fixed width for horizontal scroll
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8) // Add vertical padding to prevent cutoff
+                    }
+                    .frame(maxHeight: .infinity) // Fill space so header sits lower
+                    
+                    // Header with back button - below items
+                    HStack {
+                        if let onBack = onBack {
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                onBack()
+                            }) {
+                                Image(systemName: "chevron.left.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.white.opacity(0.7))
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(spacing: 4) {
+                            Text("Feed Your Capybara")
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                            
+                            Text("Foods are one time use")
+                                .font(.system(size: 12, weight: .regular, design: .rounded))
+                                .foregroundStyle(.white.opacity(0.6))
+                        }
+                        
+                        Spacer()
+                        
+                        // Spacer for symmetry
+                        if onBack != nil {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.clear)
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
                 }
-                .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
-                
-                // Header with back button - moved below items
-                HStack {
-                    if let onBack = onBack {
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            onBack()
-                        }) {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.white.opacity(0.7))
+                .padding(.top, 80)
+                .padding(.bottom, 36)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 12) {
+                        // Food items - horizontal scrolling row
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 16) {
+                                ForEach(FoodItem.allItems) { item in
+                                    FoodItemButton(
+                                        item: item,
+                                        canAfford: gameManager.canAfford(item.cost)
+                                    ) {
+                                        handleFoodSelection(item)
+                                    }
+                                    .frame(width: 100) // Fixed width for horizontal scroll
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                         }
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 4) {
-                        Text("Feed Your Capybara")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                        .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
                         
-                        Text("Foods are one time use")
-                            .font(.system(size: 12, weight: .regular, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.6))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                        // Header with back button - moved below items
+                        HStack {
+                            if let onBack = onBack {
+                                Button(action: {
+                                    HapticManager.shared.buttonPress()
+                                    onBack()
+                                }) {
+                                    Image(systemName: "chevron.left.circle.fill")
+                                        .font(.system(size: 28))
+                                        .foregroundStyle(.white.opacity(0.7))
+                                }
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(spacing: 4) {
+                                Text("Feed Your Capybara")
+                                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                
+                                Text("Foods are one time use")
+                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                    .foregroundStyle(.white.opacity(0.6))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                            }
+                            
+                            Spacer()
+                            
+                            // Spacer for symmetry
+                            if onBack != nil {
+                                Image(systemName: "chevron.left.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.clear)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .frame(height: 60) // Fixed height for header to prevent cutoff
                     }
-                    
-                    Spacer()
-                    
-                    // Spacer for symmetry
-                    if onBack != nil {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.clear)
-                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 16)
-                .frame(height: 60) // Fixed height for header to prevent cutoff
             }
-            .padding(.top, 8)
-            .padding(.bottom, 8)
         }
     }
     

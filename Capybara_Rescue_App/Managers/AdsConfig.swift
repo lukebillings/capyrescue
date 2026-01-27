@@ -16,12 +16,10 @@ enum AdsConfig {
     static var adsEnabled: Bool {
         // Never allow ads in SwiftUI Canvas/Previews (even if you enable ads for debugging).
         if isRunningForPreviews { return false }
-
-        #if DEBUG
-        return true
-        #else
-        return true
-        #endif
+        
+        // Globally disabled per current build requirements.
+        // Flip this back to `true` when you want AdMob active again.
+        return false
     }
 
     /// Use Google-provided test ad unit IDs in Debug builds.
