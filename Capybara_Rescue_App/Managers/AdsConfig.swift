@@ -3,7 +3,7 @@ import Foundation
 /// Central switch for enabling/disabling AdMob at runtime.
 ///
 /// Default behavior:
-/// - Debug builds: disabled (so local testing isn't blocked by AdMob loading)
+/// - Debug builds: enabled (uses Google-provided *test* ad unit IDs)
 /// - Release builds: enabled
 enum AdsConfig {
     /// Returns true when running inside SwiftUI Preview / Xcode Canvas.
@@ -17,9 +17,8 @@ enum AdsConfig {
         // Never allow ads in SwiftUI Canvas/Previews (even if you enable ads for debugging).
         if isRunningForPreviews { return false }
         
-        // Globally disabled per current build requirements.
-        // Flip this back to `true` when you want AdMob active again.
-        return false
+        // Ads enabled for normal app runs.
+        return true
     }
 
     /// Use Google-provided test ad unit IDs in Debug builds.
