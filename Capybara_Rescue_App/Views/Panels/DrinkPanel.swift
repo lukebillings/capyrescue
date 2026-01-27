@@ -12,64 +12,70 @@ struct DrinkPanel: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Drink items - horizontal scrolling row
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(DrinkItem.allItems) { item in
-                        DrinkItemButton(
-                            item: item,
-                            canAfford: gameManager.canAfford(item.cost)
-                        ) {
-                            handleDrinkSelection(item)
+        GeometryReader { geometry in
+            VStack(spacing: 12) {
+                // Drink items - horizontal scrolling row
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 16) {
+                        ForEach(DrinkItem.allItems) { item in
+                            DrinkItemButton(
+                                item: item,
+                                canAfford: gameManager.canAfford(item.cost)
+                            ) {
+                                handleDrinkSelection(item)
+                            }
+                            .frame(width: 100) // Fixed width for horizontal scroll
                         }
-                        .frame(width: 100) // Fixed width for horizontal scroll
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
+                
+                // Header with back button - moved below items
+                HStack {
+                    if let onBack = onBack {
+                        Button(action: {
+                            HapticManager.shared.buttonPress()
+                            onBack()
+                        }) {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(spacing: 4) {
+                        Text("Hydrate Your Capybara")
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        
+                        Text("Drinks are one time use")
+                            .font(.system(size: 12, weight: .regular, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.6))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    
+                    Spacer()
+                    
+                    // Spacer for symmetry
+                    if onBack != nil {
+                        Image(systemName: "chevron.left.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundStyle(.clear)
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8) // Add vertical padding to prevent cutoff
+                .frame(height: 60) // Fixed height for header to prevent cutoff
             }
-            .frame(maxHeight: .infinity) // Match ItemsPanel: fill space so header sits lower
-            
-            // Header with back button - moved below items
-            HStack {
-                if let onBack = onBack {
-                    Button(action: {
-                        HapticManager.shared.buttonPress()
-                        onBack()
-                    }) {
-                        Image(systemName: "chevron.left.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.7))
-                    }
-                }
-                
-                Spacer()
-                
-                VStack(spacing: 4) {
-                    Text("Hydrate Your Capybara")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                    
-                    Text("Drinks are one time use")
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
-                }
-                
-                Spacer()
-                
-                // Spacer for symmetry
-                if onBack != nil {
-                    Image(systemName: "chevron.left.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.clear)
-                }
-            }
-            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
         }
-        // Match ItemsPanel vertical positioning so the submenu row sits lower on screen
-        .padding(.top, 80)
-        .padding(.bottom, 36)
     }
     
     private func handleDrinkSelection(_ item: DrinkItem) {

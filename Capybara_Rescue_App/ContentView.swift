@@ -243,7 +243,7 @@ struct ContentView: View {
                     VStack {
                         Spacer()
                         panelContent
-                            .frame(minHeight: 50, maxHeight: 180) // Fixed height for panels
+                            .frame(minHeight: 180, maxHeight: 220) // Adaptive height for panels - increased for iPad Mini
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                             .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom + 4 : 8)
                     }
