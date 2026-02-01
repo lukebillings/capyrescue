@@ -21,6 +21,7 @@ struct CapybaraRescueUniverseApp: App {
     @StateObject private var gameManager = GameManager()
     @StateObject private var consentManager = ConsentManager.shared
     private let notificationDelegate = NotificationDelegate()
+    @Environment(\.scenePhase) private var scenePhase
     
     init() {
         // Set up notification delegate to show notifications in foreground
@@ -32,6 +33,11 @@ struct CapybaraRescueUniverseApp: App {
             AppStartupView(consentManager: consentManager)
                 .environmentObject(gameManager)
                 .preferredColorScheme(ColorScheme.dark)
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        gameManager.handleAppBecameActive()
+                    }
+                }
         }
     }
 }

@@ -249,9 +249,10 @@ class GameManager: ObservableObject {
         guard !isSaving else { return }
         isSaving = true
         defer { isSaving = false }
-        
-        // Update lastUpdateTime (isSaving flag prevents recursive call)
-        gameState.lastUpdateTime = Date()
+        // IMPORTANT:
+        // `lastUpdateTime` is used as the anchor for stat decay timing.
+        // Do NOT update it on every save, otherwise the "1 per hour" decay
+        // never properly accumulates (especially when backgrounded).
         
         if let data = try? JSONEncoder().encode(gameState) {
             cloudStore.set(data, forKey: storageKey)
@@ -261,19 +262,32 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Decay System
-    private func applyOfflineDecay() {
-        // Calculate decay based on 1-hour intervals
-        let hoursSinceLastUpdate = Date().timeIntervalSince(gameState.lastUpdateTime) / 3600
-        let hourIntervals = Int(hoursSinceLastUpdate)
-        let decayAmount = hourIntervals // 1 point per hour
+    private func applyOfflineDecay(now: Date = Date()) {
+        // Apply decay for each full hour elapsed since `lastUpdateTime`,
+        // and advance `lastUpdateTime` by whole hours (preserves partial-hour remainder).
+        let elapsed = now.timeIntervalSince(gameState.lastUpdateTime)
         
-        if decayAmount > 0 {
-            gameState.food = max(0, gameState.food - decayAmount)
-            gameState.drink = max(0, gameState.drink - decayAmount)
-            gameState.happiness = max(0, gameState.happiness - decayAmount)
-            
-            checkRunAway()
+        // If device clock changed and we end up in the "future", just reset the anchor.
+        guard elapsed >= 0 else {
+            gameState.lastUpdateTime = now
+            return
         }
+        
+        let hourIntervals = Int(elapsed / 3600) // full hours only
+        guard hourIntervals > 0 else { return }
+        
+        let decayAmount = hourIntervals // 1 point per hour
+        gameState.food = max(0, gameState.food - decayAmount)
+        gameState.drink = max(0, gameState.drink - decayAmount)
+        gameState.happiness = max(0, gameState.happiness - decayAmount)
+        
+        // Advance anchor by the exact number of hours applied.
+        gameState.lastUpdateTime = gameState.lastUpdateTime.addingTimeInterval(TimeInterval(hourIntervals * 3600))
+        
+        checkRunAway()
+        
+        // Reschedule future notifications based on new stat values
+        scheduleFutureNotifications()
     }
     
     private func startDecayTimer() {
@@ -290,10 +304,18 @@ class GameManager: ObservableObject {
         gameState.drink = max(0, gameState.drink - 1)
         gameState.happiness = max(0, gameState.happiness - 1)
         
+        // Anchor for next time-based decay calculation
+        gameState.lastUpdateTime = Date()
+        
         checkRunAway()
         
         // Reschedule future notifications based on new stat values
         scheduleFutureNotifications()
+    }
+
+    // Call this when the app becomes active to account for time spent backgrounded.
+    func handleAppBecameActive() {
+        applyOfflineDecay(now: Date())
     }
     
     private func checkRunAway() {
