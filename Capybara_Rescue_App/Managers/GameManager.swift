@@ -83,6 +83,8 @@ class GameManager: ObservableObject {
         Task {
             await loadIAPProducts()
             await syncNonConsumableEntitlements()
+            // Unlock Pro items if user has Pro subscription
+            unlockProItemsIfNeeded()
         }
     }
     
@@ -590,9 +592,10 @@ class GameManager: ObservableObject {
         // Award initial coins based on tier
         gameState.capycoins = tier.startingCoins
         
-        // If Pro tier, remove banner ads
+        // If Pro tier, remove banner ads and unlock Pro items
         if tier != .free {
             gameState.hasRemovedBannerAds = true
+            unlockProItemsIfNeeded()
         }
         
         print("✅ Paywall completed with \(tier.displayName) tier")
@@ -613,6 +616,27 @@ class GameManager: ObservableObject {
             return .free
         }
         return tier
+    }
+    
+    // MARK: - Pro Items Management
+    private func unlockProItemsIfNeeded() {
+        // If user has Pro subscription, automatically unlock all Pro-only items
+        guard hasProSubscription() else { return }
+        
+        let proItems = AccessoryItem.allItems.filter { $0.isProOnly }
+        var unlocked = false
+        
+        for item in proItems {
+            if !gameState.ownedAccessories.contains(item.id) {
+                gameState.ownedAccessories.append(item.id)
+                unlocked = true
+                print("✅ Unlocked Pro item: \(item.name)")
+            }
+        }
+        
+        if unlocked {
+            print("🎉 Pro items unlocked for Pro subscriber")
+        }
     }
     
     // MARK: - Reset
