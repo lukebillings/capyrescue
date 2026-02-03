@@ -70,8 +70,8 @@ struct PaywallView: View {
                         badge: "BEST VALUE",
                         badgeColor: Color(hex: "FFD700"),
                         features: [
-                            "5,000 coins starting balance",
-                            "5,000 extra coins every month",
+                            "15,000 coins starting balance",
+                            "10,000 extra coins every month",
                             "No banner ads",
                             "Exclusive Pro items"
                         ],
@@ -145,7 +145,7 @@ struct PaywallView: View {
                     
                     // Legal text
                     VStack(spacing: 8) {
-                        Text("Subscriptions auto-renew unless cancelled 24 hours before period ends.")
+                        Text("Subscriptions auto-renew unless cancelled 24 hours before period ends. Cancel anytime in iPhone Settings.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundColor(.white.opacity(0.4))
                             .multilineTextAlignment(.center)
