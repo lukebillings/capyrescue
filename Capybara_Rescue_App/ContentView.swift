@@ -55,7 +55,7 @@ struct ContentView: View {
                         checkTutorialStatus()
                         // Track app open and check if we should show ad removal promo
                         gameManager.incrementAppOpenCount()
-                        if AdsConfig.adsEnabled && gameManager.shouldShowAdRemovalPromo() {
+                        if AdsConfig.bannerAdsEnabled && gameManager.shouldShowAdRemovalPromo() {
                             // Small delay to ensure UI is ready
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                 showAdRemovalPromo = true
@@ -82,7 +82,7 @@ struct ContentView: View {
                 // Main content
                 VStack(spacing: 0) {
                     // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
-                    if AdsConfig.adsEnabled &&
+                    if AdsConfig.bannerAdsEnabled &&
                         consentManager.canRequestAds &&
                         !gameManager.gameState.hasRemovedBannerAds &&
                         trackingManager.trackingAuthorizationStatus != .notDetermined {

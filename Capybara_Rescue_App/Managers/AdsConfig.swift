@@ -21,6 +21,15 @@ enum AdsConfig {
         return true
     }
 
+    /// Temporary kill-switch for banner ads only.
+    ///
+    /// Leave `adsEnabled` on so rewarded/interstitial logic can still run,
+    /// while removing banners from the UI and preventing banner requests.
+    static var bannerAdsEnabled: Bool {
+        if !adsEnabled { return false }
+        return true
+    }
+
     /// Use Google-provided test ad unit IDs in Debug builds.
     ///
     /// This avoids generating invalid traffic while testing locally.
