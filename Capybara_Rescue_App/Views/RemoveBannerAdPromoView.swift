@@ -4,8 +4,8 @@ import SwiftUI
 struct RemoveBannerAdPromoView: View {
     @EnvironmentObject var gameManager: GameManager
     @Binding var isPresented: Bool
-    @State private var isPurchasing: Bool = false
-    @State private var showIAPError: Bool = false
+    @State private var showPaywall: Bool = false
+    @State private var selectedTier: SubscriptionManager.SubscriptionTier? = nil
     
     var body: some View {
         ZStack {
@@ -38,17 +38,9 @@ struct RemoveBannerAdPromoView: View {
                     .multilineTextAlignment(.center)
                 
                 // Description
-                let priceText = gameManager.displayPrice(
-                    forProductId: GameManager.removeBannerAdsProductId,
-                    fallback: "£3.99"
-                )
-                Text("Remove banner ads for \(priceText)")
+                Text("Remove ads and get more coins")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
-                
-                Text("One-time purchase. No subscriptions.")
-                    .font(.system(size: 14, weight: .regular, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
                     .multilineTextAlignment(.center)
                 
                 // Buttons
@@ -69,20 +61,12 @@ struct RemoveBannerAdPromoView: View {
                             )
                     }
                     
-                    // Purchase button
+                    // View Subscriptions button
                     Button(action: {
                         HapticManager.shared.buttonPress()
-                        Task {
-                            isPurchasing = true
-                            let success = await gameManager.purchaseRemoveBannerAds()
-                            isPurchasing = false
-                            if success {
-                                HapticManager.shared.purchaseSuccess()
-                                isPresented = false
-                            }
-                        }
+                        showPaywall = true
                     }) {
-                        Text(isPurchasing ? "Processing..." : "Remove Banner Ads")
+                        Text("View Subscriptions")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
@@ -99,7 +83,6 @@ struct RemoveBannerAdPromoView: View {
                             )
                             .shadow(color: Color.blue.opacity(0.4), radius: 8, x: 0, y: 4)
                     }
-                    .disabled(isPurchasing)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
@@ -125,15 +108,14 @@ struct RemoveBannerAdPromoView: View {
             .padding(.horizontal, 32)
             .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
         }
-        .alert("Purchase Issue", isPresented: $showIAPError) {
-            Button("OK") {
-                gameManager.iapLastErrorMessage = nil
-            }
-        } message: {
-            Text(gameManager.iapLastErrorMessage ?? "Unknown error")
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(selectedTier: $selectedTier)
         }
-        .onChange(of: gameManager.iapLastErrorMessage) { _, newValue in
-            showIAPError = (newValue != nil)
+        .onChange(of: selectedTier) { _, newTier in
+            if newTier != nil {
+                // User selected a tier, close this promo view
+                isPresented = false
+            }
         }
     }
 }
