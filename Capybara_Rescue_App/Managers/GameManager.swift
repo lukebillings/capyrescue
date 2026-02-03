@@ -581,6 +581,40 @@ class GameManager: ObservableObject {
         gameState.capybaraName = newName
     }
     
+    // MARK: - Subscription Management
+    func completePaywall(with tier: SubscriptionManager.SubscriptionTier) {
+        gameState.hasCompletedPaywall = true
+        gameState.subscriptionTier = tier.rawValue
+        gameState.lastSubscriptionCheckDate = Date()
+        
+        // Award initial coins based on tier
+        gameState.capycoins = tier.startingCoins
+        
+        // If Pro tier, remove banner ads
+        if tier != .free {
+            gameState.hasRemovedBannerAds = true
+        }
+        
+        print("✅ Paywall completed with \(tier.displayName) tier")
+        print("   Awarded \(tier.startingCoins) coins")
+    }
+    
+    func hasProSubscription() -> Bool {
+        guard let tierString = gameState.subscriptionTier,
+              let tier = SubscriptionManager.SubscriptionTier(rawValue: tierString) else {
+            return false
+        }
+        return tier != .free
+    }
+    
+    func currentSubscriptionTier() -> SubscriptionManager.SubscriptionTier {
+        guard let tierString = gameState.subscriptionTier,
+              let tier = SubscriptionManager.SubscriptionTier(rawValue: tierString) else {
+            return .free
+        }
+        return tier
+    }
+    
     // MARK: - Reset
     func resetGame() {
         gameState = GameState.defaultState

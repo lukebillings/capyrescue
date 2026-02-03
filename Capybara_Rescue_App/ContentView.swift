@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var showAdRemovalPromo = false
     @State private var shouldApplyInitialRotation = false
+    @State private var showPaywall = false
+    @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
 
     private let capybaraVisualOffsetY: CGFloat = -40
     
@@ -31,9 +33,24 @@ struct ContentView: View {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
     }
     
+    private func checkPaywallStatus() {
+        showPaywall = !gameManager.gameState.hasCompletedPaywall
+    }
+    
     var body: some View {
         Group {
-            if showOnboarding {
+            if showPaywall {
+                PaywallView(selectedTier: $selectedSubscriptionTier)
+                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
+                        if let tier = newValue {
+                            // User selected a tier, complete paywall and award initial coins
+                            gameManager.completePaywall(with: tier)
+                            showPaywall = false
+                            // Check if we need to show onboarding next
+                            checkOnboardingStatus()
+                        }
+                    }
+            } else if showOnboarding {
                 OnboardingView(isPresented: $showOnboarding)
                     .environmentObject(gameManager)
                     .onChange(of: showOnboarding) { oldValue, newValue in
@@ -65,7 +82,11 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            checkPaywallStatus()
             checkOnboardingStatus()
+        }
+        .onChange(of: gameManager.gameState.hasCompletedPaywall) { oldValue, newValue in
+            checkPaywallStatus()
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
             checkOnboardingStatus()
