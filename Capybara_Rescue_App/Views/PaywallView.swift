@@ -70,7 +70,6 @@ struct PaywallView: View {
                         badge: "BEST VALUE",
                         badgeColor: Color(hex: "FFD700"),
                         features: [
-                            "15,000 coins starting balance",
                             "10,000 extra coins every month",
                             "No banner ads",
                             "Exclusive Pro items"
@@ -96,7 +95,6 @@ struct PaywallView: View {
                         badge: nil,
                         badgeColor: nil,
                         features: [
-                            "2,000 coins starting balance",
                             "2,000 extra coins every month",
                             "No banner ads",
                             "Exclusive Pro items"
@@ -120,7 +118,6 @@ struct PaywallView: View {
                         badge: nil,
                         badgeColor: nil,
                         features: [
-                            "500 coins starting balance",
                             "Banner ads shown",
                             "Unlock coins via reward ads and achievements"
                         ],
