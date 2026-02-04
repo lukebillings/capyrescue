@@ -572,11 +572,11 @@ class GameManager: ObservableObject {
     }
     
     func shouldShowAdRemovalPromo() -> Bool {
-        // Show every 4th time the app is opened, but only if:
+        // Show every 5th time the app is opened, but only if:
         // 1. User hasn't already purchased ad removal
-        // 2. App has been opened at least a few times (4, 8, 12, etc.)
+        // 2. App has been opened at least a few times (5, 10, 15, etc.)
         guard !gameState.hasRemovedBannerAds else { return false }
-        return gameState.appOpenCount > 0 && gameState.appOpenCount % 4 == 0
+        return gameState.appOpenCount > 0 && gameState.appOpenCount % 5 == 0
     }
     
     func renameCapybara(to newName: String) {

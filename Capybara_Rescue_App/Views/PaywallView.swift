@@ -5,6 +5,7 @@ import StoreKit
 struct PaywallView: View {
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     @Binding var selectedTier: SubscriptionManager.SubscriptionTier?
+    var hideFreeOption: Bool = false // When true, hides the Free tier option
     @State private var isProcessing = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -110,27 +111,29 @@ struct PaywallView: View {
                         selectMonthlyPlan()
                     }
                     
-                    // Free Plan
-                    SubscriptionCard(
-                        tier: .free,
-                        title: "Free",
-                        price: "£0",
-                        priceSubtext: "forever",
-                        priceSubtext2: nil,
-                        badge: nil,
-                        badgeColor: nil,
-                        features: [
-                            "500 coins",
-                            "Banner ads shown",
-                            "Unlock coins via reward ads and achievements"
-                        ],
-                        isFeatured: false,
-                        savings: nil,
-                        rimColor: Color(hex: "CD7F32"),
-                        buttonColor: Color(hex: "B8722C"),
-                        isProcessing: isProcessing
-                    ) {
-                        selectFreePlan()
+                    // Free Plan (only show if not hidden)
+                    if !hideFreeOption {
+                        SubscriptionCard(
+                            tier: .free,
+                            title: "Free",
+                            price: "£0",
+                            priceSubtext: "forever",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            badgeColor: nil,
+                            features: [
+                                "500 coins",
+                                "Banner ads shown",
+                                "Unlock coins via reward ads and achievements"
+                            ],
+                            isFeatured: false,
+                            savings: nil,
+                            rimColor: Color(hex: "CD7F32"),
+                            buttonColor: Color(hex: "B8722C"),
+                            isProcessing: isProcessing
+                        ) {
+                            selectFreePlan()
+                        }
                     }
                     
                     // Restore Purchases Button
