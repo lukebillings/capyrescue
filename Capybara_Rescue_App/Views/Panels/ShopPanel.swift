@@ -274,6 +274,11 @@ struct ShopPanel: View {
                 let productId = tier == .annual ? SubscriptionManager.annualProductId : SubscriptionManager.monthlyProductId
                 try await subscriptionManager.purchaseSubscription(productId: productId)
                 await subscriptionManager.checkSubscriptionStatus()
+                
+                // Upgrade subscription and grant coins
+                gameManager.upgradeSubscription(to: tier)
+                gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
+                
                 HapticManager.shared.purchaseSuccess()
             } catch is CancellationError {
                 // User cancelled, do nothing

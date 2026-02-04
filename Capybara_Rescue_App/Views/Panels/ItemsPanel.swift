@@ -29,7 +29,9 @@ struct ItemsPanel: View {
                 PaywallView(selectedTier: $selectedSubscriptionTier)
                     .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
                         if let tier = newValue {
-                            gameManager.completePaywall(with: tier)
+                            // Use upgradeSubscription to ADD coins, not override
+                            gameManager.upgradeSubscription(to: tier)
+                            gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
                             showPaywall = false
                             selectedSubscriptionTier = nil
                         }

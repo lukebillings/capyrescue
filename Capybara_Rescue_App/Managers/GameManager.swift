@@ -584,12 +584,17 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Subscription Management
+    
+    /// Completes the initial paywall on first app launch.
+    /// This SETS the coin balance to the tier's starting amount (does not add).
+    /// Use this ONLY for the first-time paywall in ContentView.
+    /// For subscription upgrades after the user is already in the game, use `upgradeSubscription(to:)` instead.
     func completePaywall(with tier: SubscriptionManager.SubscriptionTier) {
         gameState.hasCompletedPaywall = true
         gameState.subscriptionTier = tier.rawValue
         gameState.lastSubscriptionCheckDate = Date()
         
-        // Award initial coins based on tier
+        // Award initial coins based on tier (SET to exact amount, not add)
         gameState.capycoins = tier.startingCoins
         
         // If Pro tier, remove banner ads and unlock Pro items
@@ -599,7 +604,31 @@ class GameManager: ObservableObject {
         }
         
         print("✅ Paywall completed with \(tier.displayName) tier")
-        print("   Awarded \(tier.startingCoins) coins")
+        print("   Set coins to \(tier.startingCoins)")
+    }
+    
+    /// Upgrades the user's subscription tier and grants coins.
+    /// This ADDS the tier's starting coins to the user's existing balance (does not override).
+    /// Use this when user purchases a subscription from the shop or upgrades after initial paywall.
+    func upgradeSubscription(to tier: SubscriptionManager.SubscriptionTier) {
+        let previousTier = currentSubscriptionTier()
+        
+        // Update subscription tier
+        gameState.subscriptionTier = tier.rawValue
+        gameState.lastSubscriptionCheckDate = Date()
+        
+        // Award initial coins (ADD to existing balance, don't override)
+        gameState.capycoins += tier.startingCoins
+        
+        // If Pro tier, remove banner ads and unlock Pro items
+        if tier != .free {
+            gameState.hasRemovedBannerAds = true
+            unlockProItemsIfNeeded()
+        }
+        
+        print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
+        print("   Added \(tier.startingCoins) coins to balance")
+        print("   New balance: \(gameState.capycoins) coins")
     }
     
     func hasProSubscription() -> Bool {
