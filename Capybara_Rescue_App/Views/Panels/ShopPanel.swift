@@ -51,7 +51,7 @@ struct ShopPanel: View {
                                 "15,000 coins",
                                 "10,000 extra coins every month",
                                 "No banner ads",
-                                "Exclusive Pro items"
+                                "Access exclusive items while subscribed"
                             ],
                             isFeatured: true,
                             savings: "Save \(subscriptionManager.annualSavingsPercentage())% compared with monthly",
@@ -75,7 +75,7 @@ struct ShopPanel: View {
                                 "2,000 coins",
                                 "2,000 extra coins every month",
                                 "No banner ads",
-                                "Exclusive Pro items"
+                                "Access exclusive items while subscribed"
                             ],
                             isFeatured: false,
                             savings: nil,
