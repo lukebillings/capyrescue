@@ -27,8 +27,12 @@
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		7AF44475E591A27725D43264 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */; };
 		812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */; };
+		812FAA352F325E8C00EE08F7 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */; };
 		815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 815001F62F0EC7DE00CFB91C /* StoreKit.framework */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
+		81B4600F2F325EB500F10BC3 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B4600E2F325EB500F10BC3 /* PaywallView.swift */; };
+		81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460102F328CB300F10BC3 /* Pizza Hat.usdz */; };
+		81B460132F328CB300F10BC3 /* Cone.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460112F328CB300F10BC3 /* Cone.usdz */; };
 		81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */; };
 		81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */; };
 		81FA1C332EF1C0180060CEF1 /* Wizard hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C302EF1C0180060CEF1 /* Wizard hat.usdz */; };
@@ -75,8 +79,12 @@
 		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
 		8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cowboy Hat 2.usdz"; sourceTree = "<group>"; };
+		812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		815001F62F0EC7DE00CFB91C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capybara_Rescue_App.entitlements; sourceTree = "<group>"; };
+		81B4600E2F325EB500F10BC3 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		81B460102F328CB300F10BC3 /* Pizza Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pizza Hat.usdz"; sourceTree = "<group>"; };
+		81B460112F328CB300F10BC3 /* Cone.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Cone.usdz; sourceTree = "<group>"; };
 		81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Baseball cap.usdz"; sourceTree = "<group>"; };
 		81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fox Hat.usdz"; sourceTree = "<group>"; };
 		81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Frog Hat.usdz"; sourceTree = "<group>"; };
@@ -172,6 +180,8 @@
 			isa = PBXGroup;
 			children = (
 				815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */,
+				81B460112F328CB300F10BC3 /* Cone.usdz */,
+				81B460102F328CB300F10BC3 /* Pizza Hat.usdz */,
 				8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */,
 				81FA1C3A2EF1C0660060CEF1 /* Sombrero2hat.usdz */,
 				81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */,
@@ -199,6 +209,7 @@
 		6D2BB6A2FF5FD49AD0097E35 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				81B4600E2F325EB500F10BC3 /* PaywallView.swift */,
 				6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */,
 				0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */,
@@ -221,6 +232,7 @@
 		9BEDE4BB3DECEF702C4B0BCD /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */,
 				A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */,
 				F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */,
 				664E587C6368CC37B1D7089B /* ConsentManager.swift */,
@@ -314,6 +326,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */,
+				81B460132F328CB300F10BC3 /* Cone.usdz in Resources */,
 				81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */,
 				81FA1C3B2EF1C0660060CEF1 /* Sombrero2hat.usdz in Resources */,
 				81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */,
@@ -338,6 +352,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */,
+				81B4600F2F325EB500F10BC3 /* PaywallView.swift in Sources */,
 				0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */,
 				23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */,
 				F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */,
@@ -346,6 +361,7 @@
 				81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */,
 				87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */,
 				9CD6D3F9FBA0D623722D4F23 /* CapybaraViewSwitch.swift in Sources */,
+				812FAA352F325E8C00EE08F7 /* SubscriptionManager.swift in Sources */,
 				DCD78B01254A8CD1A53B9C1C /* Capybara_Rescue_AppApp.swift in Sources */,
 				FE8F2C04A76B19DDB0874226 /* CircularProgressView.swift in Sources */,
 				C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */,
@@ -381,7 +397,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -399,7 +415,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.06;
+				MARKETING_VERSION = 1.07;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -415,7 +431,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -433,7 +449,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.06;
+				MARKETING_VERSION = 1.07;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
