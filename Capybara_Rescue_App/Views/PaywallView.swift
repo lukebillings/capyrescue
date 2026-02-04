@@ -151,14 +151,14 @@ struct PaywallView: View {
                             .multilineTextAlignment(.center)
                         
                         HStack(spacing: 16) {
-                            Button(action: { openURL("https://example.com/terms") }) {
-                                Text("Terms of Service")
+                            Button(action: { openURL("https://lukebillings.github.io/capyrescue/termsandconditions/") }) {
+                                Text("Terms & Conditions")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(.white.opacity(0.4))
                                     .underline()
                             }
                             
-                            Button(action: { openURL("https://example.com/privacy") }) {
+                            Button(action: { openURL("https://lukebillings.github.io/capyrescue/privacypolicy/") }) {
                                 Text("Privacy Policy")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(.white.opacity(0.4))

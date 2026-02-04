@@ -96,8 +96,8 @@ struct ShopPanel: View {
                             .multilineTextAlignment(.center)
                         
                         HStack(spacing: 8) {
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/termsandconditions/")!) {
-                                Text("Terms of Service")
+                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                Text("Terms & Conditions")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
                             }
@@ -106,7 +106,7 @@ struct ShopPanel: View {
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(.white.opacity(0.5))
                             
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/privacypolicy/")!) {
+                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
                                 Text("Privacy Policy")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
@@ -197,8 +197,8 @@ struct ShopPanel: View {
                             .multilineTextAlignment(.center)
                         
                         HStack(spacing: 8) {
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/termsandconditions/")!) {
-                                Text("Terms of Service")
+                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                Text("Terms & Conditions")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
                             }
@@ -207,7 +207,7 @@ struct ShopPanel: View {
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(.white.opacity(0.5))
                             
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/privacypolicy/")!) {
+                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
                                 Text("Privacy Policy")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
