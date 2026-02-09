@@ -3,9 +3,11 @@ import StoreKit
 
 // MARK: - Paywall View
 struct PaywallView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var subscriptionManager = SubscriptionManager.shared
     @Binding var selectedTier: SubscriptionManager.SubscriptionTier?
     var hideFreeOption: Bool = false // When true, hides the Free tier option
+    var showDismissButton: Bool = false // When true, shows X button to dismiss
     @State private var isProcessing = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -19,6 +21,22 @@ struct PaywallView: View {
             
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
+                    // Dismiss button (when shown via sheet)
+                    if showDismissButton {
+                        HStack {
+                            Spacer()
+                            Button(action: {
+                                dismiss()
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundStyle(.white.opacity(0.6))
+                            }
+                            .padding(.trailing, 8)
+                        }
+                        .padding(.top, 8)
+                    }
+                    
                     // Header
                     VStack(spacing: 12) {
                         Image("iconcapybara")
@@ -146,23 +164,40 @@ struct PaywallView: View {
                     .disabled(isProcessing)
                     .padding(.top, 8)
                     
-                    // Legal text
-                    VStack(spacing: 8) {
-                        Text("Subscriptions auto-renew unless cancelled 24 hours before period ends. Cancel anytime in iPhone Settings.")
+                    // Legal text - Apple Compliance
+                    VStack(spacing: 10) {
+                        // Auto-renewal information
+                        Text("Payment will be charged to your iTunes Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundColor(.white.opacity(0.4))
                             .multilineTextAlignment(.center)
                         
-                        HStack(spacing: 16) {
-                            Button(action: { openURL("https://lukebillings.github.io/capyrescue/termsandconditions/") }) {
-                                Text("Terms & Conditions")
-                                    .font(.system(size: 11, weight: .regular))
-                                    .foregroundColor(.white.opacity(0.4))
-                                    .underline()
+                        // Cancellation information
+                        Text("Cancel anytime in App Store settings. Your account will be charged for renewal within 24 hours prior to the end of the current period.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(.white.opacity(0.4))
+                            .multilineTextAlignment(.center)
+                        
+                        // Legal links
+                        VStack(spacing: 8) {
+                            HStack(spacing: 16) {
+                                Button(action: { openURL("https://lukebillings.github.io/capyrescue/privacypolicy/") }) {
+                                    Text("Privacy Policy")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundColor(.white.opacity(0.4))
+                                        .underline()
+                                }
+                                
+                                Button(action: { openURL("https://lukebillings.github.io/capyrescue/termsandconditions/") }) {
+                                    Text("Terms and Conditions")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundColor(.white.opacity(0.4))
+                                        .underline()
+                                }
                             }
                             
-                            Button(action: { openURL("https://lukebillings.github.io/capyrescue/privacypolicy/") }) {
-                                Text("Privacy Policy")
+                            Button(action: { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }) {
+                                Text("Terms of Use (EULA)")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(.white.opacity(0.4))
                                     .underline()

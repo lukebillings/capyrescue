@@ -88,26 +88,42 @@ struct ShopPanel: View {
                     }
                     .padding(.horizontal, 16)
                     
-                    // Subscription disclaimers
-                    VStack(spacing: 6) {
-                        Text("Subscriptions auto-renew unless cancelled 24 hours before period ends. Cancel anytime in iPhone Settings.")
+                    // Subscription disclaimers - Apple Compliance
+                    VStack(spacing: 8) {
+                        // Auto-renewal information
+                        Text("Payment will be charged to your iTunes Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundStyle(.white.opacity(0.5))
                             .multilineTextAlignment(.center)
                         
-                        HStack(spacing: 8) {
-                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                                Text("Terms & Conditions")
+                        // Cancellation information
+                        Text("Cancel anytime in App Store settings. Your account will be charged for renewal within 24 hours prior to the end of the current period.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                        
+                        // Legal links
+                        VStack(spacing: 6) {
+                            HStack(spacing: 8) {
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
+                                    Text("Privacy Policy")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                                
+                                Text("•")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
+                                
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                    Text("Terms and Conditions")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
                             }
                             
-                            Text("•")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(.white.opacity(0.5))
-                            
-                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
-                                Text("Privacy Policy")
+                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                                Text("Terms of Use (EULA)")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
                             }
@@ -185,7 +201,7 @@ struct ShopPanel: View {
                     .padding(.horizontal, 16)
                     
                     // Purchase disclaimers
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         Text("Purchases are processed by Apple. Refunds handled via Apple Support.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundStyle(.white.opacity(0.5))
@@ -196,19 +212,28 @@ struct ShopPanel: View {
                             .foregroundStyle(.white.opacity(0.5))
                             .multilineTextAlignment(.center)
                         
-                        HStack(spacing: 8) {
-                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                                Text("Terms & Conditions")
+                        // Legal links
+                        VStack(spacing: 6) {
+                            HStack(spacing: 8) {
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
+                                    Text("Privacy Policy")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                                
+                                Text("•")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
+                                
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                    Text("Terms and Conditions")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
                             }
                             
-                            Text("•")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(.white.opacity(0.5))
-                            
-                            Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
-                                Text("Privacy Policy")
+                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                                Text("Terms of Use (EULA)")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
                             }

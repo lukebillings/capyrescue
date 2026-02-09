@@ -109,7 +109,7 @@ struct RemoveBannerAdPromoView: View {
             .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView(selectedTier: $selectedTier, hideFreeOption: true)
+            PaywallView(selectedTier: $selectedTier, hideFreeOption: true, showDismissButton: true)
         }
         .onChange(of: selectedTier) { _, newTier in
             if newTier != nil {

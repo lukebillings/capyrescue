@@ -26,7 +26,7 @@ struct ItemsPanel: View {
             .overlay(looksGoodModalOverlay)
             .overlay(hatEquipErrorOverlay)
             .sheet(isPresented: $showPaywall) {
-                PaywallView(selectedTier: $selectedSubscriptionTier)
+                PaywallView(selectedTier: $selectedSubscriptionTier, hideFreeOption: true, showDismissButton: true)
                     .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
                         if let tier = newValue {
                             // Use upgradeSubscription to ADD coins, not override
