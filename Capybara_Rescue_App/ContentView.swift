@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var shouldApplyInitialRotation = false
     @State private var showPaywall = false
     @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
+    @State private var showCNYPopup = false
 
     private let capybaraVisualOffsetY: CGFloat = -40
     
@@ -110,6 +111,13 @@ struct ContentView: View {
                             // Small delay to ensure UI is ready
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                 showAdRemovalPromo = true
+                            }
+                        }
+                        
+                        // Check if we should show CNY popup
+                        if shouldShowChineseNewYearTheme && !gameManager.gameState.hasSeenCNY2026Popup {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                showCNYPopup = true
                             }
                         }
                     }
@@ -390,6 +398,15 @@ struct ContentView: View {
                 if showAdRemovalPromo {
                     RemoveBannerAdPromoView(isPresented: $showAdRemovalPromo)
                         .zIndex(202) // Above everything
+                }
+                
+                // Chinese New Year popup
+                if showCNYPopup {
+                    ChineseNewYearPopup(onDismiss: {
+                        showCNYPopup = false
+                        gameManager.markCNYPopupSeen()
+                    })
+                    .zIndex(203) // Above everything
                 }
             }
             .coordinateSpace(name: "main")
@@ -763,6 +780,173 @@ struct ChineseNewYearBackground: View {
             .opacity(0.12)
             .offset(x: xOffset, y: yOffset)
             .rotationEffect(.degrees(rotation))
+    }
+}
+
+// MARK: - Chinese New Year Popup
+struct ChineseNewYearPopup: View {
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            // Semi-transparent background
+            Color.black.opacity(0.7)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onDismiss()
+                }
+            
+            // Popup card
+            VStack(spacing: 24) {
+                // Title with lantern emoji
+                VStack(spacing: 8) {
+                    Text("🏮")
+                        .font(.system(size: 60))
+                    
+                    Text("Celebrate Chinese New Year!")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .multilineTextAlignment(.center)
+                    
+                    Text("New Limited-Time Items")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                
+                // Items list
+                VStack(alignment: .leading, spacing: 16) {
+                    CNYItemRow(emoji: "🥠", category: "Food", name: "Fortune Cookie")
+                    CNYItemRow(emoji: "🫖", category: "Drinks", name: "Jasmine Tea")
+                    CNYItemRow(emoji: "🏮", category: "Items", name: "Red Lantern")
+                }
+                .padding(.horizontal, 20)
+                
+                // Close button
+                Button(action: {
+                    HapticManager.shared.buttonPress()
+                    onDismiss()
+                }) {
+                    Text("Let's Celebrate!")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "DC143C"), Color(hex: "8B0000")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(16)
+                        .shadow(color: Color(hex: "DC143C").opacity(0.5), radius: 8, x: 0, y: 4)
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.vertical, 32)
+            .padding(.horizontal, 24)
+            .background(
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "1a1a2e"),
+                                Color(hex: "16213e")
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 28)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.3)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+                    .shadow(color: Color(hex: "FFD700").opacity(0.3), radius: 20, x: 0, y: 10)
+            )
+            .padding(.horizontal, 32)
+        }
+    }
+}
+
+// MARK: - CNY Item Row
+struct CNYItemRow: View {
+    let emoji: String
+    let category: String
+    let name: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Emoji in circle
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "FFD700").opacity(0.3), Color(hex: "FFA500").opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 50, height: 50)
+                
+                Text(emoji)
+                    .font(.system(size: 28))
+            }
+            
+            // Text info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                HStack(spacing: 6) {
+                    Text("in")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                    
+                    Text(category)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                }
+            }
+            
+            Spacer()
+            
+            // NEW badge
+            Text("NEW!")
+                .font(.system(size: 11, weight: .black, design: .rounded))
+                .foregroundStyle(Color(hex: "8B0000"))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+        }
     }
 }
 

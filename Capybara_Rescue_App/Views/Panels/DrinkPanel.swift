@@ -208,9 +208,54 @@ struct DrinkItemButton: View {
                     )
             )
             .opacity(canAfford ? 1 : 0.6)
+            .overlay(
+                // Chinese New Year "NEW!" badge for Jasmine Tea
+                Group {
+                    if item.name == "Jasmine Tea" && Date.isChineseNewYearEvent2026() {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Text("NEW!")
+                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .foregroundStyle(Color(hex: "8B0000"))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                    )
+                                    .offset(x: -5, y: 5)
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            )
         }
         .buttonStyle(ScaleButtonStyle())
         .disabled(!canAfford)
+        .overlay(
+            // Gold ring for CNY items
+            Group {
+                if item.name == "Jasmine Tea" && Date.isChineseNewYearEvent2026() {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                }
+            }
+        )
     }
 }
 

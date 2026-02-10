@@ -24,13 +24,14 @@ struct GameState: Codable {
     var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
+    var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
-        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate
+        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
     }
     
     // Custom decoding for backward compatibility
@@ -57,6 +58,7 @@ struct GameState: Codable {
         hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
+        hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -96,6 +98,7 @@ struct GameState: Codable {
         try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
+        try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
     }
     
     // Manual initializer for default state
@@ -121,7 +124,8 @@ struct GameState: Codable {
         hasCompletedTutorial: Bool,
         hasCompletedPaywall: Bool,
         subscriptionTier: String?,
-        lastSubscriptionCheckDate: Date?
+        lastSubscriptionCheckDate: Date?,
+        hasSeenCNY2026Popup: Bool
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -145,6 +149,7 @@ struct GameState: Codable {
         self.hasCompletedPaywall = hasCompletedPaywall
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
+        self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
     }
     
     static let defaultState = GameState(
@@ -169,7 +174,8 @@ struct GameState: Codable {
         hasCompletedTutorial: false,
         hasCompletedPaywall: false,
         subscriptionTier: nil,
-        lastSubscriptionCheckDate: nil
+        lastSubscriptionCheckDate: nil,
+        hasSeenCNY2026Popup: false
     )
     
     var hasActiveSubscription: Bool {
@@ -393,6 +399,40 @@ enum MenuTab: String, CaseIterable {
         case .items: return "tshirt.fill"
         case .shop: return "cart.fill"
         }
+    }
+}
+
+// MARK: - Date Extension for Chinese New Year Event
+extension Date {
+    static func isChineseNewYearEvent2026() -> Bool {
+        let now = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Start: Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        // End: Tuesday 24 February 2026 — 10:00 AM GMT
+        var endComponents = DateComponents()
+        endComponents.year = 2026
+        endComponents.month = 2
+        endComponents.day = 24
+        endComponents.hour = 10
+        endComponents.minute = 0
+        endComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents),
+              let endDate = calendar.date(from: endComponents) else {
+            return false
+        }
+        
+        return now >= startDate && now < endDate
     }
 }
 

@@ -571,6 +571,10 @@ class GameManager: ObservableObject {
         gameState.appOpenCount += 1
     }
     
+    func markCNYPopupSeen() {
+        gameState.hasSeenCNY2026Popup = true
+    }
+    
     func shouldShowAdRemovalPromo() -> Bool {
         // Show every 5th time the app is opened, but only if:
         // 1. User hasn't already purchased ad removal
