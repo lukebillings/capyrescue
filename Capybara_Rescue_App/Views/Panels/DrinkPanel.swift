@@ -12,6 +12,17 @@ struct DrinkPanel: View {
         self.onBack = onBack
     }
     
+    // Filter items - show CNY items from Feb 13 onwards
+    private var availableDrinkItems: [DrinkItem] {
+        DrinkItem.allItems.filter { item in
+            // Jasmine Tea appears from Feb 13 onwards (stays forever)
+            if item.name == "Jasmine Tea" {
+                return Date.shouldShowCNYItems2026()
+            }
+            return true
+        }
+    }
+    
     var body: some View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
@@ -20,7 +31,7 @@ struct DrinkPanel: View {
                     // Drink items - horizontal scrolling row
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(DrinkItem.allItems) { item in
+                            ForEach(availableDrinkItems) { item in
                                 DrinkItemButton(
                                     item: item,
                                     canAfford: gameManager.canAfford(item.cost)
@@ -80,7 +91,7 @@ struct DrinkPanel: View {
                         // Drink items - horizontal scrolling row
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
-                                ForEach(DrinkItem.allItems) { item in
+                                ForEach(availableDrinkItems) { item in
                                     DrinkItemButton(
                                         item: item,
                                         canAfford: gameManager.canAfford(item.cost)

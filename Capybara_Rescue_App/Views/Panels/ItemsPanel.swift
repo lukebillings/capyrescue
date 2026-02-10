@@ -256,8 +256,19 @@ struct ItemsPanel: View {
             print("⚠️ No accessory items available")
             return []
         }
+        
+        // Filter CNY items - Red Lantern appears from Feb 13 onwards (stays forever)
+        // OR if user already owns it, keep showing it
+        let filtered = AccessoryItem.allItems.filter { item in
+            if item.id == "redlantern" {
+                return Date.shouldShowCNYItems2026() || 
+                       gameManager.gameState.ownedAccessories.contains(item.id)
+            }
+            return true
+        }
+        
         // Sort items by price (cost) in ascending order
-        return AccessoryItem.allItems.sorted { $0.cost < $1.cost }
+        return filtered.sorted { $0.cost < $1.cost }
     }
     
     private func handleItemAction(_ item: AccessoryItem) {

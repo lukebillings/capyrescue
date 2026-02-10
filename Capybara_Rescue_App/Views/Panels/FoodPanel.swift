@@ -13,6 +13,17 @@ struct FoodPanel: View {
         self.onBack = onBack
     }
     
+    // Filter items - show CNY items from Feb 13 onwards
+    private var availableFoodItems: [FoodItem] {
+        FoodItem.allItems.filter { item in
+            // Fortune Cookie appears from Feb 13 onwards (stays forever)
+            if item.name == "Fortune Cookie" {
+                return Date.shouldShowCNYItems2026()
+            }
+            return true
+        }
+    }
+    
     var body: some View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
@@ -21,7 +32,7 @@ struct FoodPanel: View {
                     // Food items - horizontal scrolling row
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(FoodItem.allItems) { item in
+                            ForEach(availableFoodItems) { item in
                                 FoodItemButton(
                                     item: item,
                                     canAfford: gameManager.canAfford(item.cost)
@@ -81,7 +92,7 @@ struct FoodPanel: View {
                         // Food items - horizontal scrolling row
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
-                                ForEach(FoodItem.allItems) { item in
+                                ForEach(availableFoodItems) { item in
                                     FoodItemButton(
                                         item: item,
                                         canAfford: gameManager.canAfford(item.cost)

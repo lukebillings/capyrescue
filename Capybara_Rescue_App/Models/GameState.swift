@@ -404,6 +404,7 @@ enum MenuTab: String, CaseIterable {
 
 // MARK: - Date Extension for Chinese New Year Event
 extension Date {
+    // Check if it's during the CNY event (for popup, background, badges)
     static func isChineseNewYearEvent2026() -> Bool {
         let now = Date()
         var calendar = Calendar.current
@@ -433,6 +434,29 @@ extension Date {
         }
         
         return now >= startDate && now < endDate
+    }
+    
+    // Check if CNY items should be visible (from Feb 13 onwards, forever)
+    static func shouldShowCNYItems2026() -> Bool {
+        let now = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Items appear starting Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents) else {
+            return false
+        }
+        
+        // Show items from start date onwards (no end date)
+        return now >= startDate
     }
 }
 
