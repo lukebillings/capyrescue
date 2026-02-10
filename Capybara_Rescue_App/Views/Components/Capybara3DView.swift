@@ -223,6 +223,8 @@ struct RealityKitView: UIViewRepresentable {
     private static let coneScale: SIMD3<Float> = [1.2, 1.2, 1.2]
     private static let pizzahatPosition: SIMD3<Float> = [0, 4.25, 2.4]
     private static let pizzahatScale: SIMD3<Float> = [3.0, 3.0, 3.0]
+    private static let redlanternPosition: SIMD3<Float> = [0, 5.5, 2.1]
+    private static let redlanternScale: SIMD3<Float> = [2.5, 2.5, 2.5]
     
     private func hatPosition(for hatId: String?) -> SIMD3<Float> {
         guard let hatId = hatId else { return Self.hatPosition }
@@ -252,6 +254,8 @@ struct RealityKitView: UIViewRepresentable {
             return Self.conePosition
         case "pizzahat":
             return Self.pizzahatPosition
+        case "redlantern":
+            return Self.redlanternPosition
         default:
             return Self.hatPosition
         }
@@ -285,6 +289,8 @@ struct RealityKitView: UIViewRepresentable {
             return Self.coneScale
         case "pizzahat":
             return Self.pizzahatScale
+        case "redlantern":
+            return Self.redlanternScale
         default:
             return Self.tophatScale
         }
@@ -298,7 +304,7 @@ struct RealityKitView: UIViewRepresentable {
             // Rotate 90 degrees around Y axis to face forward
             return simd_quatf(angle: Float.pi / 2, axis: [0, 1, 0])
         case "pizzahat":
-            // Rotate 90 degrees around Z axis to lay flat, then flip 180 degrees
+            // Rotate 90 degrees around Z axis to lay flat
             return simd_quatf(angle: Float.pi / 2, axis: [0, 0, 1])
         default:
             return simd_quatf(ix: 0, iy: 0, iz: 0, r: 1) // No rotation for other hats

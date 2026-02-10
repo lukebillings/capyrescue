@@ -622,6 +622,8 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return 0.4
         } else if fileName.contains("Pizza") {
             return 0.5
+        } else if fileName.contains("red-lantern") {
+            return 0.6
         } else {
             return 0.2 // Default
         }

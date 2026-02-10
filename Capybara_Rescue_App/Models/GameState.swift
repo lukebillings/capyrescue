@@ -152,7 +152,7 @@ struct GameState: Codable {
         food: 60,
         drink: 60,
         happiness: 60,
-        capycoins: 0, // Will be set based on subscription tier chosen
+        capycoins: 500,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -267,7 +267,8 @@ struct AccessoryItem: Identifiable, Equatable {
             "foxhat",
             "santahat",
             "cone",
-            "pizzahat"
+            "pizzahat",
+            "redlantern"
         ]
         
         return hatIds.contains(id)
@@ -288,6 +289,7 @@ struct AccessoryItem: Identifiable, Equatable {
         // Pro-Only Hats (modelFileName must match exact file name without .usdz extension)
         AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 0, modelFileName: "Cone", isProOnly: true),
         AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 0, modelFileName: "Pizza Hat", isProOnly: true),
+        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 0, modelFileName: "red-lantern", isProOnly: true),
     ]
     
     static var allItems: [AccessoryItem] {
