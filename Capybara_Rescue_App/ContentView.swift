@@ -21,6 +21,40 @@ struct ContentView: View {
 
     private let capybaraVisualOffsetY: CGFloat = -40
     
+    // Chinese New Year background date checking
+    private var shouldShowChineseNewYearTheme: Bool {
+        let now = Date()
+        
+        // Create date components in GMT timezone
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Start: Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        // End: Tuesday 24 February 2026 — 10:00 AM GMT
+        var endComponents = DateComponents()
+        endComponents.year = 2026
+        endComponents.month = 2
+        endComponents.day = 24
+        endComponents.hour = 10
+        endComponents.minute = 0
+        endComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents),
+              let endDate = calendar.date(from: endComponents) else {
+            return false
+        }
+        
+        return now >= startDate && now < endDate
+    }
+    
     private func checkTutorialStatus() {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
         let hasCompletedTutorial = gameManager.gameState.hasCompletedTutorial
@@ -96,9 +130,14 @@ struct ContentView: View {
     private var mainContentView: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background
-                AnimatedBackground()
-                    .ignoresSafeArea()
+                // Background - switches between CNY and regular theme
+                if shouldShowChineseNewYearTheme {
+                    ChineseNewYearBackground()
+                        .ignoresSafeArea()
+                } else {
+                    AnimatedBackground()
+                        .ignoresSafeArea()
+                }
                 
                 // Main content
                 VStack(spacing: 0) {
@@ -488,8 +527,99 @@ struct ShopSheetView: View {
     }
 }
 
-// MARK: - Animated Background (Chinese New Year Theme - Year of the Horse)
+// MARK: - Regular Animated Background (Purple Theme)
 struct AnimatedBackground: View {
+    @State private var phase: CGFloat = 0
+    
+    var body: some View {
+        ZStack {
+            // Base gradient - Original purple theme
+            LinearGradient(
+                colors: [
+                    Color(hex: "0f0c29"),
+                    Color(hex: "302b63"),
+                    Color(hex: "24243e")
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            // Animated orbs
+            GeometryReader { geometry in
+                ZStack {
+                    // Large purple orb 1
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.purple.opacity(0.3),
+                                    Color.purple.opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 200
+                            )
+                        )
+                        .frame(width: 400, height: 400)
+                        .offset(
+                            x: sin(phase) * 30 - 100,
+                            y: cos(phase * 0.7) * 40 - 200
+                        )
+                    
+                    // Large blue orb 2
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color.blue.opacity(0.2),
+                                    Color.blue.opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 250
+                            )
+                        )
+                        .frame(width: 500, height: 500)
+                        .offset(
+                            x: cos(phase * 0.8) * 40 + 100,
+                            y: sin(phase * 0.6) * 50 + 200
+                        )
+                    
+                    // Small gold accent orb
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [
+                                    Color(hex: "FFD700").opacity(0.15),
+                                    Color(hex: "FFD700").opacity(0)
+                                ],
+                                center: .center,
+                                startRadius: 0,
+                                endRadius: 100
+                            )
+                        )
+                        .frame(width: 200, height: 200)
+                        .offset(
+                            x: sin(phase * 1.2) * 50,
+                            y: cos(phase) * 30 + 100
+                        )
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+            }
+        }
+        .onAppear {
+            withAnimation(
+                .linear(duration: 10)
+                .repeatForever(autoreverses: false)
+            ) {
+                phase = .pi * 2
+            }
+        }
+    }
+}
+
+// MARK: - Chinese New Year Background (Year of the Horse)
+struct ChineseNewYearBackground: View {
     @State private var phase: CGFloat = 0
     @State private var lanternPhase: CGFloat = 0
     
