@@ -211,7 +211,8 @@ struct FoodItem: Identifiable, Equatable {
         FoodItem(emoji: "🍉", name: "Watermelon", foodValue: 25, cost: 5),
         FoodItem(emoji: "🌽", name: "Corn", foodValue: 36, cost: 6),
         FoodItem(emoji: "🥒", name: "Cucumber", foodValue: 49, cost: 7),
-        FoodItem(emoji: "🍇", name: "Grapes", foodValue: 64, cost: 8)
+        FoodItem(emoji: "🍇", name: "Grapes", foodValue: 64, cost: 8),
+        FoodItem(emoji: "🥠", name: "Fortune Cookie", foodValue: 81, cost: 9)
     ]
 }
 
@@ -230,7 +231,8 @@ struct DrinkItem: Identifiable, Equatable {
         DrinkItem(emoji: "🥥", name: "Coconut Water", drinkValue: 16, cost: 4),
         DrinkItem(emoji: "🍵", name: "Matcha Tea", drinkValue: 25, cost: 5),
         DrinkItem(emoji: "🧋", name: "Bubble Tea", drinkValue: 36, cost: 6),
-        DrinkItem(emoji: "🍹", name: "Fruit Smoothie", drinkValue: 49, cost: 7)
+        DrinkItem(emoji: "🍹", name: "Fruit Smoothie", drinkValue: 49, cost: 7),
+        DrinkItem(emoji: "🫖", name: "Jasmine Tea", drinkValue: 64, cost: 8)
     ]
 }
 
