@@ -12,6 +12,8 @@ struct ItemsPanel: View {
     @State private var showInsufficientCoinsMessage: Bool = false
     @State private var showLooksGoodModal: Bool = false
     @State private var showHatEquipError: Bool = false
+    @State private var showPaywall: Bool = false
+    @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
     
     init(onBack: (() -> Void)? = nil, onOpenShop: (() -> Void)? = nil) {
         self.onBack = onBack
@@ -23,6 +25,18 @@ struct ItemsPanel: View {
             .overlay(insufficientCoinsOverlay)
             .overlay(looksGoodModalOverlay)
             .overlay(hatEquipErrorOverlay)
+            .sheet(isPresented: $showPaywall) {
+                PaywallView(selectedTier: $selectedSubscriptionTier, hideFreeOption: true, showDismissButton: true)
+                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
+                        if let tier = newValue {
+                            // Use upgradeSubscription to ADD coins, not override
+                            gameManager.upgradeSubscription(to: tier)
+                            gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
+                            showPaywall = false
+                            selectedSubscriptionTier = nil
+                        }
+                    }
+            }
     }
     
     private var mainContent: some View {
@@ -39,7 +53,8 @@ struct ItemsPanel: View {
                                     isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
                                     isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
                                     canAfford: gameManager.canAfford(item.cost),
-                                    isPreviewing: previewingItemId == item.id
+                                    isPreviewing: previewingItemId == item.id,
+                                    hasPro: gameManager.hasProSubscription()
                                 ) {
                                     handleItemAction(item)
                                 }
@@ -102,7 +117,8 @@ struct ItemsPanel: View {
                                         isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
                                         isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
                                         canAfford: gameManager.canAfford(item.cost),
-                                        isPreviewing: previewingItemId == item.id
+                                        isPreviewing: previewingItemId == item.id,
+                                        hasPro: gameManager.hasProSubscription()
                                     ) {
                                         handleItemAction(item)
                                     }
@@ -251,6 +267,27 @@ struct ItemsPanel: View {
             return
         }
         
+        // Check if item is Pro-only and user doesn't have Pro
+        if item.isProOnly && !gameManager.hasProSubscription() {
+            // Allow preview
+            if previewingItemId == item.id {
+                // Second click - show paywall
+                HapticManager.shared.buttonPress()
+                showPaywall = true
+            } else {
+                // First click - preview it (same as regular items)
+                HapticManager.shared.selection()
+                
+                // Clear previous modals
+                showInsufficientCoinsMessage = false
+                showLooksGoodModal = false
+                
+                previewingItemId = item.id
+                gameManager.previewAccessory(item.id)
+            }
+            return
+        }
+        
         if gameManager.gameState.ownedAccessories.contains(item.id) {
             // Check if this is a hat and if another hat is already equipped
             if item.isHat {
@@ -362,6 +399,7 @@ struct AccessoryItemButton: View {
     let isEquipped: Bool
     let canAfford: Bool
     let isPreviewing: Bool
+    let hasPro: Bool
     let action: () -> Void
     
     var body: some View {
@@ -396,6 +434,32 @@ struct AccessoryItemButton: View {
                             .background(Circle().fill(.black))
                             .offset(x: 25, y: -25)
                     }
+                    
+                    // Pro badge for Pro-only items
+                    if item.isProOnly && !hasPro {
+                        VStack {
+                            Spacer()
+                            HStack {
+                                Spacer()
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .background(
+                                        Circle()
+                                            .fill(Color.black.opacity(0.7))
+                                            .frame(width: 24, height: 24)
+                                    )
+                                    .offset(x: -5, y: -5)
+                            }
+                        }
+                        .frame(width: 70, height: 70)
+                    }
                 }
                 
                 // Name
@@ -411,6 +475,42 @@ struct AccessoryItemButton: View {
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(isEquipped ? .green : .white.opacity(0.8))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                } else if item.isProOnly && !hasPro {
+                    // Pro-only item without subscription
+                    if isPreviewing {
+                        Text("Unlock on Pro")
+                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                    } else {
+                        VStack(spacing: 2) {
+                            HStack(spacing: 2) {
+                                Image(systemName: "crown.fill")
+                                    .font(.system(size: 10))
+                                Text("PRO")
+                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                            }
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                            
+                            Text("Tap to Preview")
+                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.green)
+                                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                        }
+                    }
                 } else {
                     if isPreviewing {
                         Text("Tap to buy")
@@ -463,6 +563,8 @@ struct AccessoryItemButton: View {
     private var backgroundColor: Color {
         if isEquipped {
             return .green.opacity(0.3)
+        } else if isPreviewing {
+            return .blue.opacity(0.3)
         } else if isOwned {
             return .purple.opacity(0.3)
         } else {
@@ -473,6 +575,8 @@ struct AccessoryItemButton: View {
     private var borderColor: Color {
         if isEquipped {
             return .green.opacity(0.5)
+        } else if isPreviewing {
+            return .blue.opacity(0.6)
         } else if isOwned {
             return .purple.opacity(0.3)
         } else {
@@ -514,6 +618,10 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return 0.2
         } else if fileName.contains("Sombrero") {
             return 0.2
+        } else if fileName.contains("Cone") {
+            return 0.4
+        } else if fileName.contains("Pizza") {
+            return 0.5
         } else {
             return 0.2 // Default
         }
@@ -529,6 +637,10 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return SCNVector3(0, 0.1, 0) // Move up
         } else if fileName.contains("Wizard") {
             return SCNVector3(0, -0.1, 0) // Move down
+        } else if fileName.contains("Cone") {
+            return SCNVector3(0, 0.0, 0.0) // Centered
+        } else if fileName.contains("Pizza") {
+            return SCNVector3(0, 0.0, 0.0) // Centered
         } else {
             return SCNVector3(0, 0.0, 0.0) // Default centered
         }

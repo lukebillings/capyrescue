@@ -5,6 +5,7 @@ struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @StateObject private var rewardedAdViewModel = RewardedAdViewModel()
     @StateObject private var trackingManager = TrackingManager.shared
+    @StateObject private var subscriptionManager = SubscriptionManager.shared
     @ObservedObject private var consentManager = ConsentManager.shared
     @State private var isPurchasing: Bool = false
     @State private var showIAPError: Bool = false
@@ -14,6 +15,123 @@ struct ShopPanel: View {
             VStack(spacing: 16) {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
+                
+                // Premium Plans Section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        
+                        Text("Premium Plans")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    VStack(spacing: 12) {
+                        // Annual Plan (Featured)
+                        SubscriptionCard(
+                            tier: .annual,
+                            title: "Pro (Annual)",
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99"),
+                            priceSubtext: "per year",
+                            priceSubtext2: "Effectively \(subscriptionManager.monthlyPriceForAnnual())/month",
+                            badge: "BEST VALUE",
+                            badgeColor: Color(hex: "FFD700"),
+                            features: [
+                                "15,000 coins",
+                                "10,000 extra coins every month",
+                                "No banner ads",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isFeatured: true,
+                            savings: "Save \(subscriptionManager.annualSavingsPercentage())% compared with monthly",
+                            rimColor: Color(hex: "FFD700"),
+                            buttonColor: Color(hex: "FFD700"),
+                            isProcessing: isPurchasing
+                        ) {
+                            handleSubscriptionPurchase(.annual)
+                        }
+                        
+                        // Monthly Plan
+                        SubscriptionCard(
+                            tier: .monthly,
+                            title: "Pro (Monthly)",
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99"),
+                            priceSubtext: "per month",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            badgeColor: nil,
+                            features: [
+                                "2,000 coins",
+                                "2,000 extra coins every month",
+                                "No banner ads",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isFeatured: false,
+                            savings: nil,
+                            rimColor: Color(hex: "C0C0C0"),
+                            buttonColor: Color(hex: "A8A8A8"),
+                            isProcessing: isPurchasing
+                        ) {
+                            handleSubscriptionPurchase(.monthly)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // Subscription disclaimers - Apple Compliance
+                    VStack(spacing: 8) {
+                        // Auto-renewal information
+                        Text("Payment will be charged to your iTunes Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                        
+                        // Cancellation information
+                        Text("Cancel anytime in App Store settings. Your account will be charged for renewal within 24 hours prior to the end of the current period.")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.5))
+                            .multilineTextAlignment(.center)
+                        
+                        // Legal links
+                        VStack(spacing: 6) {
+                            HStack(spacing: 8) {
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
+                                    Text("Privacy Policy")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                                
+                                Text("•")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(.white.opacity(0.5))
+                                
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                    Text("Terms and Conditions")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                            }
+                            
+                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                                Text("Terms of Use (EULA)")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundStyle(.white.opacity(0.5))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                }
                 
                 // Free Coins Section
                 if AdsConfig.adsEnabled {
@@ -83,7 +201,7 @@ struct ShopPanel: View {
                     .padding(.horizontal, 16)
                     
                     // Purchase disclaimers
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         Text("Purchases are processed by Apple. Refunds handled via Apple Support.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundStyle(.white.opacity(0.5))
@@ -94,19 +212,28 @@ struct ShopPanel: View {
                             .foregroundStyle(.white.opacity(0.5))
                             .multilineTextAlignment(.center)
                         
-                        HStack(spacing: 8) {
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/termsandconditions/")!) {
-                                Text("Terms of Service")
+                        // Legal links
+                        VStack(spacing: 6) {
+                            HStack(spacing: 8) {
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
+                                    Text("Privacy Policy")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                                
+                                Text("•")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
+                                
+                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                    Text("Terms and Conditions")
+                                        .font(.system(size: 11, weight: .regular))
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
                             }
                             
-                            Text("•")
-                                .font(.system(size: 11, weight: .regular))
-                                .foregroundStyle(.white.opacity(0.5))
-                            
-                            Link(destination: URL(string: "https://lukebillings.github.io/capybara-rescue-universe/privacypolicy/")!) {
-                                Text("Privacy Policy")
+                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                                Text("Terms of Use (EULA)")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundStyle(.white.opacity(0.5))
                             }
@@ -114,52 +241,6 @@ struct ShopPanel: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
-                }
-                
-                // Remove Banner Ads Section
-                if AdsConfig.adsEnabled {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Color.blue, Color.purple],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                            
-                            Text("Remove Banner Ads")
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 20)
-                        
-                        RemoveBannerAdCard(
-                            isPurchased: gameManager.gameState.hasRemovedBannerAds
-                        ) {
-                            handleAdRemovalPurchase()
-                        }
-                        .padding(.horizontal, 16)
-
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            Task {
-                                isPurchasing = true
-                                _ = await gameManager.restorePurchases()
-                                isPurchasing = false
-                            }
-                        }) {
-                            Text(isPurchasing ? "Restoring..." : "Restore Purchases")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white.opacity(0.7))
-                                .padding(.top, 6)
-                        }
-                        .disabled(isPurchasing)
-                    }
                 }
                 
                 Spacer(minLength: 20)
@@ -208,14 +289,27 @@ struct ShopPanel: View {
         }
     }
     
-    private func handleAdRemovalPurchase() {
+    private func handleSubscriptionPurchase(_ tier: SubscriptionManager.SubscriptionTier) {
         HapticManager.shared.buttonPress()
         Task {
             isPurchasing = true
-            let success = await gameManager.purchaseRemoveBannerAds()
-            isPurchasing = false
-            if success {
+            defer { isPurchasing = false }
+            
+            do {
+                let productId = tier == .annual ? SubscriptionManager.annualProductId : SubscriptionManager.monthlyProductId
+                try await subscriptionManager.purchaseSubscription(productId: productId)
+                await subscriptionManager.checkSubscriptionStatus()
+                
+                // Upgrade subscription and grant coins
+                gameManager.upgradeSubscription(to: tier)
+                gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
+                
                 HapticManager.shared.purchaseSuccess()
+            } catch is CancellationError {
+                // User cancelled, do nothing
+            } catch {
+                gameManager.iapLastErrorMessage = error.localizedDescription
+                HapticManager.shared.purchaseFailed()
             }
         }
     }

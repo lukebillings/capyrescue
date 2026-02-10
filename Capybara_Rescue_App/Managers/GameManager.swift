@@ -83,6 +83,8 @@ class GameManager: ObservableObject {
         Task {
             await loadIAPProducts()
             await syncNonConsumableEntitlements()
+            // Unlock Pro items if user has Pro subscription
+            unlockProItemsIfNeeded()
         }
     }
     
@@ -570,15 +572,100 @@ class GameManager: ObservableObject {
     }
     
     func shouldShowAdRemovalPromo() -> Bool {
-        // Show every 4th time the app is opened, but only if:
+        // Show every 5th time the app is opened, but only if:
         // 1. User hasn't already purchased ad removal
-        // 2. App has been opened at least a few times (4, 8, 12, etc.)
+        // 2. App has been opened at least a few times (5, 10, 15, etc.)
         guard !gameState.hasRemovedBannerAds else { return false }
-        return gameState.appOpenCount > 0 && gameState.appOpenCount % 4 == 0
+        return gameState.appOpenCount > 0 && gameState.appOpenCount % 5 == 0
     }
     
     func renameCapybara(to newName: String) {
         gameState.capybaraName = newName
+    }
+    
+    // MARK: - Subscription Management
+    
+    /// Completes the initial paywall on first app launch.
+    /// This SETS the coin balance to the tier's starting amount (does not add).
+    /// Use this ONLY for the first-time paywall in ContentView.
+    /// For subscription upgrades after the user is already in the game, use `upgradeSubscription(to:)` instead.
+    func completePaywall(with tier: SubscriptionManager.SubscriptionTier) {
+        gameState.hasCompletedPaywall = true
+        gameState.subscriptionTier = tier.rawValue
+        gameState.lastSubscriptionCheckDate = Date()
+        
+        // Award initial coins based on tier (SET to exact amount, not add)
+        gameState.capycoins = tier.startingCoins
+        
+        // If Pro tier, remove banner ads and unlock Pro items
+        if tier != .free {
+            gameState.hasRemovedBannerAds = true
+            unlockProItemsIfNeeded()
+        }
+        
+        print("✅ Paywall completed with \(tier.displayName) tier")
+        print("   Set coins to \(tier.startingCoins)")
+    }
+    
+    /// Upgrades the user's subscription tier and grants coins.
+    /// This ADDS the tier's starting coins to the user's existing balance (does not override).
+    /// Use this when user purchases a subscription from the shop or upgrades after initial paywall.
+    func upgradeSubscription(to tier: SubscriptionManager.SubscriptionTier) {
+        let previousTier = currentSubscriptionTier()
+        
+        // Update subscription tier
+        gameState.subscriptionTier = tier.rawValue
+        gameState.lastSubscriptionCheckDate = Date()
+        
+        // Award initial coins (ADD to existing balance, don't override)
+        gameState.capycoins += tier.startingCoins
+        
+        // If Pro tier, remove banner ads and unlock Pro items
+        if tier != .free {
+            gameState.hasRemovedBannerAds = true
+            unlockProItemsIfNeeded()
+        }
+        
+        print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
+        print("   Added \(tier.startingCoins) coins to balance")
+        print("   New balance: \(gameState.capycoins) coins")
+    }
+    
+    func hasProSubscription() -> Bool {
+        guard let tierString = gameState.subscriptionTier,
+              let tier = SubscriptionManager.SubscriptionTier(rawValue: tierString) else {
+            return false
+        }
+        return tier != .free
+    }
+    
+    func currentSubscriptionTier() -> SubscriptionManager.SubscriptionTier {
+        guard let tierString = gameState.subscriptionTier,
+              let tier = SubscriptionManager.SubscriptionTier(rawValue: tierString) else {
+            return .free
+        }
+        return tier
+    }
+    
+    // MARK: - Pro Items Management
+    private func unlockProItemsIfNeeded() {
+        // If user has Pro subscription, automatically unlock all Pro-only items
+        guard hasProSubscription() else { return }
+        
+        let proItems = AccessoryItem.allItems.filter { $0.isProOnly }
+        var unlocked = false
+        
+        for item in proItems {
+            if !gameState.ownedAccessories.contains(item.id) {
+                gameState.ownedAccessories.append(item.id)
+                unlocked = true
+                print("✅ Unlocked Pro item: \(item.name)")
+            }
+        }
+        
+        if unlocked {
+            print("🎉 Pro items unlocked for Pro subscriber")
+        }
     }
     
     // MARK: - Reset

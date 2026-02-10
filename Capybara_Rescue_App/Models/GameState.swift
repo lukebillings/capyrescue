@@ -21,12 +21,16 @@ struct GameState: Codable {
     var hasRemovedBannerAds: Bool // Track if user purchased ad removal
     var hasCompletedOnboarding: Bool // Track if user completed onboarding
     var hasCompletedTutorial: Bool // Track if user completed tutorial
+    var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
+    var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
+    var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
+        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate
     }
     
     // Custom decoding for backward compatibility
@@ -50,6 +54,9 @@ struct GameState: Codable {
         hasRemovedBannerAds = try container.decodeIfPresent(Bool.self, forKey: .hasRemovedBannerAds) ?? false
         hasCompletedOnboarding = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? false
         hasCompletedTutorial = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedTutorial) ?? false
+        hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
+        subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
+        lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -86,6 +93,9 @@ struct GameState: Codable {
         try container.encode(hasRemovedBannerAds, forKey: .hasRemovedBannerAds)
         try container.encode(hasCompletedOnboarding, forKey: .hasCompletedOnboarding)
         try container.encode(hasCompletedTutorial, forKey: .hasCompletedTutorial)
+        try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
+        try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
+        try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
     }
     
     // Manual initializer for default state
@@ -108,7 +118,10 @@ struct GameState: Codable {
         appOpenCount: Int,
         hasRemovedBannerAds: Bool,
         hasCompletedOnboarding: Bool,
-        hasCompletedTutorial: Bool
+        hasCompletedTutorial: Bool,
+        hasCompletedPaywall: Bool,
+        subscriptionTier: String?,
+        lastSubscriptionCheckDate: Date?
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -129,6 +142,9 @@ struct GameState: Codable {
         self.hasRemovedBannerAds = hasRemovedBannerAds
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.hasCompletedTutorial = hasCompletedTutorial
+        self.hasCompletedPaywall = hasCompletedPaywall
+        self.subscriptionTier = subscriptionTier
+        self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
     }
     
     static let defaultState = GameState(
@@ -136,7 +152,7 @@ struct GameState: Codable {
         food: 60,
         drink: 60,
         happiness: 60,
-        capycoins: 500,
+        capycoins: 0, // Will be set based on subscription tier chosen
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -150,7 +166,10 @@ struct GameState: Codable {
         appOpenCount: 0,
         hasRemovedBannerAds: false,
         hasCompletedOnboarding: false,
-        hasCompletedTutorial: false
+        hasCompletedTutorial: false,
+        hasCompletedPaywall: false,
+        subscriptionTier: nil,
+        lastSubscriptionCheckDate: nil
     )
     
     var hasActiveSubscription: Bool {
@@ -223,6 +242,7 @@ struct AccessoryItem: Identifiable, Equatable {
     let category: AccessoryCategory
     let cost: Int
     let modelFileName: String? // USDZ filename for 3D accessories
+    let isProOnly: Bool // Pro subscription required
     
     enum AccessoryCategory: String, CaseIterable, Codable {
         case gardenItems = ""
@@ -243,24 +263,29 @@ struct AccessoryItem: Identifiable, Equatable {
             "sombrerohat",
             "froghat",
             "foxhat",
-            "santahat"
+            "santahat",
+            "cone",
+            "pizzahat"
         ]
         
         return hatIds.contains(id)
     }
     
     private static let _allItems: [AccessoryItem] = [
-        // Hats
-        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap"),
-        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 200, modelFileName: "Cowboy Hat 2"),
-        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 300, modelFileName: "Tophat"),
-        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 400, modelFileName: "Wizard hat"),
-        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 400, modelFileName: "Pirate hat"),
-        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 800, modelFileName: "Propeller hat"),
-        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 4000, modelFileName: "Sombrero2hat"),
-        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 8000, modelFileName: "Frog Hat"),
-        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 7000, modelFileName: "Fox Hat"),
-        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 10000, modelFileName: "Santahat"),
+        // Regular Hats
+        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap", isProOnly: false),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 400, modelFileName: "Cowboy Hat 2", isProOnly: false),
+        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 1000, modelFileName: "Tophat", isProOnly: false),
+        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 2500, modelFileName: "Wizard hat", isProOnly: false),
+        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 4000, modelFileName: "Pirate hat", isProOnly: false),
+        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 6500, modelFileName: "Propeller hat", isProOnly: false),
+        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 10000, modelFileName: "Sombrero2hat", isProOnly: false),
+        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 20000, modelFileName: "Frog Hat", isProOnly: false),
+        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 15000, modelFileName: "Fox Hat", isProOnly: false),
+        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 25000, modelFileName: "Santahat", isProOnly: false),
+        // Pro-Only Hats (modelFileName must match exact file name without .usdz extension)
+        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 0, modelFileName: "Cone", isProOnly: true),
+        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 0, modelFileName: "Pizza Hat", isProOnly: true),
     ]
     
     static var allItems: [AccessoryItem] {
