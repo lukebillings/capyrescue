@@ -230,6 +230,7 @@ struct ContentView: View {
                     )
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
+                    .zIndex(0) // Stats behind capybara
                     
                     Spacer()
                     
@@ -245,6 +246,7 @@ struct ContentView: View {
                     )
                     .frame(height: 320) // Increased height to show full capybara including head
                     .offset(y: capybaraVisualOffsetY) // Move up higher on the page
+                    .zIndex(100) // Ensure capybara and accessories appear above stats
                     .tutorialHighlight(key: "capybara_tap")
                     .background(
                         GeometryReader { capyGeometry in
@@ -486,82 +488,22 @@ struct ShopSheetView: View {
     }
 }
 
-// MARK: - Animated Background
+// MARK: - Animated Background (Chinese New Year Theme - Year of the Horse)
 struct AnimatedBackground: View {
     @State private var phase: CGFloat = 0
+    @State private var lanternPhase: CGFloat = 0
     
     var body: some View {
         ZStack {
-            // Base gradient
-            LinearGradient(
-                colors: [
-                    Color(hex: "0f0c29"),
-                    Color(hex: "302b63"),
-                    Color(hex: "24243e")
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            baseGradient
             
-            // Animated orbs
             GeometryReader { geometry in
                 ZStack {
-                    // Large orb 1
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.purple.opacity(0.3),
-                                    Color.purple.opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 200
-                            )
-                        )
-                        .frame(width: 400, height: 400)
-                        .offset(
-                            x: sin(phase) * 30 - 100,
-                            y: cos(phase * 0.7) * 40 - 200
-                        )
-                    
-                    // Large orb 2
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.blue.opacity(0.2),
-                                    Color.blue.opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 250
-                            )
-                        )
-                        .frame(width: 500, height: 500)
-                        .offset(
-                            x: cos(phase * 0.8) * 40 + 100,
-                            y: sin(phase * 0.6) * 50 + 200
-                        )
-                    
-                    // Small accent orb
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color(hex: "FFD700").opacity(0.15),
-                                    Color(hex: "FFD700").opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 100
-                            )
-                        )
-                        .frame(width: 200, height: 200)
-                        .offset(
-                            x: sin(phase * 1.2) * 50,
-                            y: cos(phase) * 30 + 100
-                        )
+                    goldOrb
+                    redOrb
+                    accentOrb
+                    horseElements
+                    lanternElements
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
             }
@@ -573,7 +515,124 @@ struct AnimatedBackground: View {
             ) {
                 phase = .pi * 2
             }
+            withAnimation(
+                .easeInOut(duration: 3)
+                .repeatForever(autoreverses: true)
+            ) {
+                lanternPhase = .pi
+            }
         }
+    }
+    
+    private var baseGradient: some View {
+        LinearGradient(
+            colors: [
+                Color(hex: "5A0000"),
+                Color(hex: "8B0000"),
+                Color(hex: "6B0000")
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    private var goldOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FFD700").opacity(0.4),
+                        Color(hex: "FFA500").opacity(0.2),
+                        Color(hex: "FFD700").opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 200
+                )
+            )
+            .frame(width: 400, height: 400)
+            .offset(
+                x: sin(phase) * 30 - 100,
+                y: cos(phase * 0.7) * 40 - 200
+            )
+    }
+    
+    private var redOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FF6B6B").opacity(0.3),
+                        Color(hex: "DC143C").opacity(0.1),
+                        Color.red.opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 250
+                )
+            )
+            .frame(width: 500, height: 500)
+            .offset(
+                x: cos(phase * 0.8) * 40 + 100,
+                y: sin(phase * 0.6) * 50 + 200
+            )
+    }
+    
+    private var accentOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FFD700").opacity(0.3),
+                        Color(hex: "FFA500").opacity(0.15),
+                        Color(hex: "FFD700").opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 120
+                )
+            )
+            .frame(width: 240, height: 240)
+            .offset(
+                x: sin(phase * 1.2) * 50,
+                y: cos(phase) * 30 + 100
+            )
+    }
+    
+    private var horseElements: some View {
+        ForEach(0..<3, id: \.self) { index in
+            horseElement(index: index)
+        }
+    }
+    
+    private func horseElement(index: Int) -> some View {
+        let xOffset = sin(phase + Double(index) * 2) * 80 + CGFloat(index * 120) - 180
+        let yOffset = cos(phase * 0.5 + Double(index)) * 60 + CGFloat(index * 200) - 100
+        let rotation = sin(phase + Double(index)) * 15
+        
+        return Text("🐴")
+            .font(.system(size: 60))
+            .opacity(0.08)
+            .offset(x: xOffset, y: yOffset)
+            .rotationEffect(.degrees(rotation))
+    }
+    
+    private var lanternElements: some View {
+        ForEach(0..<4, id: \.self) { index in
+            lanternElement(index: index)
+        }
+    }
+    
+    private func lanternElement(index: Int) -> some View {
+        let xOffset = cos(phase * 0.6 + Double(index) * 1.5) * 100 + CGFloat(index * 100) - 150
+        let yOffset = sin(phase * 0.8 + Double(index)) * 70 + CGFloat(index * 150) - 50
+        let rotation = cos(lanternPhase + Double(index)) * 10
+        
+        return Text("🏮")
+            .font(.system(size: 40))
+            .opacity(0.12)
+            .offset(x: xOffset, y: yOffset)
+            .rotationEffect(.degrees(rotation))
     }
 }
 
