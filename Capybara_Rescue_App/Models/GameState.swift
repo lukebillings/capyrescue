@@ -459,4 +459,3 @@ extension Date {
         return now >= startDate
     }
 }
-
