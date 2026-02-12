@@ -167,7 +167,7 @@ struct PaywallView: View {
                     // Legal text - Apple Compliance
                     VStack(spacing: 10) {
                         // Auto-renewal information
-                        Text("Payment will be charged to your iTunes Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
+                        Text("Payment will be charged to your Apple Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
                             .foregroundColor(.white.opacity(0.4))
                             .multilineTextAlignment(.center)

@@ -62,7 +62,7 @@ Displayed directly below the price in the subscription card.
 
 **Implementation:**
 ```
-"Payment will be charged to your iTunes Account at confirmation of purchase. 
+"Payment will be charged to your Apple Account at confirmation of purchase. 
 Subscription automatically renews unless auto-renew is turned off at least 
 24 hours before the end of the current period."
 

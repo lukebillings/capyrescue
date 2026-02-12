@@ -814,7 +814,7 @@ struct ChineseNewYearPopup: View {
                         )
                         .multilineTextAlignment(.center)
                     
-                    Text("New Limited-Time Items")
+                    Text("New Items")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.8))
                 }
