@@ -9,6 +9,9 @@ struct ShopPanel: View {
     @ObservedObject private var consentManager = ConsentManager.shared
     @State private var isPurchasing: Bool = false
     @State private var showIAPError: Bool = false
+    @State private var showRestoreSuccess: Bool = false
+    @State private var showRestoreError: Bool = false
+    @State private var restoreErrorMessage: String = ""
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -87,6 +90,20 @@ struct ShopPanel: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    
+                    // Restore Purchases Button - centered and prominent
+                    HStack {
+                        Spacer()
+                        Button(action: handleRestorePurchases) {
+                            Text("Restore Purchases")
+                                .font(.system(size: 14, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.5))
+                                .underline()
+                        }
+                        .disabled(isPurchasing)
+                        Spacer()
+                    }
+                    .padding(.top, 8)
                     
                     // Subscription disclaimers - Apple Compliance
                     VStack(spacing: 8) {
@@ -254,6 +271,16 @@ struct ShopPanel: View {
         } message: {
             Text(gameManager.iapLastErrorMessage ?? "Unknown error")
         }
+        .alert("Success", isPresented: $showRestoreSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your purchases have been restored!")
+        }
+        .alert("Restore Failed", isPresented: $showRestoreError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(restoreErrorMessage)
+        }
         .onAppear {
             // Update tracking status
             trackingManager.updateTrackingStatus()
@@ -295,6 +322,18 @@ struct ShopPanel: View {
             isPurchasing = true
             defer { isPurchasing = false }
             
+            // First check if they already have an active subscription
+            await subscriptionManager.checkSubscriptionStatus()
+            
+            // If they already have this tier or better, just activate it
+            if subscriptionManager.activeSubscription == tier || 
+               (tier == .monthly && subscriptionManager.activeSubscription == .annual) {
+                gameManager.upgradeSubscription(to: subscriptionManager.activeSubscription ?? tier)
+                gameManager.showToast("Subscription activated! \(tier.startingCoins) coins added! 🎉")
+                HapticManager.shared.purchaseSuccess()
+                return
+            }
+            
             do {
                 let productId = tier == .annual ? SubscriptionManager.annualProductId : SubscriptionManager.monthlyProductId
                 try await subscriptionManager.purchaseSubscription(productId: productId)
@@ -322,6 +361,34 @@ struct ShopPanel: View {
         Task {
             await trackingManager.requestTrackingAuthorizationIfNeeded()
             rewardedAdViewModel.showAd()
+        }
+    }
+    
+    private func handleRestorePurchases() {
+        HapticManager.shared.buttonPress()
+        Task {
+            isPurchasing = true
+            defer { isPurchasing = false }
+            
+            do {
+                try await subscriptionManager.restorePurchases()
+                
+                if subscriptionManager.activeSubscription != .free {
+                    // Successfully restored a subscription - upgrade and grant coins
+                    let tier = subscriptionManager.activeSubscription ?? .free
+                    gameManager.upgradeSubscription(to: tier)
+                    gameManager.showToast("Subscription restored! \(tier.startingCoins) coins added! 🎉")
+                    showRestoreSuccess = true
+                    HapticManager.shared.purchaseSuccess()
+                } else {
+                    restoreErrorMessage = "No active subscriptions found for this Apple ID"
+                    showRestoreError = true
+                }
+            } catch {
+                restoreErrorMessage = error.localizedDescription
+                showRestoreError = true
+                HapticManager.shared.purchaseFailed()
+            }
         }
     }
 }

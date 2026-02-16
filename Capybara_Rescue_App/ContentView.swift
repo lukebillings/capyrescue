@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var showPaywall = false
     @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
     @State private var showCNYPopup = false
+    @State private var isCheckingSubscription = false
 
     private let capybaraVisualOffsetY: CGFloat = -40
     
@@ -69,12 +70,59 @@ struct ContentView: View {
     }
     
     private func checkPaywallStatus() {
-        showPaywall = !gameManager.gameState.hasCompletedPaywall
+        // Check if user has already completed the paywall
+        if gameManager.gameState.hasCompletedPaywall {
+            showPaywall = false
+            isCheckingSubscription = false
+            return
+        }
+        
+        // Check if user has an active subscription (e.g., from promo code)
+        isCheckingSubscription = true
+        Task {
+            let subscriptionManager = SubscriptionManager.shared
+            await subscriptionManager.checkSubscriptionStatus()
+            
+            await MainActor.run {
+                if subscriptionManager.activeSubscription != .free {
+                    // User has active subscription - skip paywall and grant initial coins
+                    let tier = subscriptionManager.activeSubscription ?? .free
+                    gameManager.completePaywall(with: tier)
+                    showPaywall = false
+                } else {
+                    // No subscription - show paywall
+                    showPaywall = true
+                }
+                isCheckingSubscription = false
+            }
+        }
     }
     
     var body: some View {
         Group {
-            if showPaywall {
+            if isCheckingSubscription {
+                // Show loading screen while checking subscription status
+                ZStack {
+                    AnimatedBackground()
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        Image("iconcapybara")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                        
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                        
+                        Text("Loading...")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                }
+            } else if showPaywall {
                 PaywallView(selectedTier: $selectedSubscriptionTier)
                     .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
                         if let tier = newValue {
