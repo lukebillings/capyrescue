@@ -280,7 +280,7 @@ struct ContentView: View {
                         }
                         .padding(.leading, -8)
                         
-                        // Get More button
+                        // Get More button — opens shop (premium plans at top, then coin packs)
                         Button(action: {
                             HapticManager.shared.buttonPress()
                             showShopSheet = true
