@@ -1,8 +1,10 @@
 import SwiftUI
+import StoreKit
 
 // MARK: - Main Content View
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
+    @Environment(\.requestReview) private var requestReview
     @ObservedObject private var consentManager = ConsentManager.shared
     @ObservedObject private var trackingManager = TrackingManager.shared
     
@@ -455,6 +457,21 @@ struct ContentView: View {
                         gameManager.markCNYPopupSeen()
                     })
                     .zIndex(203) // Above everything
+                }
+                
+                // Achievement reward popup → then Apple review prompt
+                if let coins = gameManager.recentAchievementCoinReward {
+                    AchievementRewardPopup(coins: coins)
+                        .zIndex(204)
+                        .onAppear {
+                            // Dismiss popup after a few seconds, then show Apple review
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                                gameManager.clearRecentAchievementReward()
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                requestReview()
+                            }
+                        }
                 }
             }
             .coordinateSpace(name: "main")
@@ -1020,6 +1037,51 @@ struct ToastView: View {
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             )
             .transition(.scale.combined(with: .opacity))
+    }
+}
+
+// MARK: - Achievement Reward Popup (then Apple review)
+struct AchievementRewardPopup: View {
+    let coins: Int
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                Text("🏆")
+                    .font(.system(size: 50))
+                
+                Text("Good job!")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text("You have been awarded \(coins) coins.")
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.vertical, 28)
+            .padding(.horizontal, 32)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.4)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+            )
+            .padding(.horizontal, 40)
+        }
+        .transition(.opacity)
     }
 }
 
