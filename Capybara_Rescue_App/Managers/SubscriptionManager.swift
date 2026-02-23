@@ -72,6 +72,23 @@ class SubscriptionManager: ObservableObject {
             await loadProducts()
             await checkSubscriptionStatus()
         }
+        Task {
+            await listenForTransactionUpdates()
+        }
+    }
+
+    /// Listens for transaction updates (e.g. Ask to Buy, delayed completion). Run at launch so successful purchases are never missed.
+    private func listenForTransactionUpdates() async {
+        for await result in Transaction.updates {
+            do {
+                let transaction = try checkVerified(result)
+                await transaction.finish()
+                await checkSubscriptionStatus()
+                print("✅ Processed transaction update for \(transaction.productID)")
+            } catch {
+                print("❌ Failed to process transaction update: \(error)")
+            }
+        }
     }
     
     // MARK: - Load Products
