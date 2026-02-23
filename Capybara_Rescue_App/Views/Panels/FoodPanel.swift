@@ -13,6 +13,17 @@ struct FoodPanel: View {
         self.onBack = onBack
     }
     
+    // Filter items - show CNY items from Feb 13 onwards
+    private var availableFoodItems: [FoodItem] {
+        FoodItem.allItems.filter { item in
+            // Fortune Cookie appears from Feb 13 onwards (stays forever)
+            if item.name == "Fortune Cookie" {
+                return Date.shouldShowCNYItems2026()
+            }
+            return true
+        }
+    }
+    
     var body: some View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
@@ -21,7 +32,7 @@ struct FoodPanel: View {
                     // Food items - horizontal scrolling row
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
-                            ForEach(FoodItem.allItems) { item in
+                            ForEach(availableFoodItems) { item in
                                 FoodItemButton(
                                     item: item,
                                     canAfford: gameManager.canAfford(item.cost)
@@ -81,7 +92,7 @@ struct FoodPanel: View {
                         // Food items - horizontal scrolling row
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
-                                ForEach(FoodItem.allItems) { item in
+                                ForEach(availableFoodItems) { item in
                                     FoodItemButton(
                                         item: item,
                                         canAfford: gameManager.canAfford(item.cost)
@@ -209,9 +220,54 @@ struct FoodItemButton: View {
                     )
             )
             .opacity(canAfford ? 1 : 0.6)
+            .overlay(
+                // Chinese New Year "NEW!" badge for Fortune Cookie
+                Group {
+                    if item.name == "Fortune Cookie" && Date.isChineseNewYearEvent2026() {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Text("NEW!")
+                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .foregroundStyle(Color(hex: "8B0000"))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                    )
+                                    .offset(x: -5, y: 5)
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+            )
         }
         .buttonStyle(ScaleButtonStyle())
         .disabled(!canAfford)
+        .overlay(
+            // Gold ring for CNY items
+            Group {
+                if item.name == "Fortune Cookie" && Date.isChineseNewYearEvent2026() {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 3
+                        )
+                }
+            }
+        )
     }
 }
 

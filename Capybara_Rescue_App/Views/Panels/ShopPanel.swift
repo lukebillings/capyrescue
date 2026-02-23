@@ -9,6 +9,10 @@ struct ShopPanel: View {
     @ObservedObject private var consentManager = ConsentManager.shared
     @State private var isPurchasing: Bool = false
     @State private var showIAPError: Bool = false
+    @State private var showRestoreSuccess: Bool = false
+    @State private var showRestoreError: Bool = false
+    @State private var restoreErrorMessage: String = ""
+    @State private var selectedPlan: SubscriptionManager.SubscriptionTier = .annual
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -16,122 +20,176 @@ struct ShopPanel: View {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
                 
-                // Premium Plans Section
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                        
+                // Premium Plans Section (same style as first-open paywall)
+                VStack(alignment: .leading, spacing: 14) {
+                    // Header - match PaywallView
+                    VStack(spacing: 6) {
                         Text("Premium Plans")
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.8))
                         
-                        Spacer()
+                        Text("What plan would you like?")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 4)
                     
-                    VStack(spacing: 12) {
-                        // Annual Plan (Featured)
-                        SubscriptionCard(
+                    // Selectable plan rows (same as paywall)
+                    VStack(spacing: 8) {
+                        PaywallPlanRow(
                             tier: .annual,
-                            title: "Pro (Annual)",
+                            title: "Yearly",
+                            subtext: "",
+                            subtextHighlight: "7-day free trial",
                             price: subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99"),
-                            priceSubtext: "per year",
-                            priceSubtext2: "Effectively \(subscriptionManager.monthlyPriceForAnnual())/month",
+                            priceSubtext: "/ year",
+                            priceSubtext2: "Only \(subscriptionManager.monthlyPriceForAnnual())/month",
                             badge: "BEST VALUE",
-                            badgeColor: Color(hex: "FFD700"),
+                            savingsBadge: "Save \(subscriptionManager.annualSavingsPercentage())% vs monthly",
                             features: [
-                                "15,000 coins",
-                                "10,000 extra coins every month",
                                 "No banner ads",
+                                "15,000 coins + 10,000 every month",
                                 "Access exclusive items while subscribed"
                             ],
-                            isFeatured: true,
-                            savings: "Save \(subscriptionManager.annualSavingsPercentage())% compared with monthly",
-                            rimColor: Color(hex: "FFD700"),
-                            buttonColor: Color(hex: "FFD700"),
+                            isSelected: selectedPlan == .annual,
                             isProcessing: isPurchasing
                         ) {
-                            handleSubscriptionPurchase(.annual)
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .annual
                         }
                         
-                        // Monthly Plan
-                        SubscriptionCard(
+                        PaywallPlanRow(
                             tier: .monthly,
-                            title: "Pro (Monthly)",
+                            title: "Monthly",
+                            subtext: "",
+                            subtextHighlight: nil,
                             price: subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99"),
-                            priceSubtext: "per month",
+                            priceSubtext: "/ month",
                             priceSubtext2: nil,
                             badge: nil,
-                            badgeColor: nil,
+                            savingsBadge: nil,
                             features: [
-                                "2,000 coins",
-                                "2,000 extra coins every month",
                                 "No banner ads",
+                                "2,000 coins + 2,000 every month",
                                 "Access exclusive items while subscribed"
                             ],
-                            isFeatured: false,
-                            savings: nil,
-                            rimColor: Color(hex: "C0C0C0"),
-                            buttonColor: Color(hex: "A8A8A8"),
+                            isSelected: selectedPlan == .monthly,
                             isProcessing: isPurchasing
                         ) {
-                            handleSubscriptionPurchase(.monthly)
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .monthly
+                        }
+                        
+                        PaywallPlanRow(
+                            tier: .weekly,
+                            title: "Weekly",
+                            subtext: "",
+                            subtextHighlight: nil,
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.weeklyProductId, fallback: "£0.99"),
+                            priceSubtext: "/ week",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            savingsBadge: nil,
+                            features: [
+                                "No banner ads",
+                                "1,000 coins + 500 every week",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isSelected: selectedPlan == .weekly,
+                            isProcessing: isPurchasing
+                        ) {
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .weekly
                         }
                     }
-                    .padding(.horizontal, 16)
                     
-                    // Subscription disclaimers - Apple Compliance
-                    VStack(spacing: 8) {
-                        // Auto-renewal information
-                        Text("Payment will be charged to your iTunes Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
+                    // Single CTA button (same as paywall)
+                    Button(action: { handleSubscriptionPurchase(selectedPlan) }) {
+                        HStack(spacing: 6) {
+                            Text(shopPremiumCtaTitle)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 15, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 10, x: 0, y: 5)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(isPurchasing)
+                    .opacity(isPurchasing ? 0.7 : 1)
+                    .padding(.top, 4)
+                    
+                    // Footer trial/cancel copy
+                    Text(shopPremiumFooterText)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 2)
+                    
+                    // Restore Purchases
+                    Button(action: handleRestorePurchases) {
+                        Text("Restore Purchases")
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.5))
+                            .underline()
+                    }
+                    .disabled(isPurchasing)
+                    .padding(.top, 4)
+                    
+                    // Legal - Apple Compliance (match paywall opacity 0.4)
+                    VStack(spacing: 6) {
+                        Text("Payment will be charged to your Apple Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.4))
                             .multilineTextAlignment(.center)
                         
-                        // Cancellation information
                         Text("Cancel anytime in App Store settings. Your account will be charged for renewal within 24 hours prior to the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.4))
                             .multilineTextAlignment(.center)
                         
-                        // Legal links
-                        VStack(spacing: 6) {
-                            HStack(spacing: 8) {
-                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 16) {
+                                Button(action: { openURL("https://lukebillings.github.io/capyrescue/privacypolicy/") }) {
                                     Text("Privacy Policy")
                                         .font(.system(size: 11, weight: .regular))
-                                        .foregroundStyle(.white.opacity(0.5))
+                                        .foregroundColor(.white.opacity(0.4))
+                                        .underline()
                                 }
                                 
-                                Text("•")
-                                    .font(.system(size: 11, weight: .regular))
-                                    .foregroundStyle(.white.opacity(0.5))
-                                
-                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
+                                Button(action: { openURL("https://lukebillings.github.io/capyrescue/termsandconditions/") }) {
                                     Text("Terms and Conditions")
                                         .font(.system(size: 11, weight: .regular))
-                                        .foregroundStyle(.white.opacity(0.5))
+                                        .foregroundColor(.white.opacity(0.4))
+                                        .underline()
                                 }
                             }
                             
-                            Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                            Button(action: { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }) {
                                 Text("Terms of Use (EULA)")
                                     .font(.system(size: 11, weight: .regular))
-                                    .foregroundStyle(.white.opacity(0.5))
+                                    .foregroundColor(.white.opacity(0.4))
+                                    .underline()
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
                     .padding(.top, 4)
                 }
+                .padding(.horizontal, 18)
                 
                 // Free Coins Section
                 if AdsConfig.adsEnabled {
@@ -254,6 +312,16 @@ struct ShopPanel: View {
         } message: {
             Text(gameManager.iapLastErrorMessage ?? "Unknown error")
         }
+        .alert("Success", isPresented: $showRestoreSuccess) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your purchases have been restored!")
+        }
+        .alert("Restore Failed", isPresented: $showRestoreError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(restoreErrorMessage)
+        }
         .onAppear {
             // Update tracking status
             trackingManager.updateTrackingStatus()
@@ -295,8 +363,28 @@ struct ShopPanel: View {
             isPurchasing = true
             defer { isPurchasing = false }
             
+            // First check if they already have an active subscription
+            await subscriptionManager.checkSubscriptionStatus()
+            
+            // If they already have this tier or better, just activate it
+            let alreadyHasTierOrBetter = subscriptionManager.activeSubscription == tier ||
+                (tier == .monthly && subscriptionManager.activeSubscription == .annual) ||
+                (tier == .weekly && (subscriptionManager.activeSubscription == .monthly || subscriptionManager.activeSubscription == .annual))
+            if alreadyHasTierOrBetter {
+                gameManager.upgradeSubscription(to: subscriptionManager.activeSubscription ?? tier)
+                gameManager.showToast("Subscription activated! \(tier.startingCoins) coins added! 🎉")
+                HapticManager.shared.purchaseSuccess()
+                return
+            }
+            
             do {
-                let productId = tier == .annual ? SubscriptionManager.annualProductId : SubscriptionManager.monthlyProductId
+                let productId: String
+                switch tier {
+                case .annual: productId = SubscriptionManager.annualProductId
+                case .monthly: productId = SubscriptionManager.monthlyProductId
+                case .weekly: productId = SubscriptionManager.weeklyProductId
+                case .free: return // No purchase for free
+                }
                 try await subscriptionManager.purchaseSubscription(productId: productId)
                 await subscriptionManager.checkSubscriptionStatus()
                 
@@ -322,6 +410,61 @@ struct ShopPanel: View {
         Task {
             await trackingManager.requestTrackingAuthorizationIfNeeded()
             rewardedAdViewModel.showAd()
+        }
+    }
+    
+    private var shopPremiumCtaTitle: String {
+        switch selectedPlan {
+        case .annual: return "Start Your 7-Day Free Trial"
+        case .monthly: return "Subscribe Monthly"
+        case .weekly: return "Subscribe Weekly"
+        case .free: return "Start Your 7-Day Free Trial"
+        }
+    }
+    
+    private var shopPremiumFooterText: String {
+        let annualPrice = subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99")
+        let monthlyPrice = subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99")
+        let weeklyPrice = subscriptionManager.displayPrice(for: SubscriptionManager.weeklyProductId, fallback: "£0.99")
+        switch selectedPlan {
+        case .annual: return "7-day free trial, then \(annualPrice)/year. Billed annually. Cancel anytime."
+        case .monthly: return "\(monthlyPrice)/month · Billed monthly · Cancel anytime"
+        case .weekly: return "\(weeklyPrice)/week · Billed weekly · Cancel anytime"
+        case .free: return "7-day free trial, then \(annualPrice)/year. Billed annually. Cancel anytime."
+        }
+    }
+    
+    private func openURL(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    private func handleRestorePurchases() {
+        HapticManager.shared.buttonPress()
+        Task {
+            isPurchasing = true
+            defer { isPurchasing = false }
+            
+            do {
+                try await subscriptionManager.restorePurchases()
+                
+                if subscriptionManager.activeSubscription != .free {
+                    // Successfully restored a subscription - upgrade and grant coins
+                    let tier = subscriptionManager.activeSubscription ?? .free
+                    gameManager.upgradeSubscription(to: tier)
+                    gameManager.showToast("Subscription restored! \(tier.startingCoins) coins added! 🎉")
+                    showRestoreSuccess = true
+                    HapticManager.shared.purchaseSuccess()
+                } else {
+                    restoreErrorMessage = "No active subscriptions found for this Apple ID"
+                    showRestoreError = true
+                }
+            } catch {
+                restoreErrorMessage = error.localizedDescription
+                showRestoreError = true
+                HapticManager.shared.purchaseFailed()
+            }
         }
     }
 }

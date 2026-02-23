@@ -21,6 +21,8 @@ class GameManager: ObservableObject {
     @Published var showRunAwayAlert: Bool = false
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
     @Published var toastMessage: String? = nil // For showing toast messages to user
+    /// When non-nil, UI shows "Good job! You have been awarded X coins." popup, then requests App Store review after dismiss.
+    @Published var recentAchievementCoinReward: Int? = nil
     
     private var decayTimer: Timer?
     private let storageKey = "capybara_rescue_game_state"
@@ -233,6 +235,8 @@ class GameManager: ObservableObject {
             365: ("streak_365", 1000)
         ]
         
+        var totalCoinsAwardedThisCheck = 0
+        
         // Check each achievement threshold
         // IMPORTANT: Achievements can only be earned once. If a user earns a 30-day achievement,
         // breaks their streak, and then reaches 30 days again, they will NOT receive the coins again
@@ -242,8 +246,18 @@ class GameManager: ObservableObject {
             if streak >= days && !gameState.earnedAchievements.contains(achievementId) {
                 gameState.earnedAchievements.insert(achievementId)
                 gameState.capycoins += coins
+                totalCoinsAwardedThisCheck += coins
             }
         }
+        
+        if totalCoinsAwardedThisCheck > 0 {
+            recentAchievementCoinReward = totalCoinsAwardedThisCheck
+        }
+    }
+    
+    /// Call when the achievement reward popup has been dismissed so we can clear the reward and optionally request review.
+    func clearRecentAchievementReward() {
+        recentAchievementCoinReward = nil
     }
     
     // MARK: - Persistence
@@ -571,6 +585,10 @@ class GameManager: ObservableObject {
         gameState.appOpenCount += 1
     }
     
+    func markCNYPopupSeen() {
+        gameState.hasSeenCNY2026Popup = true
+    }
+    
     func shouldShowAdRemovalPromo() -> Bool {
         // Show every 5th time the app is opened, but only if:
         // 1. User hasn't already purchased ad removal
@@ -669,6 +687,20 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Reset
+    
+    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, paywall, and all other progress.
+    func rescueNewCapybara() {
+        var state = gameState
+        state.food = GameState.defaultState.food
+        state.drink = GameState.defaultState.drink
+        state.happiness = GameState.defaultState.happiness
+        state.lastUpdateTime = Date()
+        state.hasRunAway = false
+        gameState = state
+        showRunAwayAlert = false
+    }
+    
+    /// Full reset to default state (e.g. for debugging). Use rescueNewCapybara() when user taps "Rescue Another Capybara".
     func resetGame() {
         gameState = GameState.defaultState
         showRunAwayAlert = false

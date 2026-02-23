@@ -29,6 +29,7 @@
 		812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */; };
 		812FAA352F325E8C00EE08F7 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */; };
 		815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 815001F62F0EC7DE00CFB91C /* StoreKit.framework */; };
+		8154EAB42F3B8ABB0054066B /* red-lantern.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8154EAB32F3B8ABB0054066B /* red-lantern.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		81B4600F2F325EB500F10BC3 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B4600E2F325EB500F10BC3 /* PaywallView.swift */; };
 		81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460102F328CB300F10BC3 /* Pizza Hat.usdz */; };
@@ -82,6 +83,7 @@
 		812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		815001F62F0EC7DE00CFB91C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capybara_Rescue_App.entitlements; sourceTree = "<group>"; };
+		8154EAB32F3B8ABB0054066B /* red-lantern.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "red-lantern.usdz"; sourceTree = "<group>"; };
 		81B4600E2F325EB500F10BC3 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		81B460102F328CB300F10BC3 /* Pizza Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pizza Hat.usdz"; sourceTree = "<group>"; };
 		81B460112F328CB300F10BC3 /* Cone.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Cone.usdz; sourceTree = "<group>"; };
@@ -180,6 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */,
+				8154EAB32F3B8ABB0054066B /* red-lantern.usdz */,
 				81B460112F328CB300F10BC3 /* Cone.usdz */,
 				81B460102F328CB300F10BC3 /* Pizza Hat.usdz */,
 				8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */,
@@ -326,6 +329,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8154EAB42F3B8ABB0054066B /* red-lantern.usdz in Resources */,
 				81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */,
 				81B460132F328CB300F10BC3 /* Cone.usdz in Resources */,
 				81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */,
@@ -397,7 +401,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -415,7 +419,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.07;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -431,7 +435,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -449,7 +453,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.07;
+				MARKETING_VERSION = 1.10;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;

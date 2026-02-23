@@ -1,8 +1,10 @@
 import SwiftUI
+import StoreKit
 
 // MARK: - Main Content View
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
+    @Environment(\.requestReview) private var requestReview
     @ObservedObject private var consentManager = ConsentManager.shared
     @ObservedObject private var trackingManager = TrackingManager.shared
     
@@ -18,8 +20,44 @@ struct ContentView: View {
     @State private var shouldApplyInitialRotation = false
     @State private var showPaywall = false
     @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
+    @State private var showCNYPopup = false
+    @State private var isCheckingSubscription = false
 
     private let capybaraVisualOffsetY: CGFloat = -40
+    
+    // Chinese New Year background date checking
+    private var shouldShowChineseNewYearTheme: Bool {
+        let now = Date()
+        
+        // Create date components in GMT timezone
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Start: Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        // End: Tuesday 24 February 2026 — 10:00 AM GMT
+        var endComponents = DateComponents()
+        endComponents.year = 2026
+        endComponents.month = 2
+        endComponents.day = 24
+        endComponents.hour = 10
+        endComponents.minute = 0
+        endComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents),
+              let endDate = calendar.date(from: endComponents) else {
+            return false
+        }
+        
+        return now >= startDate && now < endDate
+    }
     
     private func checkTutorialStatus() {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
@@ -34,12 +72,59 @@ struct ContentView: View {
     }
     
     private func checkPaywallStatus() {
-        showPaywall = !gameManager.gameState.hasCompletedPaywall
+        // Check if user has already completed the paywall
+        if gameManager.gameState.hasCompletedPaywall {
+            showPaywall = false
+            isCheckingSubscription = false
+            return
+        }
+        
+        // Check if user has an active subscription (e.g., from promo code)
+        isCheckingSubscription = true
+        Task {
+            let subscriptionManager = SubscriptionManager.shared
+            await subscriptionManager.checkSubscriptionStatus()
+            
+            await MainActor.run {
+                if subscriptionManager.activeSubscription != .free {
+                    // User has active subscription - skip paywall and grant initial coins
+                    let tier = subscriptionManager.activeSubscription ?? .free
+                    gameManager.completePaywall(with: tier)
+                    showPaywall = false
+                } else {
+                    // No subscription - show paywall
+                    showPaywall = true
+                }
+                isCheckingSubscription = false
+            }
+        }
     }
     
     var body: some View {
         Group {
-            if showPaywall {
+            if isCheckingSubscription {
+                // Show loading screen while checking subscription status
+                ZStack {
+                    AnimatedBackground()
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 20) {
+                        Image("iconcapybara")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                        
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .tint(.white)
+                        
+                        Text("Loading...")
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
+                }
+            } else if showPaywall {
                 PaywallView(selectedTier: $selectedSubscriptionTier)
                     .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
                         if let tier = newValue {
@@ -78,6 +163,13 @@ struct ContentView: View {
                                 showAdRemovalPromo = true
                             }
                         }
+                        
+                        // Check if we should show CNY popup
+                        if shouldShowChineseNewYearTheme && !gameManager.gameState.hasSeenCNY2026Popup {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                showCNYPopup = true
+                            }
+                        }
                     }
             }
         }
@@ -96,9 +188,14 @@ struct ContentView: View {
     private var mainContentView: some View {
         GeometryReader { geometry in
             ZStack {
-                // Background
-                AnimatedBackground()
-                    .ignoresSafeArea()
+                // Background - switches between CNY and regular theme
+                if shouldShowChineseNewYearTheme {
+                    ChineseNewYearBackground()
+                        .ignoresSafeArea()
+                } else {
+                    AnimatedBackground()
+                        .ignoresSafeArea()
+                }
                 
                 // Main content
                 VStack(spacing: 0) {
@@ -185,7 +282,7 @@ struct ContentView: View {
                         }
                         .padding(.leading, -8)
                         
-                        // Get More button
+                        // Get More button — opens shop (premium plans at top, then coin packs)
                         Button(action: {
                             HapticManager.shared.buttonPress()
                             showShopSheet = true
@@ -230,6 +327,7 @@ struct ContentView: View {
                     )
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
+                    .zIndex(0) // Stats behind capybara
                     
                     Spacer()
                     
@@ -245,6 +343,7 @@ struct ContentView: View {
                     )
                     .frame(height: 320) // Increased height to show full capybara including head
                     .offset(y: capybaraVisualOffsetY) // Move up higher on the page
+                    .zIndex(100) // Ensure capybara and accessories appear above stats
                     .tutorialHighlight(key: "capybara_tap")
                     .background(
                         GeometryReader { capyGeometry in
@@ -324,7 +423,7 @@ struct ContentView: View {
                 // Run away overlay
                 if gameManager.gameState.hasRunAway {
                     RunAwayView(onRestart: {
-                        gameManager.resetGame()
+                        gameManager.rescueNewCapybara()
                     })
                     .transition(.opacity)
                 }
@@ -349,6 +448,30 @@ struct ContentView: View {
                 if showAdRemovalPromo {
                     RemoveBannerAdPromoView(isPresented: $showAdRemovalPromo)
                         .zIndex(202) // Above everything
+                }
+                
+                // Chinese New Year popup
+                if showCNYPopup {
+                    ChineseNewYearPopup(onDismiss: {
+                        showCNYPopup = false
+                        gameManager.markCNYPopupSeen()
+                    })
+                    .zIndex(203) // Above everything
+                }
+                
+                // Achievement reward popup → then Apple review prompt
+                if let coins = gameManager.recentAchievementCoinReward {
+                    AchievementRewardPopup(coins: coins)
+                        .zIndex(204)
+                        .onAppear {
+                            // Dismiss popup after a few seconds, then show Apple review
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                                gameManager.clearRecentAchievementReward()
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                requestReview()
+                            }
+                        }
                 }
             }
             .coordinateSpace(name: "main")
@@ -486,13 +609,13 @@ struct ShopSheetView: View {
     }
 }
 
-// MARK: - Animated Background
+// MARK: - Regular Animated Background (Purple Theme)
 struct AnimatedBackground: View {
     @State private var phase: CGFloat = 0
     
     var body: some View {
         ZStack {
-            // Base gradient
+            // Base gradient - Original purple theme
             LinearGradient(
                 colors: [
                     Color(hex: "0f0c29"),
@@ -506,7 +629,7 @@ struct AnimatedBackground: View {
             // Animated orbs
             GeometryReader { geometry in
                 ZStack {
-                    // Large orb 1
+                    // Large purple orb 1
                     Circle()
                         .fill(
                             RadialGradient(
@@ -525,7 +648,7 @@ struct AnimatedBackground: View {
                             y: cos(phase * 0.7) * 40 - 200
                         )
                     
-                    // Large orb 2
+                    // Large blue orb 2
                     Circle()
                         .fill(
                             RadialGradient(
@@ -544,7 +667,7 @@ struct AnimatedBackground: View {
                             y: sin(phase * 0.6) * 50 + 200
                         )
                     
-                    // Small accent orb
+                    // Small gold accent orb
                     Circle()
                         .fill(
                             RadialGradient(
@@ -577,6 +700,321 @@ struct AnimatedBackground: View {
     }
 }
 
+// MARK: - Chinese New Year Background (Year of the Horse)
+struct ChineseNewYearBackground: View {
+    @State private var phase: CGFloat = 0
+    @State private var lanternPhase: CGFloat = 0
+    
+    var body: some View {
+        ZStack {
+            baseGradient
+            
+            GeometryReader { geometry in
+                ZStack {
+                    goldOrb
+                    redOrb
+                    accentOrb
+                    horseElements
+                    lanternElements
+                }
+                .frame(width: geometry.size.width, height: geometry.size.height)
+            }
+        }
+        .onAppear {
+            withAnimation(
+                .linear(duration: 10)
+                .repeatForever(autoreverses: false)
+            ) {
+                phase = .pi * 2
+            }
+            withAnimation(
+                .easeInOut(duration: 3)
+                .repeatForever(autoreverses: true)
+            ) {
+                lanternPhase = .pi
+            }
+        }
+    }
+    
+    private var baseGradient: some View {
+        LinearGradient(
+            colors: [
+                Color(hex: "5A0000"),
+                Color(hex: "8B0000"),
+                Color(hex: "6B0000")
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    private var goldOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FFD700").opacity(0.4),
+                        Color(hex: "FFA500").opacity(0.2),
+                        Color(hex: "FFD700").opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 200
+                )
+            )
+            .frame(width: 400, height: 400)
+            .offset(
+                x: sin(phase) * 30 - 100,
+                y: cos(phase * 0.7) * 40 - 200
+            )
+    }
+    
+    private var redOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FF6B6B").opacity(0.3),
+                        Color(hex: "DC143C").opacity(0.1),
+                        Color.red.opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 250
+                )
+            )
+            .frame(width: 500, height: 500)
+            .offset(
+                x: cos(phase * 0.8) * 40 + 100,
+                y: sin(phase * 0.6) * 50 + 200
+            )
+    }
+    
+    private var accentOrb: some View {
+        Circle()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color(hex: "FFD700").opacity(0.3),
+                        Color(hex: "FFA500").opacity(0.15),
+                        Color(hex: "FFD700").opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 120
+                )
+            )
+            .frame(width: 240, height: 240)
+            .offset(
+                x: sin(phase * 1.2) * 50,
+                y: cos(phase) * 30 + 100
+            )
+    }
+    
+    private var horseElements: some View {
+        ForEach(0..<3, id: \.self) { index in
+            horseElement(index: index)
+        }
+    }
+    
+    private func horseElement(index: Int) -> some View {
+        let xOffset = sin(phase + Double(index) * 2) * 80 + CGFloat(index * 120) - 180
+        let yOffset = cos(phase * 0.5 + Double(index)) * 60 + CGFloat(index * 200) - 100
+        let rotation = sin(phase + Double(index)) * 15
+        
+        return Text("🐴")
+            .font(.system(size: 60))
+            .opacity(0.08)
+            .offset(x: xOffset, y: yOffset)
+            .rotationEffect(.degrees(rotation))
+    }
+    
+    private var lanternElements: some View {
+        ForEach(0..<4, id: \.self) { index in
+            lanternElement(index: index)
+        }
+    }
+    
+    private func lanternElement(index: Int) -> some View {
+        let xOffset = cos(phase * 0.6 + Double(index) * 1.5) * 100 + CGFloat(index * 100) - 150
+        let yOffset = sin(phase * 0.8 + Double(index)) * 70 + CGFloat(index * 150) - 50
+        let rotation = cos(lanternPhase + Double(index)) * 10
+        
+        return Text("🏮")
+            .font(.system(size: 40))
+            .opacity(0.12)
+            .offset(x: xOffset, y: yOffset)
+            .rotationEffect(.degrees(rotation))
+    }
+}
+
+// MARK: - Chinese New Year Popup
+struct ChineseNewYearPopup: View {
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        ZStack {
+            // Semi-transparent background
+            Color.black.opacity(0.7)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    onDismiss()
+                }
+            
+            // Popup card
+            VStack(spacing: 24) {
+                // Title with lantern emoji
+                VStack(spacing: 8) {
+                    Text("🏮")
+                        .font(.system(size: 60))
+                    
+                    Text("Celebrate Chinese New Year!")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .multilineTextAlignment(.center)
+                    
+                    Text("New Items")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                
+                // Items list
+                VStack(alignment: .leading, spacing: 16) {
+                    CNYItemRow(emoji: "🥠", category: "Food", name: "Fortune Cookie")
+                    CNYItemRow(emoji: "🫖", category: "Drinks", name: "Jasmine Tea")
+                    CNYItemRow(emoji: "🏮", category: "Items", name: "Red Lantern")
+                }
+                .padding(.horizontal, 20)
+                
+                // Close button
+                Button(action: {
+                    HapticManager.shared.buttonPress()
+                    onDismiss()
+                }) {
+                    Text("Let's Celebrate!")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "DC143C"), Color(hex: "8B0000")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(16)
+                        .shadow(color: Color(hex: "DC143C").opacity(0.5), radius: 8, x: 0, y: 4)
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.vertical, 32)
+            .padding(.horizontal, 24)
+            .background(
+                RoundedRectangle(cornerRadius: 28)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "1a1a2e"),
+                                Color(hex: "16213e")
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 28)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.3)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+                    .shadow(color: Color(hex: "FFD700").opacity(0.3), radius: 20, x: 0, y: 10)
+            )
+            .padding(.horizontal, 32)
+        }
+    }
+}
+
+// MARK: - CNY Item Row
+struct CNYItemRow: View {
+    let emoji: String
+    let category: String
+    let name: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Emoji in circle
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: "FFD700").opacity(0.3), Color(hex: "FFA500").opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 50, height: 50)
+                
+                Text(emoji)
+                    .font(.system(size: 28))
+            }
+            
+            // Text info
+            VStack(alignment: .leading, spacing: 4) {
+                Text(name)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                HStack(spacing: 6) {
+                    Text("in")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.6))
+                    
+                    Text(category)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                }
+            }
+            
+            Spacer()
+            
+            // NEW badge
+            Text("NEW!")
+                .font(.system(size: 11, weight: .black, design: .rounded))
+                .foregroundStyle(Color(hex: "8B0000"))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+        }
+    }
+}
+
 // MARK: - Toast View
 struct ToastView: View {
     let message: String
@@ -599,6 +1037,51 @@ struct ToastView: View {
                     .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
             )
             .transition(.scale.combined(with: .opacity))
+    }
+}
+
+// MARK: - Achievement Reward Popup (then Apple review)
+struct AchievementRewardPopup: View {
+    let coins: Int
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                Text("🏆")
+                    .font(.system(size: 50))
+                
+                Text("Good job!")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                
+                Text("You have been awarded \(coins) coins.")
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.vertical, 28)
+            .padding(.horizontal, 32)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.4)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 2
+                            )
+                    )
+            )
+            .padding(.horizontal, 40)
+        }
+        .transition(.opacity)
     }
 }
 

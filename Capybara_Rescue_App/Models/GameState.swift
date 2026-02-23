@@ -24,13 +24,14 @@ struct GameState: Codable {
     var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
+    var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
-        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate
+        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
     }
     
     // Custom decoding for backward compatibility
@@ -57,6 +58,7 @@ struct GameState: Codable {
         hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
+        hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -96,6 +98,7 @@ struct GameState: Codable {
         try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
+        try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
     }
     
     // Manual initializer for default state
@@ -121,7 +124,8 @@ struct GameState: Codable {
         hasCompletedTutorial: Bool,
         hasCompletedPaywall: Bool,
         subscriptionTier: String?,
-        lastSubscriptionCheckDate: Date?
+        lastSubscriptionCheckDate: Date?,
+        hasSeenCNY2026Popup: Bool
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -145,6 +149,7 @@ struct GameState: Codable {
         self.hasCompletedPaywall = hasCompletedPaywall
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
+        self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
     }
     
     static let defaultState = GameState(
@@ -152,7 +157,7 @@ struct GameState: Codable {
         food: 60,
         drink: 60,
         happiness: 60,
-        capycoins: 0, // Will be set based on subscription tier chosen
+        capycoins: 500,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -169,7 +174,8 @@ struct GameState: Codable {
         hasCompletedTutorial: false,
         hasCompletedPaywall: false,
         subscriptionTier: nil,
-        lastSubscriptionCheckDate: nil
+        lastSubscriptionCheckDate: nil,
+        hasSeenCNY2026Popup: false
     )
     
     var hasActiveSubscription: Bool {
@@ -211,7 +217,8 @@ struct FoodItem: Identifiable, Equatable {
         FoodItem(emoji: "🍉", name: "Watermelon", foodValue: 25, cost: 5),
         FoodItem(emoji: "🌽", name: "Corn", foodValue: 36, cost: 6),
         FoodItem(emoji: "🥒", name: "Cucumber", foodValue: 49, cost: 7),
-        FoodItem(emoji: "🍇", name: "Grapes", foodValue: 64, cost: 8)
+        FoodItem(emoji: "🍇", name: "Grapes", foodValue: 64, cost: 8),
+        FoodItem(emoji: "🥠", name: "Fortune Cookie", foodValue: 81, cost: 9)
     ]
 }
 
@@ -230,7 +237,8 @@ struct DrinkItem: Identifiable, Equatable {
         DrinkItem(emoji: "🥥", name: "Coconut Water", drinkValue: 16, cost: 4),
         DrinkItem(emoji: "🍵", name: "Matcha Tea", drinkValue: 25, cost: 5),
         DrinkItem(emoji: "🧋", name: "Bubble Tea", drinkValue: 36, cost: 6),
-        DrinkItem(emoji: "🍹", name: "Fruit Smoothie", drinkValue: 49, cost: 7)
+        DrinkItem(emoji: "🍹", name: "Fruit Smoothie", drinkValue: 49, cost: 7),
+        DrinkItem(emoji: "🫖", name: "Jasmine Tea", drinkValue: 64, cost: 8)
     ]
 }
 
@@ -265,7 +273,8 @@ struct AccessoryItem: Identifiable, Equatable {
             "foxhat",
             "santahat",
             "cone",
-            "pizzahat"
+            "pizzahat",
+            "redlantern"
         ]
         
         return hatIds.contains(id)
@@ -286,6 +295,7 @@ struct AccessoryItem: Identifiable, Equatable {
         // Pro-Only Hats (modelFileName must match exact file name without .usdz extension)
         AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 0, modelFileName: "Cone", isProOnly: true),
         AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 0, modelFileName: "Pizza Hat", isProOnly: true),
+        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 0, modelFileName: "red-lantern", isProOnly: true),
     ]
     
     static var allItems: [AccessoryItem] {
@@ -392,3 +402,60 @@ enum MenuTab: String, CaseIterable {
     }
 }
 
+// MARK: - Date Extension for Chinese New Year Event
+extension Date {
+    // Check if it's during the CNY event (for popup, background, badges)
+    static func isChineseNewYearEvent2026() -> Bool {
+        let now = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Start: Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        // End: Tuesday 24 February 2026 — 10:00 AM GMT
+        var endComponents = DateComponents()
+        endComponents.year = 2026
+        endComponents.month = 2
+        endComponents.day = 24
+        endComponents.hour = 10
+        endComponents.minute = 0
+        endComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents),
+              let endDate = calendar.date(from: endComponents) else {
+            return false
+        }
+        
+        return now >= startDate && now < endDate
+    }
+    
+    // Check if CNY items should be visible (from Feb 13 onwards, forever)
+    static func shouldShowCNYItems2026() -> Bool {
+        let now = Date()
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "GMT")!
+        
+        // Items appear starting Friday 13 February 2026 — 10:00 AM GMT
+        var startComponents = DateComponents()
+        startComponents.year = 2026
+        startComponents.month = 2
+        startComponents.day = 13
+        startComponents.hour = 10
+        startComponents.minute = 0
+        startComponents.timeZone = TimeZone(identifier: "GMT")
+        
+        guard let startDate = calendar.date(from: startComponents) else {
+            return false
+        }
+        
+        // Show items from start date onwards (no end date)
+        return now >= startDate
+    }
+}
