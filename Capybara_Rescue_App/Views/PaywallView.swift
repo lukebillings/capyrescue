@@ -12,6 +12,8 @@ struct PaywallView: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var showRestoreSuccess = false
+    /// Currently selected plan (one of the 3 options); purchase happens when CTA is tapped.
+    @State private var selectedPlan: SubscriptionManager.SubscriptionTier = .annual
     
     var body: some View {
         ZStack {
@@ -20,7 +22,7 @@ struct PaywallView: View {
                 .ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(spacing: 14) {
                     // Dismiss button (when shown via sheet)
                     if showDismissButton {
                         HStack {
@@ -29,20 +31,20 @@ struct PaywallView: View {
                                 dismiss()
                             }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 30))
+                                    .font(.system(size: 26))
                                     .foregroundStyle(.white.opacity(0.6))
                             }
                             .padding(.trailing, 8)
                         }
-                        .padding(.top, 8)
+                        .padding(.top, 4)
                     }
                     
-                    // Header
-                    VStack(spacing: 12) {
+                    // Header (compact)
+                    VStack(spacing: 6) {
                         Image("iconcapybara")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 120, height: 120)
+                            .frame(width: 72, height: 72)
                             .clipShape(Circle())
                             .overlay(
                                 Circle()
@@ -52,17 +54,17 @@ struct PaywallView: View {
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         ),
-                                        lineWidth: 4
+                                        lineWidth: 3
                                     )
                             )
-                            .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 20, x: 0, y: 10)
+                            .shadow(color: Color(hex: "FFD700").opacity(0.35), radius: 12, x: 0, y: 6)
                         
                         Text("Welcome to")
-                            .font(.system(size: 20, weight: .medium, design: .rounded))
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.8))
                         
                         Text("Capyrescue")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -71,101 +73,129 @@ struct PaywallView: View {
                                 )
                             )
                         
-                        Text("Choose your plan")
-                            .font(.system(size: 18, weight: .medium, design: .rounded))
+                        Text("What plan would you like?")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.7))
-                            .padding(.top, 4)
                     }
-                    .padding(.top, 40)
-                    .padding(.bottom, 8)
+                    .padding(.top, 12)
+                    .padding(.bottom, 4)
                     
-                    // Annual Plan (Featured - Most Prominent)
-                    SubscriptionCard(
-                        tier: .annual,
-                        title: "Pro (Annual)",
-                        price: subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99"),
-                        priceSubtext: "per year",
-                        priceSubtext2: "Effectively \(subscriptionManager.monthlyPriceForAnnual())/month",
-                        badge: "BEST VALUE",
-                        badgeColor: Color(hex: "FFD700"),
-                        features: [
-                            "15,000 coins",
-                            "10,000 extra coins every month",
-                            "No banner ads",
-                            "Access exclusive items while subscribed"
-                        ],
-                        isFeatured: true,
-                        savings: "Save \(subscriptionManager.annualSavingsPercentage())% compared with monthly",
-                        rimColor: Color(hex: "FFD700"),
-                        buttonColor: Color(hex: "FFD700"),
-                        isProcessing: isProcessing
-                    ) {
-                        selectAnnualPlan()
-                    }
-                    .scaleEffect(1.05) // Make it slightly larger
-                    .shadow(color: Color(hex: "FFD700").opacity(0.6), radius: 30, x: 0, y: 15)
-                    
-                    // Monthly Plan
-                    SubscriptionCard(
-                        tier: .monthly,
-                        title: "Pro (Monthly)",
-                        price: subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99"),
-                        priceSubtext: "per month",
-                        priceSubtext2: nil,
-                        badge: nil,
-                        badgeColor: nil,
-                        features: [
-                            "2,000 coins",
-                            "2,000 extra coins every month",
-                            "No banner ads",
-                            "Access exclusive items while subscribed"
-                        ],
-                        isFeatured: false,
-                        savings: nil,
-                        rimColor: Color(hex: "C0C0C0"),
-                        buttonColor: Color(hex: "A8A8A8"),
-                        isProcessing: isProcessing
-                    ) {
-                        selectMonthlyPlan()
-                    }
-                    
-                    // Free Plan (only show if not hidden)
-                    if !hideFreeOption {
-                        SubscriptionCard(
-                            tier: .free,
-                            title: "Free",
-                            price: "£0",
-                            priceSubtext: "forever",
-                            priceSubtext2: nil,
-                            badge: nil,
-                            badgeColor: nil,
+                    // Three selectable options (radio-style) — tap to select, then use CTA to purchase
+                    VStack(spacing: 8) {
+                        PaywallPlanRow(
+                            tier: .annual,
+                            title: "Yearly",
+                            subtext: "",
+                            subtextHighlight: "7-day free trial",
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99"),
+                            priceSubtext: "/ year",
+                            priceSubtext2: "Only \(subscriptionManager.monthlyPriceForAnnual())/month",
+                            badge: "BEST VALUE",
+                            savingsBadge: "Save \(subscriptionManager.annualSavingsPercentage())% vs monthly",
                             features: [
-                                "500 coins",
-                                "Banner ads shown",
-                                "Unlock coins via reward ads and achievements"
+                                "No banner ads",
+                                "15,000 coins + 10,000 every month",
+                                "Access exclusive items while subscribed"
                             ],
-                            isFeatured: false,
-                            savings: nil,
-                            rimColor: Color(hex: "CD7F32"),
-                            buttonColor: Color(hex: "B8722C"),
+                            isSelected: selectedPlan == .annual,
                             isProcessing: isProcessing
                         ) {
-                            selectFreePlan()
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .annual
+                        }
+                        
+                        PaywallPlanRow(
+                            tier: .monthly,
+                            title: "Monthly",
+                            subtext: "",
+                            subtextHighlight: nil,
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99"),
+                            priceSubtext: "/ month",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            savingsBadge: nil,
+                            features: [
+                                "No banner ads",
+                                "2,000 coins + 2,000 every month",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isSelected: selectedPlan == .monthly,
+                            isProcessing: isProcessing
+                        ) {
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .monthly
+                        }
+                        
+                        PaywallPlanRow(
+                            tier: .weekly,
+                            title: "Weekly",
+                            subtext: "",
+                            subtextHighlight: nil,
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.weeklyProductId, fallback: "£0.99"),
+                            priceSubtext: "/ week",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            savingsBadge: nil,
+                            features: [
+                                "No banner ads",
+                                "1,000 coins + 500 every week",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isSelected: selectedPlan == .weekly,
+                            isProcessing: isProcessing
+                        ) {
+                            HapticManager.shared.buttonPress()
+                            selectedPlan = .weekly
                         }
                     }
+                    
+                    // Single CTA button — "Start Your 7-Day Free Trial" when yearly selected
+                    Button(action: purchaseSelectedPlan) {
+                        HStack(spacing: 6) {
+                            Text(ctaButtonTitle)
+                                .font(.system(size: 17, weight: .bold, design: .rounded))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 15, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 10, x: 0, y: 5)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                    .disabled(isProcessing)
+                    .opacity(isProcessing ? 0.7 : 1)
+                    .padding(.top, 4)
+                    
+                    // Footer line: trial / cancel copy (clear "after trial" for yearly)
+                    Text(footerTrialText)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundColor(.white.opacity(0.5))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 2)
                     
                     // Restore Purchases Button
                     Button(action: restorePurchases) {
                         Text("Restore Purchases")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 13, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.5))
                             .underline()
                     }
                     .disabled(isProcessing)
-                    .padding(.top, 8)
+                    .padding(.top, 4)
                     
                     // Legal text - Apple Compliance
-                    VStack(spacing: 10) {
+                    VStack(spacing: 6) {
                         // Auto-renewal information
                         Text("Payment will be charged to your Apple Account at confirmation of purchase. Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period.")
                             .font(.system(size: 11, weight: .regular))
@@ -204,10 +234,10 @@ struct PaywallView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 32)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 18)
             }
             
             // Loading overlay
@@ -238,36 +268,48 @@ struct PaywallView: View {
         }
     }
     
-    // MARK: - Actions
-    private func selectAnnualPlan() {
-        Task {
-            isProcessing = true
-            defer { isProcessing = false }
-            
-            do {
-                try await subscriptionManager.purchaseSubscription(productId: SubscriptionManager.annualProductId)
-                await subscriptionManager.checkSubscriptionStatus()
-                selectedTier = .annual
-                HapticManager.shared.purchaseSuccess()
-            } catch is CancellationError {
-                // User cancelled, do nothing
-            } catch {
-                errorMessage = error.localizedDescription
-                showError = true
-                HapticManager.shared.purchaseFailed()
-            }
+    /// Title for the single CTA button (e.g. "Start Your 7-Day Free Trial" when yearly selected).
+    private var ctaButtonTitle: String {
+        switch selectedPlan {
+        case .annual: return "Start Your 7-Day Free Trial"
+        case .monthly: return "Subscribe Monthly"
+        case .weekly: return "Subscribe Weekly"
+        case .free: return "Start Your 7-Day Free Trial"
         }
     }
     
-    private func selectMonthlyPlan() {
+    /// Footer text below CTA (trial / cancel copy).
+    private var footerTrialText: String {
+        let annualPrice = subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99")
+        let monthlyPrice = subscriptionManager.displayPrice(for: SubscriptionManager.monthlyProductId, fallback: "£3.99")
+        let weeklyPrice = subscriptionManager.displayPrice(for: SubscriptionManager.weeklyProductId, fallback: "£0.99")
+        switch selectedPlan {
+        case .annual: return "7-day free trial, then \(annualPrice)/year. Billed annually. Cancel anytime."
+        case .monthly: return "\(monthlyPrice)/month · Billed monthly · Cancel anytime"
+        case .weekly: return "\(weeklyPrice)/week · Billed weekly · Cancel anytime"
+        case .free: return "7-day free trial, then \(annualPrice)/year. Billed annually. Cancel anytime."
+        }
+    }
+    
+    // MARK: - Actions
+    /// Purchases the currently selected plan (single CTA flow).
+    private func purchaseSelectedPlan() {
         Task {
             isProcessing = true
             defer { isProcessing = false }
             
+            let productId: String
+            switch selectedPlan {
+            case .annual: productId = SubscriptionManager.annualProductId
+            case .monthly: productId = SubscriptionManager.monthlyProductId
+            case .weekly: productId = SubscriptionManager.weeklyProductId
+            case .free: return
+            }
+            
             do {
-                try await subscriptionManager.purchaseSubscription(productId: SubscriptionManager.monthlyProductId)
+                try await subscriptionManager.purchaseSubscription(productId: productId)
                 await subscriptionManager.checkSubscriptionStatus()
-                selectedTier = .monthly
+                selectedTier = selectedPlan
                 HapticManager.shared.purchaseSuccess()
             } catch is CancellationError {
                 // User cancelled, do nothing
@@ -312,6 +354,125 @@ struct PaywallView: View {
         if let url = URL(string: urlString) {
             UIApplication.shared.open(url)
         }
+    }
+}
+
+// MARK: - Paywall Plan Row (selectable option: radio + title + subtext + benefits in rectangle, price + badges)
+struct PaywallPlanRow: View {
+    let tier: SubscriptionManager.SubscriptionTier
+    let title: String
+    let subtext: String
+    var subtextHighlight: String? = nil  // When set (e.g. "7-day free trial"), shown bold + gold below subtext
+    let price: String
+    let priceSubtext: String
+    var priceSubtext2: String? = nil  // Optional line under price (e.g. "Only £2.49/month" for yearly)
+    let badge: String?
+    let savingsBadge: String?
+    let features: [String]
+    let isSelected: Bool
+    let isProcessing: Bool
+    let action: () -> Void
+    
+    private var accentColor: Color {
+        isSelected ? Color(hex: "FFD700") : Color.white.opacity(0.7)
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 8) {
+                // Top row: radio + title/subtext left, price + badges right
+                HStack(alignment: .top, spacing: 10) {
+                    HStack(alignment: .center, spacing: 12) {
+                        Image(systemName: isSelected ? "circle.inset.filled" : "circle")
+                            .font(.system(size: 22))
+                            .foregroundStyle(isSelected ? Color(hex: "FFD700") : .white.opacity(0.5))
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(title)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            if !subtext.isEmpty {
+                                Text(subtext)
+                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                            if let highlight = subtextHighlight {
+                                Text(highlight)
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            }
+                        }
+                        
+                        Spacer(minLength: 8)
+                    }
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        if let badge = badge, tier == .annual {
+                            Text(badge)
+                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Capsule().fill(Color(hex: "FFD700").opacity(0.9)))
+                        }
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(price)
+                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            Text(priceSubtext)
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                        if let line2 = priceSubtext2 {
+                            Text(line2)
+                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        if let savings = savingsBadge, tier == .annual {
+                            Text(savings)
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(hex: "FFD700"))
+                        }
+                    }
+                }
+                
+                // Benefits inside the rectangle
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(features, id: \.self) { feature in
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundStyle(accentColor)
+                            Text(feature)
+                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                    }
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(isSelected ? Color.white.opacity(0.15) : Color.white.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(
+                                isSelected ? Color(hex: "FFD700").opacity(0.7) : Color.white.opacity(0.15),
+                                lineWidth: isSelected ? 2 : 1
+                            )
+                    )
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .disabled(isProcessing)
+        .opacity(isProcessing ? 0.6 : 1)
     }
 }
 

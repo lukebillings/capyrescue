@@ -10,6 +10,7 @@ class SubscriptionManager: ObservableObject {
     // Product IDs - update these with your actual App Store Connect product IDs
     static let annualProductId = "com.capybara.pro.annual"
     static let monthlyProductId = "com.capybara.pro.monthly"
+    static let weeklyProductId = "com.capybara.pro.weekly"
     
     @Published private(set) var products: [String: Product] = [:]
     @Published private(set) var isLoading: Bool = false
@@ -18,12 +19,14 @@ class SubscriptionManager: ObservableObject {
     
     enum SubscriptionTier: String, Codable {
         case free
+        case weekly
         case monthly
         case annual
         
         var displayName: String {
             switch self {
             case .free: return "Free"
+            case .weekly: return "Pro (Weekly)"
             case .monthly: return "Pro (Monthly)"
             case .annual: return "Pro (Annual)"
             }
@@ -32,6 +35,7 @@ class SubscriptionManager: ObservableObject {
         var startingCoins: Int {
             switch self {
             case .free: return 500
+            case .weekly: return 1000
             case .monthly: return 2000
             case .annual: return 15000
             }
@@ -40,8 +44,17 @@ class SubscriptionManager: ObservableObject {
         var monthlyCoins: Int {
             switch self {
             case .free: return 0
+            case .weekly: return 0
             case .monthly: return 2000
             case .annual: return 10000
+            }
+        }
+        
+        /// Recurring coins per week (for weekly plan only).
+        var weeklyCoins: Int {
+            switch self {
+            case .weekly: return 500
+            default: return 0
             }
         }
         
@@ -67,7 +80,7 @@ class SubscriptionManager: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
-        let productIds = [Self.annualProductId, Self.monthlyProductId]
+        let productIds = [Self.annualProductId, Self.monthlyProductId, Self.weeklyProductId]
         
         do {
             let fetchedProducts = try await Product.products(for: productIds)
@@ -110,17 +123,18 @@ class SubscriptionManager: ObservableObject {
     func checkSubscriptionStatus() async {
         var currentSubscription: SubscriptionTier? = nil
         
-        // Check current entitlements for active subscriptions
+        // Check current entitlements for active subscriptions (precedence: annual > monthly > weekly)
         for await result in Transaction.currentEntitlements {
             do {
                 let transaction = try checkVerified(result)
                 
-                // Check if this is one of our subscription products
                 if transaction.productID == Self.annualProductId {
                     currentSubscription = .annual
-                    break // Annual takes precedence
+                    break
                 } else if transaction.productID == Self.monthlyProductId {
-                    currentSubscription = .monthly
+                    if currentSubscription != .annual { currentSubscription = .monthly }
+                } else if transaction.productID == Self.weeklyProductId {
+                    if currentSubscription == nil { currentSubscription = .weekly }
                 }
             } catch {
                 print("❌ Failed to verify transaction: \(error)")
@@ -190,6 +204,23 @@ class SubscriptionManager: ObservableObject {
         guard monthlyEquivalent > 0 else { return 38 }
         
         let savings = ((monthlyEquivalent - annualPrice) / monthlyEquivalent) * 100
+        return Int(savings.rounded())
+    }
+    
+    /// Savings percentage for annual vs paying weekly for a year (52 weeks).
+    func annualSavingsVsWeeklyPercentage() -> Int {
+        guard let annualProduct = products[Self.annualProductId],
+              let weeklyProduct = products[Self.weeklyProductId] else {
+            return 37 // Default fallback
+        }
+        
+        let annualPrice = Double(truncating: annualProduct.price as NSDecimalNumber)
+        let weeklyPrice = Double(truncating: weeklyProduct.price as NSDecimalNumber)
+        let weeklyEquivalent = weeklyPrice * 52
+        
+        guard weeklyEquivalent > 0 else { return 37 }
+        
+        let savings = ((weeklyEquivalent - annualPrice) / weeklyEquivalent) * 100
         return Int(savings.rounded())
     }
 }

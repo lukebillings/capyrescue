@@ -88,6 +88,30 @@ struct ShopPanel: View {
                         ) {
                             handleSubscriptionPurchase(.monthly)
                         }
+                        
+                        // Weekly Plan (price from App Store Connect via StoreKit)
+                        SubscriptionCard(
+                            tier: .weekly,
+                            title: "Pro (Weekly)",
+                            price: subscriptionManager.displayPrice(for: SubscriptionManager.weeklyProductId, fallback: "£0.99"),
+                            priceSubtext: "per week",
+                            priceSubtext2: nil,
+                            badge: nil,
+                            badgeColor: nil,
+                            features: [
+                                "1,000 coins",
+                                "500 extra coins every week",
+                                "No banner ads",
+                                "Access exclusive items while subscribed"
+                            ],
+                            isFeatured: false,
+                            savings: nil,
+                            rimColor: Color(hex: "C0C0C0"),
+                            buttonColor: Color(hex: "A8A8A8"),
+                            isProcessing: isPurchasing
+                        ) {
+                            handleSubscriptionPurchase(.weekly)
+                        }
                     }
                     .padding(.horizontal, 16)
                     
@@ -326,8 +350,10 @@ struct ShopPanel: View {
             await subscriptionManager.checkSubscriptionStatus()
             
             // If they already have this tier or better, just activate it
-            if subscriptionManager.activeSubscription == tier || 
-               (tier == .monthly && subscriptionManager.activeSubscription == .annual) {
+            let alreadyHasTierOrBetter = subscriptionManager.activeSubscription == tier ||
+                (tier == .monthly && subscriptionManager.activeSubscription == .annual) ||
+                (tier == .weekly && (subscriptionManager.activeSubscription == .monthly || subscriptionManager.activeSubscription == .annual))
+            if alreadyHasTierOrBetter {
                 gameManager.upgradeSubscription(to: subscriptionManager.activeSubscription ?? tier)
                 gameManager.showToast("Subscription activated! \(tier.startingCoins) coins added! 🎉")
                 HapticManager.shared.purchaseSuccess()
@@ -335,7 +361,13 @@ struct ShopPanel: View {
             }
             
             do {
-                let productId = tier == .annual ? SubscriptionManager.annualProductId : SubscriptionManager.monthlyProductId
+                let productId: String
+                switch tier {
+                case .annual: productId = SubscriptionManager.annualProductId
+                case .monthly: productId = SubscriptionManager.monthlyProductId
+                case .weekly: productId = SubscriptionManager.weeklyProductId
+                case .free: return // No purchase for free
+                }
                 try await subscriptionManager.purchaseSubscription(productId: productId)
                 await subscriptionManager.checkSubscriptionStatus()
                 
