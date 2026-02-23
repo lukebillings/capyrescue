@@ -673,6 +673,20 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Reset
+    
+    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, paywall, and all other progress.
+    func rescueNewCapybara() {
+        var state = gameState
+        state.food = GameState.defaultState.food
+        state.drink = GameState.defaultState.drink
+        state.happiness = GameState.defaultState.happiness
+        state.lastUpdateTime = Date()
+        state.hasRunAway = false
+        gameState = state
+        showRunAwayAlert = false
+    }
+    
+    /// Full reset to default state (e.g. for debugging). Use rescueNewCapybara() when user taps "Rescue Another Capybara".
     func resetGame() {
         gameState = GameState.defaultState
         showRunAwayAlert = false

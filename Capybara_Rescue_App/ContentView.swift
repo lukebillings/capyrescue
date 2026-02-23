@@ -421,7 +421,7 @@ struct ContentView: View {
                 // Run away overlay
                 if gameManager.gameState.hasRunAway {
                     RunAwayView(onRestart: {
-                        gameManager.resetGame()
+                        gameManager.rescueNewCapybara()
                     })
                     .transition(.opacity)
                 }
