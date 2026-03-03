@@ -25,6 +25,7 @@ struct GameState: Codable {
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
+    var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the 500 coins/week
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
@@ -32,6 +33,7 @@ struct GameState: Codable {
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
         case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
+        case lastWeeklyCoinsGrantDate
     }
     
     // Custom decoding for backward compatibility
@@ -59,6 +61,7 @@ struct GameState: Codable {
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
+        lastWeeklyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastWeeklyCoinsGrantDate)
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -99,6 +102,7 @@ struct GameState: Codable {
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
+        try container.encodeIfPresent(lastWeeklyCoinsGrantDate, forKey: .lastWeeklyCoinsGrantDate)
     }
     
     // Manual initializer for default state
@@ -125,7 +129,8 @@ struct GameState: Codable {
         hasCompletedPaywall: Bool,
         subscriptionTier: String?,
         lastSubscriptionCheckDate: Date?,
-        hasSeenCNY2026Popup: Bool
+        hasSeenCNY2026Popup: Bool,
+        lastWeeklyCoinsGrantDate: Date?
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -150,6 +155,7 @@ struct GameState: Codable {
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
+        self.lastWeeklyCoinsGrantDate = lastWeeklyCoinsGrantDate
     }
     
     static let defaultState = GameState(
@@ -175,7 +181,8 @@ struct GameState: Codable {
         hasCompletedPaywall: false,
         subscriptionTier: nil,
         lastSubscriptionCheckDate: nil,
-        hasSeenCNY2026Popup: false
+        hasSeenCNY2026Popup: false,
+        lastWeeklyCoinsGrantDate: nil
     )
     
     var hasActiveSubscription: Bool {

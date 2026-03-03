@@ -32,6 +32,7 @@
 		8154EAB42F3B8ABB0054066B /* red-lantern.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8154EAB32F3B8ABB0054066B /* red-lantern.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
 		81B4600F2F325EB500F10BC3 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B4600E2F325EB500F10BC3 /* PaywallView.swift */; };
+		81B4601F2F325EB500F10BC3 /* PaywallView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B4601E2F325EB500F10BC3 /* PaywallView2.swift */; };
 		81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460102F328CB300F10BC3 /* Pizza Hat.usdz */; };
 		81B460132F328CB300F10BC3 /* Cone.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460112F328CB300F10BC3 /* Cone.usdz */; };
 		81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */; };
@@ -85,6 +86,7 @@
 		815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capybara_Rescue_App.entitlements; sourceTree = "<group>"; };
 		8154EAB32F3B8ABB0054066B /* red-lantern.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "red-lantern.usdz"; sourceTree = "<group>"; };
 		81B4600E2F325EB500F10BC3 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		81B4601E2F325EB500F10BC3 /* PaywallView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView2.swift; sourceTree = "<group>"; };
 		81B460102F328CB300F10BC3 /* Pizza Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pizza Hat.usdz"; sourceTree = "<group>"; };
 		81B460112F328CB300F10BC3 /* Cone.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Cone.usdz; sourceTree = "<group>"; };
 		81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Baseball cap.usdz"; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				81B4600E2F325EB500F10BC3 /* PaywallView.swift */,
+				81B4601E2F325EB500F10BC3 /* PaywallView2.swift */,
 				6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */,
 				0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* RemoveBannerAdPromoView.swift */,
@@ -357,6 +360,7 @@
 			files = (
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */,
 				81B4600F2F325EB500F10BC3 /* PaywallView.swift in Sources */,
+				81B4601F2F325EB500F10BC3 /* PaywallView2.swift in Sources */,
 				0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */,
 				23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */,
 				F8A2B3C4D5E6F7A8B9C0D1E2 /* RemoveBannerAdPromoView.swift in Sources */,
@@ -401,7 +405,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -435,7 +439,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;

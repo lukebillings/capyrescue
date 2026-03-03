@@ -8,6 +8,7 @@ struct PaywallView: View {
     @Binding var selectedTier: SubscriptionManager.SubscriptionTier?
     var hideFreeOption: Bool = false // When true, hides the Free tier option
     var showDismissButton: Bool = false // When true, shows X button to dismiss
+    var onSkip: (() -> Void)? = nil // When set, X button calls this (e.g. skip paywall as free)
     @State private var isProcessing = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -28,6 +29,7 @@ struct PaywallView: View {
                         HStack {
                             Spacer()
                             Button(action: {
+                                onSkip?()
                                 dismiss()
                             }) {
                                 Image(systemName: "xmark.circle.fill")

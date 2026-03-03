@@ -621,6 +621,11 @@ class GameManager: ObservableObject {
             unlockProItemsIfNeeded()
         }
         
+        // Pro Weekly: mark grant date so first 500/week is in 7 days
+        if tier == .weekly {
+            gameState.lastWeeklyCoinsGrantDate = Date()
+        }
+        
         print("✅ Paywall completed with \(tier.displayName) tier")
         print("   Set coins to \(tier.startingCoins)")
     }
@@ -644,6 +649,11 @@ class GameManager: ObservableObject {
             unlockProItemsIfNeeded()
         }
         
+        // Pro Weekly: mark grant date so first 500/week is in 7 days
+        if tier == .weekly {
+            gameState.lastWeeklyCoinsGrantDate = Date()
+        }
+        
         print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
         print("   Added \(tier.startingCoins) coins to balance")
         print("   New balance: \(gameState.capycoins) coins")
@@ -663,6 +673,35 @@ class GameManager: ObservableObject {
             return .free
         }
         return tier
+    }
+    
+    /// Grants 500 coins to Pro Weekly subscribers every 7 days. Call from main content onAppear.
+    func grantWeeklySubscriptionCoinsIfNeeded() {
+        guard currentSubscriptionTier() == .weekly else { return }
+        let amount = SubscriptionManager.SubscriptionTier.weekly.weeklyCoins
+        let now = Date()
+#if DEBUG
+        // In Debug: use 7-second interval so you can test without waiting 7 days
+        let interval: TimeInterval = 7
+        let useSeconds = true
+#else
+        let interval: TimeInterval = 7 * 24 * 60 * 60 // 7 days in seconds
+        let useSeconds = false
+#endif
+        
+        if let last = gameState.lastWeeklyCoinsGrantDate {
+            let nextGrant = useSeconds ? last.addingTimeInterval(interval) : Calendar.current.date(byAdding: .day, value: 7, to: last)
+            guard let next = nextGrant, now >= next else {
+                return
+            }
+            gameState.capycoins += amount
+            gameState.lastWeeklyCoinsGrantDate = now
+            showToast("Weekly Pro reward: \(amount) coins! 🎉")
+            print("✅ Granted \(amount) weekly coins (Pro Weekly). New balance: \(gameState.capycoins)")
+        } else {
+            // First time we see weekly subscriber (e.g. existing user before this feature): start 7-day window
+            gameState.lastWeeklyCoinsGrantDate = now
+        }
     }
     
     // MARK: - Pro Items Management

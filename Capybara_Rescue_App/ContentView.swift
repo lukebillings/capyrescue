@@ -71,7 +71,14 @@ struct ContentView: View {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
     }
     
-    private func checkPaywallStatus() {
+    /// When skipLoading is true (e.g. right after pledge), paywall is shown immediately and subscription check runs in background without a loading spinner.
+    private func checkPaywallStatus(skipLoading: Bool = false) {
+        // Show paywall only after onboarding (including pledge) is complete
+        if !gameManager.gameState.hasCompletedOnboarding {
+            showPaywall = false
+            isCheckingSubscription = false
+            return
+        }
         // Check if user has already completed the paywall
         if gameManager.gameState.hasCompletedPaywall {
             showPaywall = false
@@ -80,7 +87,9 @@ struct ContentView: View {
         }
         
         // Check if user has an active subscription (e.g., from promo code)
-        isCheckingSubscription = true
+        if !skipLoading {
+            isCheckingSubscription = true
+        }
         Task {
             let subscriptionManager = SubscriptionManager.shared
             await subscriptionManager.checkSubscriptionStatus()
@@ -124,37 +133,55 @@ struct ContentView: View {
                             .foregroundColor(.white.opacity(0.7))
                     }
                 }
-            } else if showPaywall {
-                PaywallView(selectedTier: $selectedSubscriptionTier)
-                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
-                        if let tier = newValue {
-                            // User selected a tier, complete paywall and award initial coins
-                            gameManager.completePaywall(with: tier)
-                            showPaywall = false
-                            // Check if we need to show onboarding next
-                            checkOnboardingStatus()
-                        }
-                    }
             } else if showOnboarding {
                 OnboardingView(isPresented: $showOnboarding)
                     .environmentObject(gameManager)
                     .onChange(of: showOnboarding) { oldValue, newValue in
                         if !newValue {
-                            // Onboarding completed, apply initial rotation and check if tutorial should show
+                            // Onboarding (including pledge) completed — show paywall immediately, then check subscription in background
+                            if !gameManager.gameState.hasCompletedPaywall {
+                                showPaywall = true
+                                checkPaywallStatus(skipLoading: true) // no loading spinner; paywall already showing
+                            }
                             shouldApplyInitialRotation = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 checkTutorialStatus()
                             }
-                            // Reset after a short delay so it only applies once
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 shouldApplyInitialRotation = false
                             }
+                        }
+                    }
+            } else if showPaywall {
+                PaywallView2(
+                    selectedTier: $selectedSubscriptionTier,
+                    showDismissButton: true,
+                    onSkip: {
+                        showPaywall = false
+                        gameManager.completePaywall(with: .free)
+                        checkOnboardingStatus()
+                    },
+                    capybaraName: gameManager.gameState.capybaraName
+                )
+                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
+                        if let tier = newValue {
+                            gameManager.completePaywall(with: tier)
+                            showPaywall = false
+                            checkOnboardingStatus()
                         }
                     }
             } else {
                 mainContentView
                     .onAppear {
                         checkTutorialStatus()
+                        // TEMPORARY: Debug-only 100k coins for testing (remove for release)
+                        #if DEBUG
+                        var state = gameManager.gameState
+                        state.capycoins = 100_000
+                        gameManager.gameState = state
+                        #endif
+                        // Pro Weekly: grant 500 coins every 7 days if eligible
+                        gameManager.grantWeeklySubscriptionCoinsIfNeeded()
                         // Track app open and check if we should show ad removal promo
                         gameManager.incrementAppOpenCount()
                         if AdsConfig.bannerAdsEnabled && gameManager.shouldShowAdRemovalPromo() {

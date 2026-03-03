@@ -27,7 +27,8 @@ enum AdsConfig {
     /// while removing banners from the UI and preventing banner requests.
     static var bannerAdsEnabled: Bool {
         if !adsEnabled { return false }
-        return true
+        // TEMPORARY: disable banner ads for testing (set back to true for release)
+        return false
     }
 
     /// Use Google-provided test ad unit IDs in Debug builds.
