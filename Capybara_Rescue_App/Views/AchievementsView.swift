@@ -172,10 +172,10 @@ struct AchievementRow: View {
                 HStack(spacing: 4) {
                     Text("₵")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(hex: "FFD700"))
+                        .foregroundStyle(Color(hex: "1a5f1a"))
                     Text("\(achievement.coinReward) coins")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(hex: "FFD700"))
+                        .foregroundStyle(Color(hex: "1a5f1a"))
                     Text(isEarned ? "rewarded" : "reward")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundStyle(Color.primary.opacity(0.8))

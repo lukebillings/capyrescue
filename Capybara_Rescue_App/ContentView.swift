@@ -5,6 +5,7 @@ import StoreKit
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.requestReview) private var requestReview
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false

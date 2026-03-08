@@ -33,7 +33,7 @@ struct SettingsView: View {
                             ) {
                                 Toggle("", isOn: $settingsManager.darkMode)
                                     .labelsHidden()
-                                    .tint(Color(hex: "FFD700"))
+                                    .tint(Color(hex: "1a5f1a"))
                             }
                             
                             Divider()
@@ -47,7 +47,7 @@ struct SettingsView: View {
                             ) {
                                 Toggle("", isOn: $settingsManager.soundEnabled)
                                     .labelsHidden()
-                                    .tint(Color(hex: "FFD700"))
+                                    .tint(Color(hex: "1a5f1a"))
                             }
                             
                             Divider()
@@ -61,7 +61,7 @@ struct SettingsView: View {
                             ) {
                                 Toggle("", isOn: $settingsManager.hapticEnabled)
                                     .labelsHidden()
-                                    .tint(Color(hex: "FFD700"))
+                                    .tint(Color(hex: "1a5f1a"))
                             }
                         }
                         .background(
@@ -190,13 +190,7 @@ private struct SettingsRow<T: View>: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+                .foregroundStyle(Color(hex: "1a5f1a"))
                 .frame(width: 28, alignment: .center)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -229,13 +223,7 @@ private struct SettingsActionRow: View {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.system(size: 20))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(Color(hex: "1a5f1a"))
                     .frame(width: 28, alignment: .center)
                 
                 VStack(alignment: .leading, spacing: 2) {
@@ -265,19 +253,14 @@ private struct SettingsLinkRow: View {
     let icon: String
     let title: String
     let url: String
+    @Environment(\.openURL) private var openURL
     
     var body: some View {
-        Link(destination: URL(string: url)!) {
+        Button(action: { openURL(URL(string: url)!) }) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.system(size: 20))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(Color(hex: "1a5f1a"))
                     .frame(width: 28, alignment: .center)
                 
                 Text(title)
@@ -288,11 +271,12 @@ private struct SettingsLinkRow: View {
                 
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.primary.opacity(0.7))
+                    .foregroundStyle(Color.primary.opacity(0.7))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -318,14 +302,15 @@ private struct LanguagePickerSheet: View {
                             HStack {
                                 Text(lang.displayName)
                                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(Color(hex: "1a5f1a"))
                                 Spacer()
                                 if localizationManager.currentLanguage == lang.code {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(Color(hex: "FFD700"))
+                                        .foregroundStyle(Color(hex: "1a5f1a"))
                                 }
                             }
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .scrollContentBackground(.hidden)
