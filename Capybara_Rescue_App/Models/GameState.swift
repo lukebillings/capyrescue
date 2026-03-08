@@ -299,10 +299,10 @@ struct AccessoryItem: Identifiable, Equatable {
         AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 20000, modelFileName: "Frog Hat", isProOnly: false),
         AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 15000, modelFileName: "Fox Hat", isProOnly: false),
         AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 25000, modelFileName: "Santahat", isProOnly: false),
-        // Pro-Only Hats (modelFileName must match exact file name without .usdz extension)
-        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 0, modelFileName: "Cone", isProOnly: true),
-        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 0, modelFileName: "Pizza Hat", isProOnly: true),
-        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 0, modelFileName: "red-lantern", isProOnly: true),
+        // Premium Hats (formerly Pro-only, now purchasable with coins)
+        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 30000, modelFileName: "Cone", isProOnly: false),
+        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 35000, modelFileName: "Pizza Hat", isProOnly: false),
+        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 40000, modelFileName: "red-lantern", isProOnly: false),
     ]
     
     static var allItems: [AccessoryItem] {
@@ -398,6 +398,24 @@ enum MenuTab: String, CaseIterable {
     case drink = "Drink"
     case items = "Items"
     case shop = "Shop"
+    
+    var localizedTitle: String {
+        switch self {
+        case .food: return L("menu.food")
+        case .drink: return L("menu.drink")
+        case .items: return L("menu.items")
+        case .shop: return L("menu.shop")
+        }
+    }
+    
+    var localizedSubtitle: String {
+        switch self {
+        case .food: return L("menu.foodSubtitle")
+        case .drink: return L("menu.drinkSubtitle")
+        case .items: return L("menu.itemsSubtitle")
+        case .shop: return L("menu.shopSubtitle")
+        }
+    }
     
     var icon: String {
         switch self {

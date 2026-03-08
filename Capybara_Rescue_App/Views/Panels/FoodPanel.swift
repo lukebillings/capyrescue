@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Food Panel
 struct FoodPanel: View {
     @EnvironmentObject var gameManager: GameManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let onFoodSelected: (FoodItem) -> Void
     let onBack: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
@@ -56,21 +57,16 @@ struct FoodPanel: View {
                             }) {
                                 Image(systemName: "chevron.left.circle.fill")
                                     .font(.system(size: 28))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(.primary.opacity(0.8))
                             }
+                            .padding(.leading, 8)
                         }
                         
                         Spacer()
                         
-                        VStack(spacing: 4) {
-                            Text("Feed Your Capybara")
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                            
-                            Text("Foods are one time use")
-                                .font(.system(size: 12, weight: .regular, design: .rounded))
-                                .foregroundStyle(.white.opacity(0.6))
-                        }
+                        Text(L("panel.feedTitle"))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
                         
                         Spacer()
                         
@@ -84,7 +80,7 @@ struct FoodPanel: View {
                     .padding(.horizontal, 16)
                 }
                 .padding(.top, 80)
-                .padding(.bottom, 36)
+                .padding(.bottom, 20)
             } else {
                 // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
                 GeometryReader { geometry in
@@ -116,25 +112,18 @@ struct FoodPanel: View {
                                 }) {
                                     Image(systemName: "chevron.left.circle.fill")
                                         .font(.system(size: 28))
-                                        .foregroundStyle(.white.opacity(0.7))
+                                        .foregroundStyle(.primary.opacity(0.8))
                                 }
+                                .padding(.leading, 8)
                             }
                             
                             Spacer()
                             
-                            VStack(spacing: 4) {
-                                Text("Feed Your Capybara")
-                                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.8)
-                                
-                                Text("Foods are one time use")
-                                    .font(.system(size: 12, weight: .regular, design: .rounded))
-                                    .foregroundStyle(.white.opacity(0.6))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.8)
-                            }
+                            Text(L("panel.feedTitle"))
+                                .font(.system(size: 22, weight: .bold, design: .rounded))
+                                .foregroundStyle(.primary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                             
                             Spacer()
                             
@@ -171,103 +160,124 @@ struct FoodItemButton: View {
     let canAfford: Bool
     let action: () -> Void
     
+    private var nameForegroundStyle: Color {
+        canAfford ? Color.primary : Color.primary.opacity(0.7)
+    }
+    
+    private var costForegroundStyle: Color {
+        canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7)
+    }
+    
+    private var backgroundFillOpacity: Double {
+        canAfford ? 0.08 : 0.03
+    }
+    
+    private var strokeOpacity: Double {
+        canAfford ? 0.15 : 0.05
+    }
+    
+    private var showCNYBadge: Bool {
+        item.name == "Fortune Cookie" && Date.isChineseNewYearEvent2026()
+    }
+    
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                // Emoji
-                Text(item.emoji)
-                    .font(.system(size: 48)) // Increased size
-                    .frame(width: 70, height: 70) // Larger frame
-                
-                // Name
-                Text(item.name)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(canAfford ? .white : .white.opacity(0.6))
-                    .lineLimit(1)
-                    .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
-                
-                // Cost and Food value on same line
-                HStack(spacing: 8) {
-                    // Cost
-                    HStack(spacing: 3) {
-                        Text("₵")
-                            .font(.system(size: 12, weight: .bold))
-                        Text("\(item.cost)")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                    }
-                    .foregroundStyle(canAfford ? AppColors.accent : .white.opacity(0.5))
-                    .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
-                    
-                    // Food value indicator
-                    HStack(spacing: 2) {
-                        Image(systemName: "leaf.fill")
-                            .font(.system(size: 10))
-                        Text("+\(item.foodValue)")
-                            .font(.system(size: 12, weight: .semibold))
-                    }
-                    .foregroundStyle(AppColors.foodGreen.opacity(canAfford ? 1 : 0.6))
-                    .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
-                }
-            }
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(.white.opacity(canAfford ? 0.08 : 0.03))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(.white.opacity(canAfford ? 0.15 : 0.05), lineWidth: 1)
-                    )
-            )
-            .opacity(canAfford ? 1 : 0.6)
-            .overlay(
-                // Chinese New Year "NEW!" badge for Fortune Cookie
-                Group {
-                    if item.name == "Fortune Cookie" && Date.isChineseNewYearEvent2026() {
-                        VStack {
-                            HStack {
-                                Spacer()
-                                Text("NEW!")
-                                    .font(.system(size: 10, weight: .black, design: .rounded))
-                                    .foregroundStyle(Color(hex: "8B0000"))
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(
-                                        Capsule()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                                    startPoint: .leading,
-                                                    endPoint: .trailing
-                                                )
-                                            )
-                                    )
-                                    .offset(x: -5, y: 5)
-                            }
-                            Spacer()
-                        }
-                    }
-                }
-            )
+            foodItemContent
         }
         .buttonStyle(ScaleButtonStyle())
         .disabled(!canAfford)
-        .overlay(
-            // Gold ring for CNY items
-            Group {
-                if item.name == "Fortune Cookie" && Date.isChineseNewYearEvent2026() {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(
-                            LinearGradient(
-                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 3
-                        )
+        .overlay(goldRingOverlay)
+    }
+    
+    private var foodItemContent: some View {
+        VStack(spacing: 6) {
+            Text(item.emoji)
+                .font(.system(size: 48))
+                .frame(width: 70, height: 70)
+            
+            Text(localizedFoodName(item.name))
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(nameForegroundStyle)
+                .lineLimit(1)
+                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+            
+            HStack(spacing: 8) {
+                HStack(spacing: 3) {
+                    Text("₵")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("\(item.cost)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
+                .foregroundStyle(costForegroundStyle)
+                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
+                
+                HStack(spacing: 2) {
+                    Image(systemName: "leaf.fill")
+                        .font(.system(size: 10))
+                    Text("+\(item.foodValue)")
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundStyle(AppColors.foodGreen.opacity(canAfford ? 1 : 0.6))
+                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
             }
-        )
+        }
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity)
+        .background(buttonBackground)
+        .opacity(canAfford ? 1 : 0.6)
+        .overlay(cnyBadgeOverlay)
+    }
+    
+    private var buttonBackground: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(.white.opacity(backgroundFillOpacity))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(.white.opacity(strokeOpacity), lineWidth: 1)
+            )
+    }
+    
+    @ViewBuilder
+    private var cnyBadgeOverlay: some View {
+        if showCNYBadge {
+            VStack {
+                HStack {
+                    Spacer()
+                    Text(L("common.new"))
+                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .foregroundStyle(Color(hex: "8B0000"))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .offset(x: -5, y: 5)
+                }
+                Spacer()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var goldRingOverlay: some View {
+        if showCNYBadge {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 3
+                )
+        }
     }
 }
 
@@ -281,7 +291,7 @@ struct PanelHeader: View {
         VStack(spacing: 6) {
             Text(title)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
             
             Text(subtitle)
                 .font(.system(size: 14, weight: .medium, design: .rounded))

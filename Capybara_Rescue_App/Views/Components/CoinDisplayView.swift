@@ -30,11 +30,11 @@ struct CoinDisplayView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(coins)")
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                     
                     Text("Coins")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(.primary.opacity(0.8))
                 }
             }
             
@@ -49,10 +49,10 @@ struct CoinDisplayView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 14, weight: .semibold))
                     
-                    Text("Get More")
+                    Text(L("common.getMore"))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                 }
-                .foregroundStyle(.white)
+                .foregroundStyle(.black)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(

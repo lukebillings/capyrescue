@@ -4,6 +4,7 @@ import SceneKit
 // MARK: - Items Panel
 struct ItemsPanel: View {
     @EnvironmentObject var gameManager: GameManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let onBack: (() -> Void)?
     let onOpenShop: (() -> Void)?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -12,8 +13,6 @@ struct ItemsPanel: View {
     @State private var showInsufficientCoinsMessage: Bool = false
     @State private var showLooksGoodModal: Bool = false
     @State private var showHatEquipError: Bool = false
-    @State private var showPaywall: Bool = false
-    @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
     
     init(onBack: (() -> Void)? = nil, onOpenShop: (() -> Void)? = nil) {
         self.onBack = onBack
@@ -25,18 +24,6 @@ struct ItemsPanel: View {
             .overlay(insufficientCoinsOverlay)
             .overlay(looksGoodModalOverlay)
             .overlay(hatEquipErrorOverlay)
-            .sheet(isPresented: $showPaywall) {
-                PaywallView(selectedTier: $selectedSubscriptionTier, hideFreeOption: true, showDismissButton: true)
-                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
-                        if let tier = newValue {
-                            // Use upgradeSubscription to ADD coins, not override
-                            gameManager.upgradeSubscription(to: tier)
-                            gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
-                            showPaywall = false
-                            selectedSubscriptionTier = nil
-                        }
-                    }
-            }
     }
     
     private var mainContent: some View {
@@ -81,15 +68,16 @@ struct ItemsPanel: View {
                             }) {
                                 Image(systemName: "chevron.left.circle.fill")
                                     .font(.system(size: 28))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.primary.opacity(0.8))
                             }
+                            .padding(.leading, 8)
                         }
                         
                         Spacer()
                         
-                        Text("Accessorise Your Capybara")
+                        Text(L("panel.accessoriseTitle"))
                             .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                         
                         Spacer()
                         
@@ -103,7 +91,7 @@ struct ItemsPanel: View {
                     .padding(.horizontal, 16)
                 }
                 .padding(.top, 80)
-                .padding(.bottom, 36)
+                .padding(.bottom, 20)
             } else {
                 // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
                 GeometryReader { geometry in
@@ -145,15 +133,16 @@ struct ItemsPanel: View {
                                 }) {
                                     Image(systemName: "chevron.left.circle.fill")
                                         .font(.system(size: 28))
-                                        .foregroundStyle(.white.opacity(0.7))
+                                        .foregroundStyle(Color.primary.opacity(0.8))
                                 }
+                                .padding(.leading, 8)
                             }
                             
                             Spacer()
                             
-                            Text("Accessorise Your Capybara")
+                            Text(L("panel.accessoriseTitle"))
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(.primary)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
                             
@@ -194,7 +183,7 @@ struct ItemsPanel: View {
            !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             InsufficientCoinsOverlay(
-                itemName: item.name,
+                itemName: localizedAccessoryName(id: item.id),
                 itemCost: item.cost,
                 currentCoins: gameManager.gameState.capycoins,
                 onBuyCoins: {
@@ -218,7 +207,7 @@ struct ItemsPanel: View {
            !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             LooksGoodModal(
-                itemName: item.name,
+                itemName: localizedAccessoryName(id: item.id),
                 itemCost: item.cost,
                 currentCoins: gameManager.gameState.capycoins,
                 onBuyNow: {
@@ -282,9 +271,9 @@ struct ItemsPanel: View {
         if item.isProOnly && !gameManager.hasProSubscription() {
             // Allow preview
             if previewingItemId == item.id {
-                // Second click - show paywall
+                // Second click - open shop to subscribe
                 HapticManager.shared.buttonPress()
-                showPaywall = true
+                onOpenShop?()
             } else {
                 // First click - preview it (same as regular items)
                 HapticManager.shared.selection()
@@ -387,7 +376,7 @@ struct CategoryTab: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
-                .foregroundStyle(isSelected ? .white : .white.opacity(0.5))
+                .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.8))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
@@ -474,22 +463,22 @@ struct AccessoryItemButton: View {
                 }
                 
                 // Name
-                Text(item.name)
+                Text(localizedAccessoryName(id: item.id))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 
                 // Status / Price
                 if isOwned {
-                    Text(isEquipped ? "Equipped" : "Tap to Equip")
+                    Text(isEquipped ? L("common.equipped") : L("common.tapToEquip"))
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(isEquipped ? .green : .white.opacity(0.8))
+                        .foregroundStyle(isEquipped ? .green : Color.primary.opacity(0.8))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 } else if item.isProOnly && !hasPro {
                     // Pro-only item without subscription
                     if isPreviewing {
-                        Text("Unlock on Pro")
+                        Text(L("common.unlockOnPro"))
                             .font(.system(size: 11, weight: .bold, design: .rounded))
                             .foregroundStyle(
                                 LinearGradient(
@@ -516,7 +505,7 @@ struct AccessoryItemButton: View {
                             )
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                             
-                            Text("Tap to Preview")
+                            Text(L("common.tapToPreview"))
                                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                                 .foregroundStyle(.green)
                                 .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -524,7 +513,7 @@ struct AccessoryItemButton: View {
                     }
                 } else {
                     if isPreviewing {
-                        Text("Tap to buy")
+                        Text(L("common.tapToBuy"))
                             .font(.system(size: 11, weight: .semibold, design: .rounded))
                             .foregroundStyle(.blue)
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -536,10 +525,10 @@ struct AccessoryItemButton: View {
                             Text("\(item.cost)")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
                         }
-                        .foregroundStyle(canAfford ? AppColors.accent : .white.opacity(0.5))
+                        .foregroundStyle(canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         
-                        Text("Tap to Preview")
+                        Text(L("common.tapToPreview"))
                             .font(.system(size: 10, weight: .semibold, design: .rounded))
                             .foregroundStyle(.green)
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -567,7 +556,7 @@ struct AccessoryItemButton: View {
                     VStack {
                         HStack {
                             Spacer()
-                            Text("NEW!")
+                            Text(L("common.new"))
                                 .font(.system(size: 10, weight: .black, design: .rounded))
                                 .foregroundStyle(Color(hex: "8B0000"))
                                 .padding(.horizontal, 8)
@@ -822,13 +811,13 @@ struct LooksGoodModal: View {
             
             // Message card
             VStack(spacing: 20) {
-                Text("Looks Good?")
+                Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 6) {
-                        Text("Cost:")
+                        Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white.opacity(0.7))
                         Text("₵\(itemCost)")
@@ -836,12 +825,12 @@ struct LooksGoodModal: View {
                             .foregroundStyle(AppColors.accent)
                         Text("•")
                             .foregroundStyle(.white.opacity(0.5))
-                        Text("You have:")
+                        Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white.opacity(0.7))
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                     }
                 }
                 
@@ -852,10 +841,10 @@ struct LooksGoodModal: View {
                     HStack(spacing: 8) {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Buy Now")
+                        Text(L("common.buyNow"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
@@ -873,7 +862,7 @@ struct LooksGoodModal: View {
                     HapticManager.shared.buttonPress()
                     onDismiss()
                 }) {
-                    Text("Maybe Later")
+                    Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -911,17 +900,17 @@ struct InsufficientCoinsOverlay: View {
             
             // Message card
             VStack(spacing: 20) {
-                Text("Looks Good?")
+                Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                 
                 VStack(spacing: 8) {
-                    Text("You need more coins")
+                    Text(L("common.youNeedMoreCoins"))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(.white.opacity(0.9))
                     
                     HStack(spacing: 6) {
-                        Text("Cost:")
+                        Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white.opacity(0.7))
                         Text("₵\(itemCost)")
@@ -929,12 +918,12 @@ struct InsufficientCoinsOverlay: View {
                             .foregroundStyle(AppColors.accent)
                         Text("•")
                             .foregroundStyle(.white.opacity(0.5))
-                        Text("You have:")
+                        Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(.white.opacity(0.7))
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                     }
                 }
                 
@@ -945,10 +934,10 @@ struct InsufficientCoinsOverlay: View {
                     HStack(spacing: 8) {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Buy More Coins")
+                        Text(L("common.buyMoreCoins"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
@@ -966,7 +955,7 @@ struct InsufficientCoinsOverlay: View {
                     HapticManager.shared.buttonPress()
                     onDismiss()
                 }) {
-                    Text("Maybe Later")
+                    Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -1000,12 +989,12 @@ struct HatEquipErrorOverlay: View {
             
             // Message card
             VStack(spacing: 20) {
-                Text("Only one hat can be equipped at a time")
+                Text(L("hat.oneAtATime"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                 
-                Text("Please deselect current hat")
+                Text(L("hat.deselectCurrent"))
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -1016,7 +1005,7 @@ struct HatEquipErrorOverlay: View {
                 }) {
                     Text("OK")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(

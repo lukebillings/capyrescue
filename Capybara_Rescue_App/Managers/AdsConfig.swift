@@ -13,23 +13,10 @@ enum AdsConfig {
         ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
     }
 
-    static var adsEnabled: Bool {
-        // Never allow ads in SwiftUI Canvas/Previews (even if you enable ads for debugging).
-        if isRunningForPreviews { return false }
-        
-        // Ads enabled for normal app runs.
-        return true
-    }
+    /// Ads are disabled - no banner or rewarded ads in the app.
+    static var adsEnabled: Bool { false }
 
-    /// Temporary kill-switch for banner ads only.
-    ///
-    /// Leave `adsEnabled` on so rewarded/interstitial logic can still run,
-    /// while removing banners from the UI and preventing banner requests.
-    static var bannerAdsEnabled: Bool {
-        if !adsEnabled { return false }
-        // TEMPORARY: disable banner ads for testing (set back to true for release)
-        return false
-    }
+    static var bannerAdsEnabled: Bool { false }
 
     /// Use Google-provided test ad unit IDs in Debug builds.
     ///

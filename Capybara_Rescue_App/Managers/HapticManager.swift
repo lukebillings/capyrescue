@@ -23,8 +23,13 @@ class HapticManager {
         notificationGenerator.prepare()
     }
     
+    var isEnabled: Bool {
+        SettingsManager.shared.hapticEnabled
+    }
+    
     // MARK: - Menu Navigation
     func menuTabChanged() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.selectionGenerator.selectionChanged()
@@ -34,6 +39,7 @@ class HapticManager {
     
     // MARK: - Petting Capybara
     func petCapybara() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.lightGenerator.impactOccurred(intensity: 0.6)
@@ -43,6 +49,7 @@ class HapticManager {
     
     // MARK: - Throwing Food/Drink
     func throwItem() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.mediumGenerator.impactOccurred(intensity: 0.8)
@@ -52,6 +59,7 @@ class HapticManager {
     
     // MARK: - Item Consumed
     func itemConsumed() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.heavyGenerator.impactOccurred(intensity: 0.5)
@@ -61,6 +69,7 @@ class HapticManager {
     
     // MARK: - Purchase Success
     func purchaseSuccess() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.notificationGenerator.notificationOccurred(.success)
@@ -70,6 +79,7 @@ class HapticManager {
     
     // MARK: - Purchase Failed (not enough coins)
     func purchaseFailed() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.notificationGenerator.notificationOccurred(.error)
@@ -79,6 +89,7 @@ class HapticManager {
     
     // MARK: - Button Press
     func buttonPress() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.lightGenerator.impactOccurred(intensity: 0.4)
@@ -88,6 +99,7 @@ class HapticManager {
     
     // MARK: - Selection
     func selection() {
+        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.selectionGenerator.selectionChanged()

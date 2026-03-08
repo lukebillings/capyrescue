@@ -61,14 +61,14 @@ struct CircularProgressView: View {
                     
                     Text("\(value)")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
             }
             .frame(width: 80, height: 80)
             
             Text(title)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(.primary.opacity(0.8))
         }
         .tutorialHighlight(key: tutorialKey)
     }
@@ -90,7 +90,7 @@ struct StatsDisplayView: View {
     let happiness: Int
     
     var body: some View {
-        HStack(spacing: 30) {
+        HStack(spacing: 0) {
             CircularProgressView(
                 title: "Food",
                 value: food,
@@ -99,6 +99,8 @@ struct StatsDisplayView: View {
                 icon: "leaf.fill"
             )
             
+            Spacer(minLength: 16)
+            
             CircularProgressView(
                 title: "Drink",
                 value: drink,
@@ -106,6 +108,8 @@ struct StatsDisplayView: View {
                 color: .cyan,
                 icon: "drop.fill"
             )
+            
+            Spacer(minLength: 16)
             
             CircularProgressView(
                 title: "Happy",
@@ -117,9 +121,6 @@ struct StatsDisplayView: View {
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 32)
-        .background(
-            GlassBackground()
-        )
     }
 }
 

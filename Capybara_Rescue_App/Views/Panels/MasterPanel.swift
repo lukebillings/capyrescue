@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Master Panel
 struct MasterPanel: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let onCategorySelected: (MenuTab) -> Void
     
     var body: some View {
@@ -10,8 +11,7 @@ struct MasterPanel: View {
             // Food
             CategoryCard(
                 icon: "leaf.fill",
-                title: "Food",
-                subtitle: "Feed your capybara",
+                title: L("menu.food"),
                 color: AppColors.foodGreen,
                 emoji: "🌿",
                 tutorialKey: "food_button"
@@ -22,8 +22,7 @@ struct MasterPanel: View {
             // Drink
             CategoryCard(
                 icon: "drop.fill",
-                title: "Drink",
-                subtitle: "Keep them hydrated",
+                title: L("menu.drink"),
                 color: AppColors.drinkBlue,
                 emoji: "💧",
                 tutorialKey: "drink_button"
@@ -34,8 +33,7 @@ struct MasterPanel: View {
             // Items
             CategoryCard(
                 icon: "tshirt.fill",
-                title: "Items",
-                subtitle: "Capybara items",
+                title: L("menu.items"),
                 color: .purple,
                 emoji: "👕",
                 tutorialKey: "items_button"
@@ -46,11 +44,11 @@ struct MasterPanel: View {
             // Shop
             CategoryCard(
                 icon: "cart.fill",
-                title: "Shop",
-                subtitle: "Get more coins",
+                title: L("menu.shop"),
                 color: AppColors.accent,
                 emoji: "🛒",
-                tutorialKey: "shop_button"
+                tutorialKey: "shop_button",
+                isShopButton: true
             ) {
                 onCategorySelected(.shop)
             }
@@ -65,19 +63,19 @@ struct MasterPanel: View {
 struct CategoryCard: View {
     let icon: String
     let title: String
-    let subtitle: String
     let color: Color
     let emoji: String
     let tutorialKey: String?
+    let isShopButton: Bool
     let action: () -> Void
     
-    init(icon: String, title: String, subtitle: String, color: Color, emoji: String, tutorialKey: String? = nil, action: @escaping () -> Void) {
+    init(icon: String, title: String, color: Color, emoji: String, tutorialKey: String? = nil, isShopButton: Bool = false, action: @escaping () -> Void) {
         self.icon = icon
         self.title = title
-        self.subtitle = subtitle
         self.color = color
         self.emoji = emoji
         self.tutorialKey = tutorialKey
+        self.isShopButton = isShopButton
         self.action = action
     }
     
@@ -92,14 +90,7 @@ struct CategoryCard: View {
                 // Title
                 Text(title)
                     .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                
-                // Subtitle
-                Text(subtitle)
-                    .font(.system(size: 10, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
+                    .foregroundStyle(isShopButton ? .black : .primary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12) // Reduced vertical padding
@@ -136,7 +127,7 @@ struct CategoryCard: View {
                             )
                     )
             )
-            .shadow(
+                    .shadow(
                 color: isShopButton ? Color(hex: "FFD700").opacity(0.4) : .clear,
                 radius: 8,
                 x: 0,
@@ -145,13 +136,6 @@ struct CategoryCard: View {
         }
         .buttonStyle(ScaleButtonStyle())
         .tutorialHighlight(key: tutorialKey ?? "")
-    }
-    
-    // Check if this is the Shop button by comparing color to accent
-    private var isShopButton: Bool {
-        // Compare the color to AppColors.accent (gold)
-        // Since we can't directly compare Color values, we check if title is "Shop"
-        return title == "Shop"
     }
 }
 

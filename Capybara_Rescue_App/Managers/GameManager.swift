@@ -19,6 +19,8 @@ class GameManager: ObservableObject {
     
     @Published var thrownItem: ThrownItem?
     @Published var showRunAwayAlert: Bool = false
+    /// When set to "food", "drink", or "happiness", triggers confetti + sound (stat reached 100). Cleared by UI after animation.
+    @Published var stat100ConfettiTrigger: String? = nil
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
     @Published var toastMessage: String? = nil // For showing toast messages to user
     /// When non-nil, UI shows "Good job! You have been awarded X coins." popup, then requests App Store review after dismiss.
@@ -30,7 +32,6 @@ class GameManager: ObservableObject {
     private let cloudStore = NSUbiquitousKeyValueStore.default
 
     // MARK: - StoreKit (IAP)
-    static let removeBannerAdsProductId = "remove_banner_ads"
     @Published private(set) var iapProducts: [String: Product] = [:]
     @Published private(set) var isIAPLoading: Bool = false
     @Published var iapLastErrorMessage: String? = nil
@@ -81,12 +82,38 @@ class GameManager: ObservableObject {
         // Start decay timer
         startDecayTimer()
 
-        // Load StoreKit products + sync non-consumable entitlements (e.g. Remove Ads)
+        // Load StoreKit products
         Task {
             await loadIAPProducts()
-            await syncNonConsumableEntitlements()
             // Unlock Pro items if user has Pro subscription
             unlockProItemsIfNeeded()
+        }
+        
+        // Listen for transaction updates (e.g. Ask to Buy, delayed completion) so successful purchases are never missed
+        Task {
+            await listenForTransactionUpdates()
+        }
+    }
+    
+    /// Listens for transaction updates at launch. Handles coin pack purchases that may complete asynchronously (e.g. Ask to Buy).
+    private func listenForTransactionUpdates() async {
+        for await result in Transaction.updates {
+            do {
+                let transaction = try checkVerified(result)
+                let productId = transaction.productID
+                
+                // Coin pack purchase
+                if let pack = CoinPack.packs.first(where: { $0.productId == productId }) {
+                    gameState.capycoins += pack.coins
+                    showToast("\(pack.coins) coins added! 🎉")
+                }
+                // Subscription purchases are handled by SubscriptionManager's listener
+                
+                await transaction.finish()
+                print("✅ Processed transaction update for \(productId)")
+            } catch {
+                print("❌ Failed to process transaction update: \(error)")
+            }
         }
     }
     
@@ -353,7 +380,13 @@ class GameManager: ObservableObject {
         
         gameState.capycoins -= item.cost
         
+        let previousFood = gameState.food
         gameState.food = min(100, gameState.food + item.foodValue)
+        
+        if gameState.food == 100 && previousFood < 100 {
+            stat100ConfettiTrigger = "food"
+            SoundManager.shared.playStat100Celebration()
+        }
         
         // Reschedule notifications based on new stat value
         scheduleFutureNotifications()
@@ -372,7 +405,13 @@ class GameManager: ObservableObject {
         
         gameState.capycoins -= item.cost
         
+        let previousDrink = gameState.drink
         gameState.drink = min(100, gameState.drink + item.drinkValue)
+        
+        if gameState.drink == 100 && previousDrink < 100 {
+            stat100ConfettiTrigger = "drink"
+            SoundManager.shared.playStat100Celebration()
+        }
         
         // Reschedule notifications based on new stat value
         scheduleFutureNotifications()
@@ -381,7 +420,13 @@ class GameManager: ObservableObject {
     }
     
     func petCapybara() {
+        let previousHappiness = gameState.happiness
         gameState.happiness = min(100, gameState.happiness + 1)
+        
+        if gameState.happiness == 100 && previousHappiness < 100 {
+            stat100ConfettiTrigger = "happiness"
+            SoundManager.shared.playStat100Celebration()
+        }
         
         // Reschedule notifications based on new stat value
         scheduleFutureNotifications()
@@ -418,11 +463,6 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Coins & Purchases
-    func watchAd() {
-        // Simulate watching a 10-second ad
-        gameState.capycoins += 10
-    }
-    
     func displayPrice(forProductId productId: String, fallback: String) -> String {
         if let product = iapProducts[productId] {
             return product.displayPrice
@@ -454,57 +494,13 @@ class GameManager: ObservableObject {
         }
     }
     
-    func purchaseRemoveBannerAds() async -> Bool {
-        do {
-            let product = try await product(for: Self.removeBannerAdsProductId)
-            _ = try await purchase(product: product)
-
-            // Unlock non-consumable
-            gameState.hasRemovedBannerAds = true
-            showToast("Banner ads removed! 🎉")
-            return true
-        } catch is CancellationError {
-            // no-op
-            return false
-        } catch {
-            let message = "Purchase failed: \(error.localizedDescription)"
-            iapLastErrorMessage = message
-            showToast(message)
-            return false
-        }
-    }
-
-    func restorePurchases() async -> Bool {
-        do {
-            try await AppStore.sync()
-            await syncNonConsumableEntitlements()
-
-            if gameState.hasRemovedBannerAds {
-                showToast("Purchases restored ✅")
-                return true
-            } else {
-                showToast("No purchases found to restore.")
-                iapLastErrorMessage = "No purchases found to restore for this Apple ID / Sandbox tester."
-                return false
-            }
-        } catch is CancellationError {
-            // no-op
-            return false
-        } catch {
-            let message = "Restore failed: \(error.localizedDescription)"
-            iapLastErrorMessage = message
-            showToast(message)
-            return false
-        }
-    }
-
     // MARK: - StoreKit helpers
     private func loadIAPProducts() async {
         guard !isIAPLoading else { return }
         isIAPLoading = true
         defer { isIAPLoading = false }
 
-        let ids = Set(CoinPack.packs.map(\.productId) + [Self.removeBannerAdsProductId])
+        let ids = Set(CoinPack.packs.map(\.productId))
 
         do {
             let products = try await Product.products(for: Array(ids))
@@ -553,25 +549,6 @@ class GameManager: ObservableObject {
         }
     }
 
-    private func syncNonConsumableEntitlements() async {
-        var hasRemoveAds = false
-
-        for await result in StoreKit.Transaction.currentEntitlements {
-            do {
-                let transaction = try checkVerified(result)
-                if transaction.productID == Self.removeBannerAdsProductId {
-                    hasRemoveAds = true
-                }
-            } catch {
-                // Ignore unverified entitlements
-            }
-        }
-
-        if hasRemoveAds && !gameState.hasRemovedBannerAds {
-            gameState.hasRemovedBannerAds = true
-        }
-    }
-
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified:
@@ -581,20 +558,8 @@ class GameManager: ObservableObject {
         }
     }
     
-    func incrementAppOpenCount() {
-        gameState.appOpenCount += 1
-    }
-    
     func markCNYPopupSeen() {
         gameState.hasSeenCNY2026Popup = true
-    }
-    
-    func shouldShowAdRemovalPromo() -> Bool {
-        // Show every 5th time the app is opened, but only if:
-        // 1. User hasn't already purchased ad removal
-        // 2. App has been opened at least a few times (5, 10, 15, etc.)
-        guard !gameState.hasRemovedBannerAds else { return false }
-        return gameState.appOpenCount > 0 && gameState.appOpenCount % 5 == 0
     }
     
     func renameCapybara(to newName: String) {
@@ -602,33 +567,6 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Subscription Management
-    
-    /// Completes the initial paywall on first app launch.
-    /// This SETS the coin balance to the tier's starting amount (does not add).
-    /// Use this ONLY for the first-time paywall in ContentView.
-    /// For subscription upgrades after the user is already in the game, use `upgradeSubscription(to:)` instead.
-    func completePaywall(with tier: SubscriptionManager.SubscriptionTier) {
-        gameState.hasCompletedPaywall = true
-        gameState.subscriptionTier = tier.rawValue
-        gameState.lastSubscriptionCheckDate = Date()
-        
-        // Award initial coins based on tier (SET to exact amount, not add)
-        gameState.capycoins = tier.startingCoins
-        
-        // If Pro tier, remove banner ads and unlock Pro items
-        if tier != .free {
-            gameState.hasRemovedBannerAds = true
-            unlockProItemsIfNeeded()
-        }
-        
-        // Pro Weekly: mark grant date so first 500/week is in 7 days
-        if tier == .weekly {
-            gameState.lastWeeklyCoinsGrantDate = Date()
-        }
-        
-        print("✅ Paywall completed with \(tier.displayName) tier")
-        print("   Set coins to \(tier.startingCoins)")
-    }
     
     /// Upgrades the user's subscription tier and grants coins.
     /// This ADDS the tier's starting coins to the user's existing balance (does not override).
@@ -727,7 +665,7 @@ class GameManager: ObservableObject {
     
     // MARK: - Reset
     
-    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, paywall, and all other progress.
+    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, and all other progress.
     func rescueNewCapybara() {
         var state = gameState
         state.food = GameState.defaultState.food

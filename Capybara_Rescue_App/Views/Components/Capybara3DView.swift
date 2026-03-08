@@ -12,7 +12,6 @@ struct Capybara3DView: View {
     let initialRotation: Double?
     
     @State private var isPressed = false
-    @State private var pulseScale: CGFloat = 1.0
     @State private var heartOffset: CGFloat = 0
     @State private var showHeart = false
     @State private var rotationAngle: Double = 0
@@ -31,23 +30,6 @@ struct Capybara3DView: View {
     
     var body: some View {
         ZStack {
-            // Glow effect behind capybara
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            emotionColor.opacity(0.3),
-                            emotionColor.opacity(0.1),
-                            .clear
-                        ],
-                        center: .center,
-                        startRadius: 50,
-                        endRadius: 180
-                    )
-                )
-                .frame(width: 360, height: 360)
-                .scaleEffect(pulseScale)
-            
             // 3D Capybara Model (iOS 17+ compatible using ARView)
             RealityKitView(
                 rotationAngle: $rotationAngle,
@@ -90,8 +72,6 @@ struct Capybara3DView: View {
             isPressed = pressing
         }, perform: {})
         .onAppear {
-            startPulseAnimation()
-            
             // Apply initial rotation on first load
             if !hasAppliedInitialRotation {
                 if let initialRotation = initialRotation {
@@ -110,14 +90,6 @@ struct Capybara3DView: View {
                 rotationAngle = newRotation
                 hasAppliedInitialRotation = true
             }
-        }
-    }
-    
-    private var emotionColor: Color {
-        switch emotion {
-        case .happy: return .pink
-        case .neutral: return .orange
-        case .sad: return .blue
         }
     }
     
@@ -168,15 +140,6 @@ struct Capybara3DView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             showHeart = false
             heartOffset = 0
-        }
-    }
-    
-    private func startPulseAnimation() {
-        withAnimation(
-            .easeInOut(duration: 2)
-            .repeatForever(autoreverses: true)
-        ) {
-            pulseScale = 1.1
         }
     }
     
@@ -344,7 +307,7 @@ struct RealityKitView: UIViewRepresentable {
         
         // Try to load the USDZ model first
         if !useProceduralModel, let model = loadCapybaraModel() {
-            model.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            model.scale = [0.35, 0.35, 0.35] // Slightly larger capybara
             model.position = [0, -0.1, 0] // Slightly lower to center better in view
             
             // Try to disable shadows on all entities to avoid rendering pipeline issues
@@ -378,7 +341,7 @@ struct RealityKitView: UIViewRepresentable {
             }
         } else if let proceduralModel = createProceduralCapybara() {
             // Fallback to procedural model if USDZ fails to load
-            proceduralModel.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            proceduralModel.scale = [0.35, 0.35, 0.35] // Slightly larger capybara
             proceduralModel.position = [0, -0.1, 0] // Slightly lower to center better in view
             anchor.addChild(proceduralModel)
             context.coordinator.modelEntity = proceduralModel

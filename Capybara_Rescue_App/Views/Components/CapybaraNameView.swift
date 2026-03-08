@@ -94,7 +94,7 @@ struct RenameSheet: View {
                 .frame(width: 40, height: 4)
                 .padding(.top, 12)
             
-            Text("Rename Your Capybara")
+            Text(L("rename.title"))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
             
@@ -117,7 +117,7 @@ struct RenameSheet: View {
             
             // Buttons
             HStack(spacing: 16) {
-                Button("Cancel") {
+                Button(L("common.cancel")) {
                     HapticManager.shared.buttonPress()
                     isPresented = false
                 }
@@ -130,7 +130,7 @@ struct RenameSheet: View {
                         .fill(.white.opacity(0.1))
                 )
                 
-                Button("Save") {
+                Button(L("common.save")) {
                     HapticManager.shared.purchaseSuccess()
                     if !editedName.isEmpty {
                         onSave(editedName)

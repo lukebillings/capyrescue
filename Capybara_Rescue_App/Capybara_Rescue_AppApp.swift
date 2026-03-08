@@ -32,7 +32,7 @@ struct CapybaraRescueUniverseApp: App {
         WindowGroup {
             AppStartupView(consentManager: consentManager)
                 .environmentObject(gameManager)
-                .preferredColorScheme(ColorScheme.dark)
+                .environmentObject(SettingsManager.shared)
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .active {
                         gameManager.handleAppBecameActive()
@@ -46,6 +46,7 @@ struct CapybaraRescueUniverseApp: App {
 struct AppStartupView: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject var consentManager: ConsentManager
+    @ObservedObject private var settingsManager = SettingsManager.shared
     @State private var hasRequestedConsent = false
     @StateObject private var trackingManager = TrackingManager.shared
     @State private var hasStartedMobileAds = false
@@ -59,16 +60,16 @@ struct AppStartupView: View {
                 ZStack {
                     if consentManager.isLoading {
                         // Show loading screen while consent is being handled
-                        Color(hex: "0f0c29")
+                        Color(hex: "FFF8E7")
                             .ignoresSafeArea()
                             .overlay {
                                 VStack(spacing: 20) {
                                     ProgressView()
                                         .scaleEffect(1.5)
-                                        .tint(.white)
+                                        .tint(.gray)
                                     Text("Loading...")
                                         .font(.headline)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                 }
                             }
                     } else {
@@ -78,6 +79,7 @@ struct AppStartupView: View {
                 }
             }
         }
+        .preferredColorScheme(settingsManager.darkMode ? .dark : .light)
         .onAppear {
             // Request consent info update on first launch
             guard AdsConfig.adsEnabled else { return }

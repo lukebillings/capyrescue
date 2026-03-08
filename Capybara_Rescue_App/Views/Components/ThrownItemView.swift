@@ -4,6 +4,7 @@ import Foundation
 // MARK: - Thrown Item View
 struct ThrownItemView: View {
     let emoji: String
+    let isFood: Bool
     let startPosition: CGPoint
     let endPosition: CGPoint
     let onComplete: () -> Void
@@ -13,8 +14,9 @@ struct ThrownItemView: View {
     @State private var rotation: Double = 0
     @State private var opacity: Double = 1
     
-    init(emoji: String, startPosition: CGPoint, endPosition: CGPoint, onComplete: @escaping () -> Void) {
+    init(emoji: String, isFood: Bool, startPosition: CGPoint, endPosition: CGPoint, onComplete: @escaping () -> Void) {
         self.emoji = emoji
+        self.isFood = isFood
         self.startPosition = startPosition
         self.endPosition = endPosition
         self.onComplete = onComplete
@@ -45,9 +47,14 @@ struct ThrownItemView: View {
             opacity = 0
         }
         
-        // Haptic on "catch"
+        // Haptic and sound on "catch"
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             HapticManager.shared.itemConsumed()
+            if isFood {
+                SoundManager.shared.playEatingSound()
+            } else {
+                SoundManager.shared.playDrinkingSound()
+            }
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
@@ -67,6 +74,7 @@ struct FoodThrowingOverlay: View {
             if let thrownItem = item {
                 ThrownItemView(
                     emoji: thrownItem.emoji,
+                    isFood: thrownItem.isFood,
                     startPosition: CGPoint(
                         x: geometry.size.width / 2,
                         y: geometry.size.height - 150
@@ -594,6 +602,7 @@ struct CapybaraSpeechBubbleOverlay: View {
         
         ThrownItemView(
             emoji: "🥕",
+            isFood: true,
             startPosition: CGPoint(x: 200, y: 600),
             endPosition: CGPoint(x: 200, y: 300),
             onComplete: {}

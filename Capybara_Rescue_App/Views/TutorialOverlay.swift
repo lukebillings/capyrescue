@@ -24,13 +24,13 @@ enum TutorialStep: Int, CaseIterable {
     
     var title: String {
         switch self {
-        case .food: return "Food"
-        case .drink: return "Drink"
-        case .happy: return "Happy"
-        case .statsWarning: return "Keep stats above 0"
-        case .items: return "Items"
-        case .shop: return "Shop"
-        case .achievements: return "Achievements"
+        case .food: return L("tutorial.food")
+        case .drink: return L("tutorial.drink")
+        case .happy: return L("tutorial.happy")
+        case .statsWarning: return L("tutorial.statsWarning")
+        case .items: return L("tutorial.items")
+        case .shop: return L("tutorial.shop")
+        case .achievements: return L("tutorial.achievements")
         }
     }
     
@@ -219,7 +219,7 @@ struct TutorialOverlay: View {
                         .lineLimit(nil)
                     
                     HStack(spacing: 8) {
-                        Text("You can check your streaks with the")
+                        Text(L("tutorial.youCanCheckStreaks"))
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .foregroundStyle(.white.opacity(0.9))
                         
@@ -245,7 +245,7 @@ struct TutorialOverlay: View {
                     currentStep = nil
                 }
             }) {
-                Text(step.rawValue < TutorialStep.allCases.count - 1 ? "Next" : "Got it!")
+                Text(step.rawValue < TutorialStep.allCases.count - 1 ? L("common.next") : L("common.gotIt"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.black)
                     .frame(maxWidth: .infinity)

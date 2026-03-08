@@ -38,11 +38,11 @@ struct AchievementsView: View {
                         VStack(spacing: 12) {
                             Text("Current Care Streak")
                                 .font(.system(size: 18, weight: .medium, design: .rounded))
-                                .foregroundStyle(.white.opacity(0.7))
+                                .foregroundStyle(Color.primary.opacity(0.8))
                             
                             Text("Keep food, drink, and happiness all above 50")
                                 .font(.system(size: 14, weight: .regular, design: .rounded))
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(Color.primary.opacity(0.8))
                                 .multilineTextAlignment(.center)
                             
                             HStack(spacing: 8) {
@@ -58,11 +58,11 @@ struct AchievementsView: View {
                                 
                                 Text("\(currentStreak)")
                                     .font(.system(size: 48, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.primary)
                                 
                                 Text("days")
                                     .font(.system(size: 20, weight: .medium, design: .rounded))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                    .foregroundStyle(Color.primary.opacity(0.8))
                             }
                         }
                         .padding(.vertical, 24)
@@ -103,7 +103,7 @@ struct AchievementsView: View {
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(Color.primary.opacity(0.7))
                     }
                 }
             }
@@ -155,7 +155,7 @@ struct AchievementRow: View {
                 HStack {
                     Text(achievement.name)
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(isEarned ? .white : .white.opacity(0.6))
+                        .foregroundStyle(isEarned ? Color.primary : Color.primary.opacity(0.8))
                     
                     if isEarned {
                         Image(systemName: "checkmark.circle.fill")
@@ -166,7 +166,7 @@ struct AchievementRow: View {
                 
                 Text(achievement.description)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(Color.primary.opacity(0.8))
                 
                 // Coin reward - always shown
                 HStack(spacing: 4) {
@@ -178,7 +178,7 @@ struct AchievementRow: View {
                         .foregroundStyle(Color(hex: "FFD700"))
                     Text(isEarned ? "rewarded" : "reward")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(Color.primary.opacity(0.8))
                 }
                 
                 // Progress bar
@@ -204,7 +204,7 @@ struct AchievementRow: View {
                     
                     Text("\(Int(progress * 100))% complete")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .foregroundStyle(Color.primary.opacity(0.8))
                 }
             }
             

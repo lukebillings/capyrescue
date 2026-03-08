@@ -49,14 +49,14 @@ struct OnboardingView: View {
                 
                 Text("Thank you for rescuing a capybara!")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text("What would you like to call your capybara?")
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(.primary.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .fixedSize(horizontal: false, vertical: true)
@@ -79,7 +79,7 @@ struct OnboardingView: View {
                     // Text field
                     TextField("Enter name", text: $capybaraName)
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 18)
                         .autocapitalization(.words)
@@ -137,13 +137,13 @@ struct OnboardingView: View {
             
             Text("Stay Connected")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
             Text("Enable notifications to get notifications, including reminders to feed and care for your capybara!")
                 .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(.primary.opacity(0.8))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -173,7 +173,7 @@ struct OnboardingView: View {
             }) {
                 Text("Skip")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.6))
+                    .foregroundStyle(.primary.opacity(0.8))
             }
             .padding(.bottom, 40)
         }
@@ -189,7 +189,7 @@ struct OnboardingView: View {
             
             Text("I pledge to take care of my capybara")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -200,7 +200,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By feeding it")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
                 
                 HStack(spacing: 12) {
@@ -209,7 +209,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By giving it drinks")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
                 
                 HStack(spacing: 12) {
@@ -218,7 +218,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By making it feel good")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
             }
             .padding(.horizontal, 32)
