@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "Laisser un avis sur l'App Store",
   "settings.terms": "Conditions générales",
   "settings.privacy": "Politique de confidentialité",
+  "onboarding.languageTitle": "Choisissez votre langue",
+  "onboarding.languageSubtitle": "L'app utilisera cette langue. Vous pourrez la modifier plus tard dans Réglages.",
   "menu.food": "Nourriture",
   "menu.foodSubtitle": "Nourrissez votre capybara",
   "menu.drink": "Boissons",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Thé matcha",
   "drink.bubbletea": "Bubble tea",
   "drink.fruitsmoothie": "Smoothie aux fruits",
-  "drink.jasminetea": "Thé au jasmin"
+  "drink.jasminetea": "Thé au jasmin",
+  "orange.title": "Attrape l'orange",
+  "orange.subtitle": "Touchez les oranges qui tombent ! Collectez 20 pour gagner 100 pièces. Une fois par jour.",
+  "orange.play": "Jouer",
+  "orange.comeBackTomorrow": "Revenez demain ! Vous avez déjà gagné vos pièces aujourd'hui.",
+  "orange.successTitle": "Bravo !",
+  "orange.successBody": "Vous avez gagné 100 pièces ! Rejouez demain."
 }

@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "App Store'da yorum bırak",
   "settings.terms": "Şartlar ve Koşullar",
   "settings.privacy": "Gizlilik Politikası",
+  "onboarding.languageTitle": "Dilini seç",
+  "onboarding.languageSubtitle": "Uygulama bu dili kullanacak. Sonradan Ayarlar'dan değiştirebilirsin.",
   "menu.food": "Yemek",
   "menu.foodSubtitle": "Kapibarana yemek ver",
   "menu.drink": "İçecek",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Matcha çayı",
   "drink.bubbletea": "Bubble tea",
   "drink.fruitsmoothie": "Meyve smoothie",
-  "drink.jasminetea": "Yasemin çayı"
+  "drink.jasminetea": "Yasemin çayı",
+  "orange.title": "Portakalı Yakala",
+  "orange.subtitle": "Düşen portakallara dokun! 20 topla, 100 jeton kazan. Günde bir kez.",
+  "orange.play": "Oyna",
+  "orange.comeBackTomorrow": "Yarın tekrar gel! Bugünkü jetonları zaten kazandın.",
+  "orange.successTitle": "Başardın!",
+  "orange.successBody": "100 jeton kazandın! Yarın tekrar oyna."
 }

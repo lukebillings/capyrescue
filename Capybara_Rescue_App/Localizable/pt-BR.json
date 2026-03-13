@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "Deixe uma avaliação na App Store",
   "settings.terms": "Termos e Condições",
   "settings.privacy": "Política de Privacidade",
+  "onboarding.languageTitle": "Escolha seu idioma",
+  "onboarding.languageSubtitle": "O app usará este idioma. Você pode alterar depois nas configurações.",
   "menu.food": "Comida",
   "menu.foodSubtitle": "Alimente sua capivara",
   "menu.drink": "Bebidas",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Chá matcha",
   "drink.bubbletea": "Bubble tea",
   "drink.fruitsmoothie": "Smoothie de frutas",
-  "drink.jasminetea": "Chá de jasmim"
+  "drink.jasminetea": "Chá de jasmim",
+  "orange.title": "Pegue a Laranja",
+  "orange.subtitle": "Toque nas laranjas que caem! Junte 20 para ganhar 100 moedas. Uma vez por dia.",
+  "orange.play": "Jogar",
+  "orange.comeBackTomorrow": "Volte amanhã! Você já ganhou suas moedas hoje.",
+  "orange.successTitle": "Você conseguiu!",
+  "orange.successBody": "Você ganhou 100 moedas! Jogue de novo amanhã."
 }

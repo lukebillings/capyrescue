@@ -6,12 +6,22 @@ struct ShopPanel: View {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var isPurchasing: Bool = false
     @State private var showIAPError: Bool = false
+    @State private var showCatchTheOrangeGame: Bool = false
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 16) {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
+                
+                // Catch the Orange - daily mini-game card
+                CatchTheOrangeCard(
+                    canPlayToday: gameManager.canPlayCatchTheOrangeToday(),
+                    onPlay: {
+                        HapticManager.shared.buttonPress()
+                        showCatchTheOrangeGame = true
+                    }
+                )
                 
                 // Coin Packs Section
                 VStack(alignment: .leading, spacing: 12) {
@@ -101,6 +111,10 @@ struct ShopPanel: View {
         .onChange(of: gameManager.iapLastErrorMessage) { _, newValue in
             showIAPError = (newValue != nil)
         }
+        .fullScreenCover(isPresented: $showCatchTheOrangeGame) {
+            CatchTheOrangeView(isPresented: $showCatchTheOrangeGame)
+                .environmentObject(gameManager)
+        }
     }
     
     private func handleCoinPackPurchase(_ pack: CoinPack) {
@@ -115,6 +129,63 @@ struct ShopPanel: View {
         }
     }
     
+}
+
+// MARK: - Catch the Orange Card (Get More / Shop)
+struct CatchTheOrangeCard: View {
+    let canPlayToday: Bool
+    let onPlay: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                Text("🍊")
+                    .font(.system(size: 28))
+                Text(L("orange.title"))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            
+            Text(L("orange.subtitle"))
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(.primary.opacity(0.85))
+                .multilineTextAlignment(.leading)
+                .padding(.horizontal, 16)
+            
+            if canPlayToday {
+                Button(action: onPlay) {
+                    Text(L("orange.play"))
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color(hex: "FF8C00"))
+                        )
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            } else {
+                Text(L("orange.comeBackTomorrow"))
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary.opacity(0.7))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(hex: "FFF8E7"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(hex: "FF8C00").opacity(0.4), lineWidth: 1.5)
+                )
+        )
+        .padding(.horizontal, 16)
+    }
 }
 
 // MARK: - Balance Hero Card

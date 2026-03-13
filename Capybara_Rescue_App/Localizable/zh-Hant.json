@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "在 App Store 留下評論",
   "settings.terms": "條款與條件",
   "settings.privacy": "隱私權政策",
+  "onboarding.languageTitle": "選擇語言",
+  "onboarding.languageSubtitle": "應用程式將使用此語言顯示。您可稍後在設定中變更。",
   "menu.food": "食物",
   "menu.foodSubtitle": "餵養你的水豚",
   "menu.drink": "飲料",
@@ -91,5 +93,11 @@
   "drink.matchatea": "抹茶",
   "drink.bubbletea": "珍珠奶茶",
   "drink.fruitsmoothie": "水果冰沙",
-  "drink.jasminetea": "茉莉花茶"
+  "drink.jasminetea": "茉莉花茶",
+  "orange.title": "接住橘子",
+  "orange.subtitle": "點擊掉落的橘子！收集 20 個可獲得 100 金幣。每天限一次。",
+  "orange.play": "開始遊戲",
+  "orange.comeBackTomorrow": "明天再來！您今天已經領過金幣了。",
+  "orange.successTitle": "完成了！",
+  "orange.successBody": "您獲得了 100 金幣！明天再來玩吧。"
 }

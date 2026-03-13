@@ -4,25 +4,35 @@ import UserNotifications
 // MARK: - Onboarding View
 struct OnboardingView: View {
     @EnvironmentObject var gameManager: GameManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     @Binding var isPresented: Bool
     
-    @State private var currentStep: OnboardingStep = .welcome
+    @State private var currentStep: OnboardingStep = .language
     @State private var capybaraName: String = ""
     @FocusState private var isNameFieldFocused: Bool
     
     enum OnboardingStep {
+        case language
         case welcome
         case notifications
         case pledge
     }
     
+    /// Onboarding uses light color scheme (cream background) like the homepage for consistency and legibility.
+    private static let onboardingBackground = Color(hex: "FFF8E7")
+    private static let onboardingPrimaryText = Color(hex: "1a1a2e")
+    private static let onboardingSecondaryText = Color(hex: "5A5A5A")
+    private static let onboardingCardFill = Color.white.opacity(0.85)
+    private static let onboardingCardStroke = Color(hex: "1a1a2e").opacity(0.12)
+    
     var body: some View {
         ZStack {
-            // Background
-            AppColors.background
+            Self.onboardingBackground
                 .ignoresSafeArea()
             
             switch currentStep {
+            case .language:
+                languageView
             case .welcome:
                 welcomeView
             case .notifications:
@@ -30,6 +40,88 @@ struct OnboardingView: View {
             case .pledge:
                 pledgeView
             }
+        }
+        .preferredColorScheme(.light)
+    }
+    
+    // MARK: - Language View
+    private var languageView: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer()
+                    .frame(height: 40)
+                
+                Image(systemName: "globe")
+                    .font(.system(size: 64))
+                    .foregroundStyle(AppColors.accent)
+                
+                Text(L("onboarding.languageTitle"))
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                
+                Text(L("onboarding.languageSubtitle"))
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                
+                VStack(spacing: 0) {
+                    ForEach(LocalizationManager.supportedLanguages, id: \.code) { lang in
+                        Button(action: {
+                            localizationManager.currentLanguage = lang.code
+                        }) {
+                            HStack {
+                                Text(lang.displayName)
+                                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                                    .foregroundStyle(Self.onboardingPrimaryText)
+                                Spacer()
+                                if localizationManager.currentLanguage == lang.code {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.system(size: 22))
+                                        .foregroundStyle(AppColors.accent)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Self.onboardingCardFill)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Self.onboardingCardStroke, lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 32)
+                .padding(.top, 8)
+                
+                Spacer()
+                    .frame(height: 32)
+                
+                Button(action: {
+                    withAnimation {
+                        currentStep = .welcome
+                    }
+                }) {
+                    Text(L("common.next"))
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(AppColors.accent)
+                        )
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 40)
+            }
+            .frame(maxWidth: .infinity)
         }
     }
     
@@ -49,14 +141,14 @@ struct OnboardingView: View {
                 
                 Text("Thank you for rescuing a capybara!")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.onboardingPrimaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .fixedSize(horizontal: false, vertical: true)
                 
                 Text("What would you like to call your capybara?")
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.8))
+                    .foregroundStyle(Self.onboardingSecondaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .fixedSize(horizontal: false, vertical: true)
@@ -65,10 +157,10 @@ struct OnboardingView: View {
                 ZStack {
                     // Tappable background area
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(.white.opacity(0.1))
+                        .fill(Self.onboardingCardFill)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(.white.opacity(0.2), lineWidth: 1)
+                                .stroke(Self.onboardingCardStroke, lineWidth: 1)
                         )
                         .frame(minHeight: 60)
                         .onTapGesture {
@@ -79,7 +171,7 @@ struct OnboardingView: View {
                     // Text field
                     TextField("Enter name", text: $capybaraName)
                         .font(.system(size: 22, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Self.onboardingPrimaryText)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 18)
                         .autocapitalization(.words)
@@ -137,13 +229,13 @@ struct OnboardingView: View {
             
             Text("Stay Connected")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Self.onboardingPrimaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
             Text("Enable notifications to get notifications, including reminders to feed and care for your capybara!")
                 .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundStyle(.primary.opacity(0.8))
+                .foregroundStyle(Self.onboardingSecondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -173,7 +265,7 @@ struct OnboardingView: View {
             }) {
                 Text("Skip")
                     .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.8))
+                    .foregroundStyle(Self.onboardingSecondaryText)
             }
             .padding(.bottom, 40)
         }
@@ -189,7 +281,7 @@ struct OnboardingView: View {
             
             Text("I pledge to take care of my capybara")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Self.onboardingPrimaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             
@@ -200,7 +292,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By feeding it")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Self.onboardingPrimaryText)
                 }
                 
                 HStack(spacing: 12) {
@@ -209,7 +301,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By giving it drinks")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Self.onboardingPrimaryText)
                 }
                 
                 HStack(spacing: 12) {
@@ -218,7 +310,7 @@ struct OnboardingView: View {
                         .foregroundStyle(AppColors.accent)
                     Text("By making it feel good")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Self.onboardingPrimaryText)
                 }
             }
             .padding(.horizontal, 32)

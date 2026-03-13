@@ -40,18 +40,6 @@ struct MasterPanel: View {
             ) {
                 onCategorySelected(.items)
             }
-            
-            // Shop
-            CategoryCard(
-                icon: "cart.fill",
-                title: L("menu.shop"),
-                color: AppColors.accent,
-                emoji: "🛒",
-                tutorialKey: "shop_button",
-                isShopButton: true
-            ) {
-                onCategorySelected(.shop)
-            }
         }
         .padding(.bottom, 0)
         .padding(.top, 0)

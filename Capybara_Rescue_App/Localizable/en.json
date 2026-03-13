@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "Leave a review on the App Store",
   "settings.terms": "Terms and Conditions",
   "settings.privacy": "Privacy Policy",
+  "onboarding.languageTitle": "Choose your language",
+  "onboarding.languageSubtitle": "The app will use this language. You can change it later in Settings.",
   "menu.food": "Food",
   "menu.foodSubtitle": "Feed your capybara",
   "menu.drink": "Drink",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Matcha Tea",
   "drink.bubbletea": "Bubble Tea",
   "drink.fruitsmoothie": "Fruit Smoothie",
-  "drink.jasminetea": "Jasmine Tea"
+  "drink.jasminetea": "Jasmine Tea",
+  "orange.title": "Catch the Orange",
+  "orange.subtitle": "Tap falling oranges! Collect 20 to earn 100 coins. Once per day.",
+  "orange.play": "Play",
+  "orange.comeBackTomorrow": "Come back tomorrow! You've already earned your coins today.",
+  "orange.successTitle": "You did it!",
+  "orange.successBody": "You earned 100 coins! Play again tomorrow for more."
 }

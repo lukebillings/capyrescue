@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "Lascia una recensione su App Store",
   "settings.terms": "Termini e condizioni",
   "settings.privacy": "Informativa sulla privacy",
+  "onboarding.languageTitle": "Scegli la tua lingua",
+  "onboarding.languageSubtitle": "L'app userà questa lingua. Puoi cambiarla dopo in Impostazioni.",
   "menu.food": "Cibo",
   "menu.foodSubtitle": "Nutri il tuo capibara",
   "menu.drink": "Bevande",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Tè matcha",
   "drink.bubbletea": "Bubble tea",
   "drink.fruitsmoothie": "Frullato di frutta",
-  "drink.jasminetea": "Tè al gelsomino"
+  "drink.jasminetea": "Tè al gelsomino",
+  "orange.title": "Prendi l'arancia",
+  "orange.subtitle": "Tocca le arance che cadono! Raccogli 20 per guadagnare 100 monete. Una volta al giorno.",
+  "orange.play": "Gioca",
+  "orange.comeBackTomorrow": "Torna domani! Hai già guadagnato le monete di oggi.",
+  "orange.successTitle": "Ce l'hai fatta!",
+  "orange.successBody": "Hai guadagnato 100 monete! Gioca di nuovo domani."
 }

@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "App Store에 리뷰 남기기",
   "settings.terms": "이용약관",
   "settings.privacy": "개인정보처리방침",
+  "onboarding.languageTitle": "언어 선택",
+  "onboarding.languageSubtitle": "앱이 이 언어로 표시됩니다. 설정에서 나중에 변경할 수 있습니다.",
   "menu.food": "음식",
   "menu.foodSubtitle": "카피바라에게 먹이 주기",
   "menu.drink": "음료",
@@ -91,5 +93,11 @@
   "drink.matchatea": "말차",
   "drink.bubbletea": "버블티",
   "drink.fruitsmoothie": "과일 스무디",
-  "drink.jasminetea": "자스민 차"
+  "drink.jasminetea": "자스민 차",
+  "orange.title": "오렌지 잡기",
+  "orange.subtitle": "떨어지는 오렌지를 탭하세요! 20개 모으면 100 코인. 하루에 한 번.",
+  "orange.play": "플레이",
+  "orange.comeBackTomorrow": "내일 다시 오세요! 오늘 코인은 이미 받았어요.",
+  "orange.successTitle": "성공!",
+  "orange.successBody": "100 코인을 받았어요! 내일 다시 플레이하세요."
 }

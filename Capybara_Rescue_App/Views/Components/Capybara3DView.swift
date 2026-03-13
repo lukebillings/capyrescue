@@ -19,6 +19,14 @@ struct Capybara3DView: View {
     @State private var lastDragValue: CGFloat = 0
     @State private var useProceduralModel = false // Try to load USDZ model first
     @State private var hasAppliedInitialRotation = false
+    /// Idle rotation: slow right→left sway over front 180° only. When user drags, we resume from current angle.
+    @State private var isUserDragging = false
+    @State private var idleRotationStartTime = Date()
+    @State private var idlePhase: Double = 0
+    @State private var idleRotationTimer: Timer?
+    
+    /// Front 180° range: right = +90°, left = -90°. Full cycle (right→left→right) duration in seconds.
+    private static let idleRotationPeriod: Double = 16
     
     init(emotion: CapybaraEmotion, equippedAccessories: [String], previewingAccessoryId: String?, onPet: @escaping () -> Void, initialRotation: Double? = nil) {
         self.emotion = emotion
@@ -45,12 +53,20 @@ struct Capybara3DView: View {
             .gesture(
                 DragGesture()
                     .onChanged { value in
+                        isUserDragging = true
                         let delta = value.translation.width - lastDragValue
                         rotationAngle += Double(delta) * 0.5 // Adjust sensitivity
+                        rotationAngle = min(90, max(-90, rotationAngle)) // Clamp to front 180°
                         lastDragValue = value.translation.width
                     }
                     .onEnded { _ in
                         lastDragValue = 0
+                        rotationAngle = min(90, max(-90, rotationAngle))
+                        // Resume idle rotation from current angle (phase so cos matches)
+                        let clamped = max(-1, min(1, rotationAngle / 90))
+                        idlePhase = acos(clamped)
+                        idleRotationStartTime = Date()
+                        isUserDragging = false
                     }
             )
             
@@ -75,14 +91,29 @@ struct Capybara3DView: View {
             // Apply initial rotation on first load
             if !hasAppliedInitialRotation {
                 if let initialRotation = initialRotation {
-                    // Use provided initial rotation if available
-                    rotationAngle = initialRotation
+                    rotationAngle = min(90, max(-90, initialRotation))
                 } else {
-                    // Default to 30 degrees angle when first loading the main screen
                     rotationAngle = 30
                 }
                 hasAppliedInitialRotation = true
+                idlePhase = acos(max(-1, min(1, rotationAngle / 90)))
+                idleRotationStartTime = Date()
             }
+            // Slow idle rotation: right → left → right over front 180° only
+            idleRotationTimer?.invalidate()
+            let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+                guard !isUserDragging else { return }
+                let elapsed = Date().timeIntervalSince(idleRotationStartTime)
+                let angle = 90 * cos(2 * .pi * elapsed / Self.idleRotationPeriod + idlePhase)
+                rotationAngle = angle
+            }
+            timer.tolerance = 0.02
+            RunLoop.main.add(timer, forMode: .common)
+            idleRotationTimer = timer
+        }
+        .onDisappear {
+            idleRotationTimer?.invalidate()
+            idleRotationTimer = nil
         }
         .onChange(of: initialRotation) { oldValue, newValue in
             // Apply rotation when it becomes available

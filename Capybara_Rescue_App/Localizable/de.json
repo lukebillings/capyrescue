@@ -13,6 +13,8 @@
   "settings.rateSubtitle": "Bewertung im App Store hinterlassen",
   "settings.terms": "AGB",
   "settings.privacy": "Datenschutz",
+  "onboarding.languageTitle": "Sprache wählen",
+  "onboarding.languageSubtitle": "Die App verwendet diese Sprache. Du kannst sie später in den Einstellungen ändern.",
   "menu.food": "Essen",
   "menu.foodSubtitle": "Füttere dein Capybara",
   "menu.drink": "Getränke",
@@ -91,5 +93,11 @@
   "drink.matchatea": "Matcha-Tee",
   "drink.bubbletea": "Bubble Tea",
   "drink.fruitsmoothie": "Fruchtsmoothie",
-  "drink.jasminetea": "Jasmintee"
+  "drink.jasminetea": "Jasmintee",
+  "orange.title": "Fang die Orange",
+  "orange.subtitle": "Tippe auf fallende Orangen! Sammle 20 für 100 Münzen. Einmal pro Tag.",
+  "orange.play": "Spielen",
+  "orange.comeBackTomorrow": "Komm morgen wieder! Du hast deine Münzen für heute schon verdient.",
+  "orange.successTitle": "Geschafft!",
+  "orange.successBody": "Du hast 100 Münzen verdient! Spiel morgen wieder."
 }

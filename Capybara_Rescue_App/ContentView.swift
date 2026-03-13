@@ -330,6 +330,15 @@ struct ContentView: View {
                 )
                 .id(gameManager.stat100ConfettiTrigger ?? "idle")
                 .zIndex(200)
+                .onChange(of: gameManager.stat100ConfettiTrigger) { _, newValue in
+                    // When any stat hits 100, if all three are now 100, request review 3 seconds later
+                    guard newValue != nil else { return }
+                    let state = gameManager.gameState
+                    guard state.food == 100, state.drink == 100, state.happiness == 100 else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        requestReview()
+                    }
+                }
                 
                 // Love hearts overlay (when happiness >= 80)
                 LoveHeartsOverlay(

@@ -361,6 +361,29 @@ class GameManager: ObservableObject {
         applyOfflineDecay(now: Date())
     }
     
+    /// Returns false so the "remove ads" / subscription promo popup is never shown.
+    /// Call this from UI instead of showing any periodic remove-ads prompt.
+    func shouldShowAdRemovalPromo() -> Bool {
+        return false
+    }
+    
+    // MARK: - Catch the Orange (daily mini-game)
+    /// Coins awarded when user catches 20 oranges in one run (once per day).
+    static let catchTheOrangeCoinsReward = 100
+    
+    /// True if the user has not yet completed Catch the Orange today (calendar day).
+    func canPlayCatchTheOrangeToday() -> Bool {
+        guard let last = gameState.lastCatchTheOrangeCompletedDate else { return true }
+        return !Calendar.current.isDateInToday(last)
+    }
+    
+    /// Call when user catches 20 oranges. Awards coins and marks day as completed.
+    func completeCatchTheOrangeGame() {
+        gameState.capycoins += Self.catchTheOrangeCoinsReward
+        gameState.lastCatchTheOrangeCompletedDate = Date()
+        showToast("\(Self.catchTheOrangeCoinsReward) coins earned! 🍊")
+    }
+    
     private func checkRunAway() {
         if gameState.food == 0 && gameState.drink == 0 && gameState.happiness == 0 {
             gameState.hasRunAway = true
@@ -879,6 +902,30 @@ class GameManager: ObservableObject {
                         badgeNumber: index + 1
                     )
                 }
+                
+                // Daily 8am reminder: "Catch the Orange" mini-game to earn coins
+                self.scheduleCatchTheOrangeDailyReminder()
+            }
+        }
+    }
+    
+    private func scheduleCatchTheOrangeDailyReminder() {
+        let content = UNMutableNotificationContent()
+        content.title = "Catch the Orange! 🍊"
+        content.body = "Let's catch some oranges to earn some coins!"
+        content.sound = .default
+        
+        var dateComponents = DateComponents()
+        dateComponents.hour = 8
+        dateComponents.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: "catch_orange_8am", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to schedule Catch the Orange reminder: \(error.localizedDescription)")
+            } else {
+                print("✅ Scheduled daily 8am Catch the Orange reminder")
             }
         }
     }

@@ -154,12 +154,8 @@ Shows `PaywallView` on first app launch when `hasCompletedPaywall` is false.
 
 ---
 
-### 2. Subscription Screen After Every 5 Opens
-**File:** `ContentView.swift`
-**Lines:** 74-80
-
-Shows `RemoveBannerAdPromoView` which links to `PaywallView`.
-Triggered by `gameManager.shouldShowAdRemovalPromo()` check based on app open count.
+### 2. ~~Subscription Screen After Every 5 Opens~~ (REMOVED)
+**Status:** Disabled. The periodic "remove ads" / subscription promo popup is not shown. `GameManager.shouldShowAdRemovalPromo()` always returns `false`.
 
 ---
 

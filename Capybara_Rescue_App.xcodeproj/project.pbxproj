@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14A995BB7DDA4D6B0A767124 /* ThrownItemView.swift */; };
+		B8C3D4E6F6A7B8C9D0E1F2A3 /* CatchTheOrangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C3D4E5F6A7B8C9D0E1F2A3 /* CatchTheOrangeView.swift */; };
 		0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */; };
 		0D61A085AA202EF5EB913E5B /* MasterPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C99258A5050BE2B6E7997BB /* MasterPanel.swift */; };
 		1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */; };
@@ -22,7 +23,6 @@
 		7171803649BEF1868C0D3960 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */; };
 		753D2F54FAF8045BAE685158 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */; };
 		773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E92C200238E96CDB16E9732 /* FoodPanel.swift */; };
-		79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = A5A371906970024C7E6DA72A /* GoogleMobileAds */; };
 		7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C3AEDFBE8014685F7D5827 /* ContentView.swift */; };
 		7AF44475E591A27725D43264 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */; };
 		812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */; };
@@ -45,11 +45,8 @@
 		9CF47036A79B74EB3558D9B5 /* Sunflower.usdz in Resources */ = {isa = PBXBuildFile; fileRef = D929CE28E0EC27ED19506142 /* Sunflower.usdz */; };
 		A0C24DE818F55B2A9C53E283 /* LiquidMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */; };
 		A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31C4839B791F1C9749F05CFF /* Assets.xcassets */; };
-		ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */; };
-		B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */; };
 		B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 9C2351377F437F65D65ABCCD /* Santahat.usdz */; };
 		C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9694621846B25490EFFB06 /* ShopPanel.swift */; };
-		C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 664E587C6368CC37B1D7089B /* ConsentManager.swift */; };
 		C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */; };
 		D5D367EF79E4A56FA344338B /* GameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DC24A7428511F72A1DDEED /* GameManager.swift */; };
 		DCD78B01254A8CD1A53B9C1C /* Capybara_Rescue_AppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9809FF92BF9017890B206434 /* Capybara_Rescue_AppApp.swift */; };
@@ -66,6 +63,7 @@
 /* Begin PBXFileReference section */
 		0482BF3A81138611B9C52AD3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		B8C3D4E5F6A7B8C9D0E1F2A3 /* CatchTheOrangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatchTheOrangeView.swift; sourceTree = "<group>"; };
 		1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Tophat.usdz; sourceTree = "<group>"; };
 		14A995BB7DDA4D6B0A767124 /* ThrownItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThrownItemView.swift; sourceTree = "<group>"; };
 		27DC24A7428511F72A1DDEED /* GameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameManager.swift; sourceTree = "<group>"; };
@@ -74,7 +72,6 @@
 		3E92C200238E96CDB16E9732 /* FoodPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodPanel.swift; sourceTree = "<group>"; };
 		4B9694621846B25490EFFB06 /* ShopPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopPanel.swift; sourceTree = "<group>"; };
 		5B3BD89F2722C937DCB8EB19 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
-		664E587C6368CC37B1D7089B /* ConsentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentManager.swift; sourceTree = "<group>"; };
 		6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Capybara.usdz; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
@@ -101,7 +98,6 @@
 		98FC20F03C42D7F84D7FF56C /* CapybaraViewSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraViewSwitch.swift; sourceTree = "<group>"; };
 		9C2351377F437F65D65ABCCD /* Santahat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Santahat.usdz; sourceTree = "<group>"; };
 		A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialOverlay.swift; sourceTree = "<group>"; };
-		A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobIDs.swift; sourceTree = "<group>"; };
 		C2C3AEDFBE8014685F7D5827 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C4FE4DC15AEE3B9CE67EF2C9 /* LiquidMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidMenuBar.swift; sourceTree = "<group>"; };
 		C5DA8216F441CA19E1F83C9F /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
@@ -127,8 +123,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */,
-				79C3B49BF69DE357229D7C89 /* GoogleMobileAds in Frameworks */,
-				ABBF58465CD2831A39A9A72A /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +215,7 @@
 			children = (
 				81B4602E2F325EB500F10BC3 /* SubscriptionPlanRow.swift */,
 				6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */,
+				B8C3D4E5F6A7B8C9D0E1F2A3 /* CatchTheOrangeView.swift */,
 				0DE1B98CAD19D6125BE4CDB7 /* OnboardingView.swift */,
 				6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */,
 				SETTINGS0042F325EB500F10BC3 /* SettingsView.swift */,
@@ -243,9 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */,
-				A6B7C8D9E0F1A2B3C4D5E6F7 /* AdMobIDs.swift */,
 				F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */,
-				664E587C6368CC37B1D7089B /* ConsentManager.swift */,
 				27DC24A7428511F72A1DDEED /* GameManager.swift */,
 				EB93563846587619659B7D5E /* HapticManager.swift */,
 				L10N00022F325EB500F10BC3 /* LocalizationManager.swift */,
@@ -285,8 +278,6 @@
 			);
 			name = Capybara_Rescue_App;
 			packageProductDependencies = (
-				A5A371906970024C7E6DA72A /* GoogleMobileAds */,
-				94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */,
 			);
 			productName = Capybara_Rescue_App;
 			productReference = 6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */;
@@ -322,8 +313,6 @@
 			mainGroup = 449565BE8651469C1122D5B8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -365,10 +354,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B1C2D3E4F5A6B7C8D9E0F1A2 /* AdMobIDs.swift in Sources */,
 				81B4602F2F325EB500F10BC3 /* SubscriptionPlanRow.swift in Sources */,
 				0A1B2C3D4E5F60718293A4B5 /* AdsConfig.swift in Sources */,
 				23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */,
+				B8C3D4E6F6A7B8C9D0E1F2A3 /* CatchTheOrangeView.swift in Sources */,
 				1B2DC2D5D6A87F29C758BF08 /* Capybara3DView.swift in Sources */,
 				81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */,
 				87B38444C6E04B4ACA44E2B1 /* CapybaraView.swift in Sources */,
@@ -378,7 +367,6 @@
 				FE8F2C04A76B19DDB0874226 /* CircularProgressView.swift in Sources */,
 				C421E3B91457752710B0B0D8 /* CoinDisplayView.swift in Sources */,
 				753D2F54FAF8045BAE685158 /* ColorExtensions.swift in Sources */,
-				C2D3CEEBEB2AA059CD95B595 /* ConsentManager.swift in Sources */,
 				7A4FCD61B393EB37AB855128 /* ContentView.swift in Sources */,
 				45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */,
 				773CCC8615F48BA2DC908A31 /* FoodPanel.swift in Sources */,
@@ -615,37 +603,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.14.0;
-			};
-		};
-		4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.1.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		94263D9A9B668880F4C17E60 /* GoogleUserMessagingPlatform */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 4A1214DD5E98FE3FBB85A09A /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
-			productName = GoogleUserMessagingPlatform;
-		};
-		A5A371906970024C7E6DA72A /* GoogleMobileAds */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 37742AF146700FDB29AAB411 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B3700F1B99F715A081CA7438 /* Project object */;
 }
