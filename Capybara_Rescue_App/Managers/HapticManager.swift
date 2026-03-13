@@ -32,6 +32,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.selectionGenerator.selectionChanged()
             self.selectionGenerator.prepare()
         }
@@ -42,6 +43,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.lightGenerator.impactOccurred(intensity: 0.6)
             self.lightGenerator.prepare()
         }
@@ -52,6 +54,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.mediumGenerator.impactOccurred(intensity: 0.8)
             self.mediumGenerator.prepare()
         }
@@ -62,6 +65,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.heavyGenerator.impactOccurred(intensity: 0.5)
             self.heavyGenerator.prepare()
         }
@@ -72,6 +76,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.notificationGenerator.notificationOccurred(.success)
             self.notificationGenerator.prepare()
         }
@@ -82,6 +87,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.notificationGenerator.notificationOccurred(.error)
             self.notificationGenerator.prepare()
         }
@@ -92,6 +98,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.lightGenerator.impactOccurred(intensity: 0.4)
             self.lightGenerator.prepare()
         }
@@ -102,6 +109,7 @@ class HapticManager {
         guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            self.prepareGenerators()
             self.selectionGenerator.selectionChanged()
             self.selectionGenerator.prepare()
         }

@@ -27,6 +27,10 @@ struct GameState: Codable {
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
     var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the 500 coins/week
     var lastCatchTheOrangeCompletedDate: Date? // Last calendar day user completed Catch the Orange (once per day reward)
+    /// Counters for repeatable achievements (e.g. "feed" -> total feeds, "pet" -> total pets).
+    var achievementCounts: [String: Int]
+    /// For repeatable achievements, last milestone we granted (e.g. "feed_10" -> 30 means granted at 10, 20, 30).
+    var achievementRepeatLastGranted: [String: Int]
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
@@ -35,6 +39,7 @@ struct GameState: Codable {
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
         case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
         case lastWeeklyCoinsGrantDate, lastCatchTheOrangeCompletedDate
+        case achievementCounts, achievementRepeatLastGranted
     }
     
     // Custom decoding for backward compatibility
@@ -64,6 +69,8 @@ struct GameState: Codable {
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
         lastWeeklyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastWeeklyCoinsGrantDate)
         lastCatchTheOrangeCompletedDate = try container.decodeIfPresent(Date.self, forKey: .lastCatchTheOrangeCompletedDate)
+        achievementCounts = try container.decodeIfPresent([String: Int].self, forKey: .achievementCounts) ?? [:]
+        achievementRepeatLastGranted = try container.decodeIfPresent([String: Int].self, forKey: .achievementRepeatLastGranted) ?? [:]
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -106,6 +113,8 @@ struct GameState: Codable {
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
         try container.encodeIfPresent(lastWeeklyCoinsGrantDate, forKey: .lastWeeklyCoinsGrantDate)
         try container.encodeIfPresent(lastCatchTheOrangeCompletedDate, forKey: .lastCatchTheOrangeCompletedDate)
+        try container.encode(achievementCounts, forKey: .achievementCounts)
+        try container.encode(achievementRepeatLastGranted, forKey: .achievementRepeatLastGranted)
     }
     
     // Manual initializer for default state
@@ -134,7 +143,9 @@ struct GameState: Codable {
         lastSubscriptionCheckDate: Date?,
         hasSeenCNY2026Popup: Bool,
         lastWeeklyCoinsGrantDate: Date?,
-        lastCatchTheOrangeCompletedDate: Date?
+        lastCatchTheOrangeCompletedDate: Date?,
+        achievementCounts: [String: Int] = [:],
+        achievementRepeatLastGranted: [String: Int] = [:]
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -161,6 +172,8 @@ struct GameState: Codable {
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
         self.lastWeeklyCoinsGrantDate = lastWeeklyCoinsGrantDate
         self.lastCatchTheOrangeCompletedDate = lastCatchTheOrangeCompletedDate
+        self.achievementCounts = achievementCounts
+        self.achievementRepeatLastGranted = achievementRepeatLastGranted
     }
     
     static let defaultState = GameState(

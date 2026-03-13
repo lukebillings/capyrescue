@@ -28,20 +28,6 @@ struct SettingsView: View {
                         // Toggles section
                         VStack(spacing: 0) {
                             SettingsRow(
-                                icon: "moon.fill",
-                                title: L("settings.darkMode"),
-                                subtitle: L("settings.darkModeSubtitle")
-                            ) {
-                                Toggle("", isOn: $settingsManager.darkMode)
-                                    .labelsHidden()
-                                    .tint(Color(hex: "1a5f1a"))
-                            }
-                            
-                            Divider()
-                                .background(Color.white.opacity(0.2))
-                                .padding(.leading, 56)
-                            
-                            SettingsRow(
                                 icon: "speaker.wave.2.fill",
                                 title: L("settings.sound"),
                                 subtitle: L("settings.soundSubtitle")

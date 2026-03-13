@@ -40,13 +40,16 @@ struct CapybaraRescueUniverseApp: App {
     }
 }
 
-// MARK: - Root View (applies settings like dark mode)
+// MARK: - Root View
 private struct RootView: View {
-    @ObservedObject private var settingsManager = SettingsManager.shared
     @EnvironmentObject var gameManager: GameManager
     
     var body: some View {
         ContentView()
-            .preferredColorScheme(settingsManager.darkMode ? .dark : .light)
+            .preferredColorScheme(.light)
+            .onAppear {
+                // Prepare haptic generators on main thread so feedback works reliably
+                HapticManager.shared.prepareGenerators()
+            }
     }
 }

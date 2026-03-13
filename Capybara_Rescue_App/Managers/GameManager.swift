@@ -23,8 +23,8 @@ class GameManager: ObservableObject {
     @Published var stat100ConfettiTrigger: String? = nil
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
     @Published var toastMessage: String? = nil // For showing toast messages to user
-    /// When non-nil, UI shows "Good job! You have been awarded X coins." popup, then requests App Store review after dismiss.
-    @Published var recentAchievementCoinReward: Int? = nil
+    /// When set, UI shows celebration popup + confetti: "Well done on [name], here's [X] coins."
+    @Published var recentAchievement: (name: String, coins: Int)? = nil
     
     private var decayTimer: Timer?
     private let storageKey = "capybara_rescue_game_state"
@@ -250,10 +250,36 @@ class GameManager: ObservableObject {
         }
     }
     
+    private static let achievementDisplayNames: [String: String] = [
+        "streak_3": "3 day streak",
+        "streak_7": "7 day streak",
+        "streak_30": "30 day streak",
+        "streak_100": "100 day streak",
+        "streak_365": "365 day streak",
+        "first_100_food": "Food at 100",
+        "first_100_drink": "Drink at 100",
+        "first_100_happy": "Happy at 100",
+        "first_all_100": "All at 100",
+        "feed_10": "Feed 10 times",
+        "pet_50": "Pet 50 times"
+    ]
+    
+    private static let achievementCoins: [String: Int] = [
+        "streak_3": 600, "streak_7": 700, "streak_30": 800, "streak_100": 900, "streak_365": 1000,
+        "first_100_food": 200, "first_100_drink": 200, "first_100_happy": 200, "first_all_100": 500,
+        "feed_10": 50, "pet_50": 75
+    ]
+    
+    private func grantAchievement(id: String, name: String? = nil, coins: Int? = nil) {
+        let displayName = name ?? Self.achievementDisplayNames[id] ?? id
+        let coinAmount = coins ?? Self.achievementCoins[id] ?? 0
+        gameState.capycoins += coinAmount
+        recentAchievement = (displayName, coinAmount)
+    }
+    
     private func checkAchievements() {
         let streak = gameState.statsStreak
         
-        // Achievement rewards: 3 days = 600, 7 days = 700, 30 days = 800, 100 days = 900, 365 days = 1000
         let achievementRewards: [Int: (String, Int)] = [
             3: ("streak_3", 600),
             7: ("streak_7", 700),
@@ -262,29 +288,27 @@ class GameManager: ObservableObject {
             365: ("streak_365", 1000)
         ]
         
-        var totalCoinsAwardedThisCheck = 0
+        var totalCoins = 0
+        var names: [String] = []
         
-        // Check each achievement threshold
-        // IMPORTANT: Achievements can only be earned once. If a user earns a 30-day achievement,
-        // breaks their streak, and then reaches 30 days again, they will NOT receive the coins again
-        // because the achievement is already in earnedAchievements.
         for (days, (achievementId, coins)) in achievementRewards.sorted(by: { $0.key < $1.key }) {
-            // Only award if streak meets threshold AND achievement hasn't been earned before
             if streak >= days && !gameState.earnedAchievements.contains(achievementId) {
                 gameState.earnedAchievements.insert(achievementId)
                 gameState.capycoins += coins
-                totalCoinsAwardedThisCheck += coins
+                totalCoins += coins
+                if let n = Self.achievementDisplayNames[achievementId] { names.append(n) }
             }
         }
         
-        if totalCoinsAwardedThisCheck > 0 {
-            recentAchievementCoinReward = totalCoinsAwardedThisCheck
+        if totalCoins > 0 {
+            let name = names.count == 1 ? names[0] : (names.isEmpty ? "Streak achievements" : names.joined(separator: " & "))
+            recentAchievement = (name, totalCoins)
         }
     }
     
-    /// Call when the achievement reward popup has been dismissed so we can clear the reward and optionally request review.
+    /// Call when the achievement reward popup has been dismissed.
     func clearRecentAchievementReward() {
-        recentAchievementCoinReward = nil
+        recentAchievement = nil
     }
     
     // MARK: - Persistence
@@ -403,55 +427,139 @@ class GameManager: ObservableObject {
         
         gameState.capycoins -= item.cost
         
+        // Increment feed count for repeatable achievement
+        let feedKey = "feed"
+        gameState.achievementCounts[feedKey] = (gameState.achievementCounts[feedKey] ?? 0) + 1
+        
         let previousFood = gameState.food
         gameState.food = min(100, gameState.food + item.foodValue)
+        
+        var awardNames: [String] = []
+        var awardCoins = 0
         
         if gameState.food == 100 && previousFood < 100 {
             stat100ConfettiTrigger = "food"
             SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_food") {
+                gameState.earnedAchievements.insert("first_100_food")
+                let c = Self.achievementCoins["first_100_food"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_100_food"] ?? "First 100 Food")
+            }
+            if gameState.drink == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+            }
         }
         
-        // Reschedule notifications based on new stat value
-        scheduleFutureNotifications()
+        // Repeatable: every 10 feeds
+        let feedCount = gameState.achievementCounts[feedKey] ?? 0
+        let feedMilestone = (feedCount / 10) * 10
+        let lastFeed10 = gameState.achievementRepeatLastGranted["feed_10"] ?? 0
+        if feedMilestone >= 10 && feedMilestone > lastFeed10 {
+            gameState.achievementRepeatLastGranted["feed_10"] = feedMilestone
+            let c = Self.achievementCoins["feed_10"] ?? 50
+            gameState.capycoins += c
+            awardCoins += c
+            awardNames.append((Self.achievementDisplayNames["feed_10"] ?? "Feed 10 Times") + " (\(feedMilestone))")
+        }
         
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
+        }
+        
+        scheduleFutureNotifications()
         return true
     }
     
     func giveWater(with item: DrinkItem) -> Bool {
-        // Check if drink is already at max
         guard gameState.drink < 100 else {
             showToast("CAPYBARA HAS HAD ENOUGH TO DRINK 😊")
             return false
         }
-        
         guard canAfford(item.cost) else { return false }
         
         gameState.capycoins -= item.cost
-        
         let previousDrink = gameState.drink
         gameState.drink = min(100, gameState.drink + item.drinkValue)
+        
+        var awardNames: [String] = []
+        var awardCoins = 0
         
         if gameState.drink == 100 && previousDrink < 100 {
             stat100ConfettiTrigger = "drink"
             SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_drink") {
+                gameState.earnedAchievements.insert("first_100_drink")
+                let c = Self.achievementCoins["first_100_drink"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_100_drink"] ?? "First 100 Drink")
+            }
+            if gameState.food == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+            }
+        }
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
         }
         
-        // Reschedule notifications based on new stat value
         scheduleFutureNotifications()
-        
         return true
     }
     
     func petCapybara() {
+        let petKey = "pet"
+        gameState.achievementCounts[petKey] = (gameState.achievementCounts[petKey] ?? 0) + 1
+        
         let previousHappiness = gameState.happiness
         gameState.happiness = min(100, gameState.happiness + 1)
+        
+        var awardNames: [String] = []
+        var awardCoins = 0
         
         if gameState.happiness == 100 && previousHappiness < 100 {
             stat100ConfettiTrigger = "happiness"
             SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_happy") {
+                gameState.earnedAchievements.insert("first_100_happy")
+                let c = Self.achievementCoins["first_100_happy"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_100_happy"] ?? "First 100 Happy")
+            }
+            if gameState.food == 100 && gameState.drink == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+            }
         }
         
-        // Reschedule notifications based on new stat value
+        let petCount = gameState.achievementCounts[petKey] ?? 0
+        let petMilestone = (petCount / 50) * 50
+        let lastPet50 = gameState.achievementRepeatLastGranted["pet_50"] ?? 0
+        if petMilestone >= 50 && petMilestone > lastPet50 {
+            gameState.achievementRepeatLastGranted["pet_50"] = petMilestone
+            let c = Self.achievementCoins["pet_50"] ?? 75
+            gameState.capycoins += c
+            awardCoins += c
+            awardNames.append((Self.achievementDisplayNames["pet_50"] ?? "Pet 50 Times") + " (\(petMilestone))")
+        }
+        
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
+        }
+        
         scheduleFutureNotifications()
     }
     

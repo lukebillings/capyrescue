@@ -47,7 +47,7 @@ enum TutorialStep: Int, CaseIterable {
         case .items:
             return "Your capybara might like to have some accessories.\nYou can buy them using coins in the Items menu."
         case .shop:
-            return "You can buy more coins from the shop."
+            return "You can get more coins from Get More."
         case .achievements:
             return "Keep food, drink, and happiness all above 50 for consecutive days to earn achievement rewards!"
         }

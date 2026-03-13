@@ -488,10 +488,11 @@ struct AccessoryItemButton: View {
                         HStack(spacing: 3) {
                             Text("₵")
                                 .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(Color(hex: "B8860B"))
                             Text("\(item.cost)")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7))
                         }
-                        .foregroundStyle(canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         
                         Text(L("common.tapToPreview"))
@@ -801,7 +802,7 @@ struct LooksGoodModal: View {
                             .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Self.settingsGreen)
+                            .foregroundStyle(Color(hex: "B8860B"))
                         Text("•")
                             .foregroundStyle(Self.secondaryText)
                         Text(L("common.youHave"))
@@ -893,7 +894,7 @@ struct InsufficientCoinsOverlay: View {
                             .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(Self.settingsGreen)
+                            .foregroundStyle(Color(hex: "B8860B"))
                         Text("•")
                             .foregroundStyle(Self.secondaryText)
                         Text(L("common.youHave"))

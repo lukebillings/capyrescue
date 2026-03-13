@@ -14,14 +14,33 @@ struct ShopPanel: View {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
                 
-                // Catch the Orange - daily mini-game card
-                CatchTheOrangeCard(
-                    canPlayToday: gameManager.canPlayCatchTheOrangeToday(),
-                    onPlay: {
-                        HapticManager.shared.buttonPress()
-                        showCatchTheOrangeGame = true
+                // Play Daily Games section
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "gamecontroller.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(Color(hex: "1a5f1a"))
+                        
+                        Text("Play Daily Games")
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(hex: "1a1a2e"))
+                        
+                        Spacer()
                     }
-                )
+                    .padding(.horizontal, 20)
+                    
+                    VStack(spacing: 8) {
+                        CatchTheOrangeCard(
+                            coinsPerDay: GameManager.catchTheOrangeCoinsReward,
+                            canPlayToday: gameManager.canPlayCatchTheOrangeToday(),
+                            onPlay: {
+                                HapticManager.shared.buttonPress()
+                                showCatchTheOrangeGame = true
+                            }
+                        )
+                    }
+                    .padding(.horizontal, 16)
+                }
                 .padding(.top, 24)
                 
                 // Coin Packs Section
@@ -122,6 +141,7 @@ struct ShopPanel: View {
 
 // MARK: - Catch the Orange Card (Get More / Shop)
 struct CatchTheOrangeCard: View {
+    let coinsPerDay: Int
     let canPlayToday: Bool
     let onPlay: () -> Void
     
@@ -139,6 +159,21 @@ struct CatchTheOrangeCard: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.primaryText)
                 Spacer()
+            }
+            .padding(.horizontal, 16)
+            
+            // Coins per day (same style as coin pack number + "coins")
+            HStack(spacing: 8) {
+                CoinIcon(size: 26)
+                Text("\(coinsPerDay)")
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Self.primaryText)
+                Text("coins")
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundStyle(Self.primaryText)
+                Text("per day")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Self.secondaryText)
             }
             .padding(.horizontal, 16)
             
@@ -179,7 +214,6 @@ struct CatchTheOrangeCard: View {
                         .stroke(Self.settingsGreen.opacity(0.4), lineWidth: 1.5)
                 )
         )
-        .padding(.horizontal, 16)
     }
 }
 
@@ -217,15 +251,7 @@ struct BalanceHeroCard: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Self.settingsGreen.opacity(0.4), lineWidth: 1.5)
-                )
-                .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-        )
+        .background(GlassBackground())
         .padding(.horizontal, 16)
     }
     
@@ -237,7 +263,7 @@ struct BalanceHeroCard: View {
     }
 }
 
-// MARK: - Coin Icon
+// MARK: - Coin Icon (gold style)
 struct CoinIcon: View {
     let size: CGFloat
     
@@ -246,7 +272,7 @@ struct CoinIcon: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "2E7D32"), Color(hex: "1a5f1a")],
+                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -256,7 +282,7 @@ struct CoinIcon: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "4CAF50").opacity(0.5), Color.clear],
+                        colors: [Color(hex: "FFF8DC").opacity(0.6), Color.clear],
                         startPoint: .topLeading,
                         endPoint: .center
                     )
@@ -305,12 +331,11 @@ struct CoinPackCard: View {
                     }
                     
                     HStack(spacing: 4) {
-                        CoinIcon(size: 18)
                         Text(formatCoins(pack.coins))
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.system(size: 22, weight: .semibold, design: .rounded))
                             .foregroundStyle(Self.primaryText)
                         Text("coins")
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 22, weight: .medium))
                             .foregroundStyle(Self.secondaryText)
                     }
                 }

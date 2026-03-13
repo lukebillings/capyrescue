@@ -24,7 +24,7 @@ struct CoinDisplayView: View {
                     
                     Text("₵")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color(hex: "8B4513"))
+                        .foregroundStyle(.white)
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {

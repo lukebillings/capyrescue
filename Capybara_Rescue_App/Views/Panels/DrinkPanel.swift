@@ -167,10 +167,11 @@ struct DrinkItemButton: View {
                 HStack(spacing: 2) {
                     Text("₵")
                         .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(Color(hex: "B8860B"))
                     Text("\(item.cost)")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(costForegroundStyle)
                 }
-                .foregroundStyle(costForegroundStyle)
                 
                 HStack(spacing: 2) {
                     Image(systemName: "drop.fill")

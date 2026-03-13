@@ -341,7 +341,7 @@ struct RealityKitView: UIViewRepresentable {
         
         // Try to load the USDZ model first
         if !useProceduralModel, let model = loadCapybaraModel() {
-            model.scale = [0.35, 0.35, 0.35] // Slightly larger capybara
+            model.scale = [0.30, 0.30, 0.30] // Slightly smaller so hats don't clip at top
             model.position = [0, -0.1, 0] // Slightly lower to center better in view
             
             // Try to disable shadows on all entities to avoid rendering pipeline issues
@@ -375,7 +375,7 @@ struct RealityKitView: UIViewRepresentable {
             }
         } else if let proceduralModel = createProceduralCapybara() {
             // Fallback to procedural model if USDZ fails to load
-            proceduralModel.scale = [0.35, 0.35, 0.35] // Slightly larger capybara
+            proceduralModel.scale = [0.30, 0.30, 0.30] // Slightly smaller so hats don't clip at top
             proceduralModel.position = [0, -0.1, 0] // Slightly lower to center better in view
             anchor.addChild(proceduralModel)
             context.coordinator.modelEntity = proceduralModel

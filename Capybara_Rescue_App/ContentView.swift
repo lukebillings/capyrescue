@@ -203,7 +203,7 @@ struct ContentView: View {
                                     
                                     Text("₵")
                                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color(hex: "8B4513"))
+                                        .foregroundStyle(.white)
                                 }
                                 
                                 Text(formattedCoinString(gameManager.gameState.capycoins))
@@ -328,17 +328,16 @@ struct ContentView: View {
                     onAnimationComplete: {}
                 )
                 
-                // Confetti overlay (when food, drink, or happiness reaches 100)
+                // Confetti (stat 100 or achievement earned)
                 ConfettiView(
-                    isActive: gameManager.stat100ConfettiTrigger != nil,
+                    isActive: gameManager.stat100ConfettiTrigger != nil || gameManager.recentAchievement != nil,
                     onComplete: {
                         gameManager.stat100ConfettiTrigger = nil
                     }
                 )
-                .id(gameManager.stat100ConfettiTrigger ?? "idle")
+                .id(gameManager.stat100ConfettiTrigger ?? (gameManager.recentAchievement != nil ? "achievement" : "idle"))
                 .zIndex(200)
                 .onChange(of: gameManager.stat100ConfettiTrigger) { _, newValue in
-                    // When any stat hits 100, if all three are now 100, request review 3 seconds later
                     guard newValue != nil else { return }
                     let state = gameManager.gameState
                     guard state.food == 100, state.drink == 100, state.happiness == 100 else { return }
@@ -399,17 +398,19 @@ struct ContentView: View {
                     .zIndex(203) // Above everything
                 }
                 
-                // Achievement reward popup → then Apple review prompt
-                if let coins = gameManager.recentAchievementCoinReward {
-                    AchievementRewardPopup(coins: coins)
+                // Achievement reward popup + confetti ("Well done on [achievement], here's [X] coins")
+                if let achievement = gameManager.recentAchievement {
+                    AchievementRewardPopup(achievementName: achievement.name, coins: achievement.coins)
                         .zIndex(204)
                         .onAppear {
-                            // Dismiss popup after a few seconds, then show Apple review
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                                 gameManager.clearRecentAchievementReward()
                             }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                requestReview()
+                                let state = gameManager.gameState
+                                if state.food == 100, state.drink == 100, state.happiness == 100 {
+                                    requestReview()
+                                }
                             }
                         }
                 }
@@ -839,8 +840,9 @@ struct ToastView: View {
     }
 }
 
-// MARK: - Achievement Reward Popup (then Apple review)
+// MARK: - Achievement Reward Popup ("Well done on [achievement], here's [X] coins")
 struct AchievementRewardPopup: View {
+    let achievementName: String
     let coins: Int
     
     private static let cream = Color(hex: "FFF8E7")
@@ -857,14 +859,14 @@ struct AchievementRewardPopup: View {
                 Text("🏆")
                     .font(.system(size: 50))
                 
-                Text("Good job!")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                Text("Well done on \(achievementName)!")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.primaryText)
+                    .multilineTextAlignment(.center)
                 
-                Text("You have been awarded \(coins) coins.")
+                Text("Here's \(coins) coins.")
                     .font(.system(size: 17, weight: .medium, design: .rounded))
                     .foregroundStyle(Self.secondaryText)
-                    .multilineTextAlignment(.center)
             }
             .padding(.vertical, 28)
             .padding(.horizontal, 32)
