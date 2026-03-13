@@ -22,23 +22,18 @@ struct ShopPanel: View {
                         showCatchTheOrangeGame = true
                     }
                 )
+                .padding(.top, 24)
                 
                 // Coin Packs Section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "sparkles")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .foregroundStyle(Color(hex: "1a5f1a"))
                         
                         Text(L("panel.coinPacks"))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color(hex: "1a1a2e"))
                         
                         Spacer()
                     }
@@ -85,12 +80,6 @@ struct ShopPanel: View {
                                         .foregroundStyle(.black)
                                 }
                             }
-                            
-                                Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                                    Text("Terms of Use (EULA)")
-                                        .font(.system(size: 11, weight: .regular))
-                                        .foregroundStyle(.black)
-                                }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -136,6 +125,11 @@ struct CatchTheOrangeCard: View {
     let canPlayToday: Bool
     let onPlay: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
@@ -143,14 +137,14 @@ struct CatchTheOrangeCard: View {
                     .font(.system(size: 28))
                 Text(L("orange.title"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 16)
             
             Text(L("orange.subtitle"))
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(.primary.opacity(0.85))
+                .foregroundStyle(Self.secondaryText)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal, 16)
             
@@ -158,12 +152,12 @@ struct CatchTheOrangeCard: View {
                 Button(action: onPlay) {
                     Text(L("orange.play"))
                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(hex: "FF8C00"))
+                                .fill(Self.settingsGreen)
                         )
                 }
                 .padding(.horizontal, 16)
@@ -171,17 +165,18 @@ struct CatchTheOrangeCard: View {
             } else {
                 Text(L("orange.comeBackTomorrow"))
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.7))
+                    .foregroundStyle(Self.secondaryText)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
             }
         }
+        .padding(.top, 24)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(hex: "FFF8E7"))
+                .fill(Self.cream)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color(hex: "FF8C00").opacity(0.4), lineWidth: 1.5)
+                        .stroke(Self.settingsGreen.opacity(0.4), lineWidth: 1.5)
                 )
         )
         .padding(.horizontal, 16)
@@ -192,27 +187,30 @@ struct CatchTheOrangeCard: View {
 struct BalanceHeroCard: View {
     let coins: Int
     
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         HStack(spacing: 20) {
             ZStack {
                 CoinIcon(size: 50)
             }
             
-            // Balance Text
             VStack(alignment: .leading, spacing: 4) {
                 Text(L("panel.shopBalance"))
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.black.opacity(0.7))
+                    .foregroundStyle(Self.secondaryText)
                 
                 Text(formatCoins(coins))
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(Self.primaryText)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 
                 Text(L("common.coins"))
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.black.opacity(0.8))
+                    .foregroundStyle(Self.secondaryText)
             }
             
             Spacer()
@@ -224,7 +222,7 @@ struct BalanceHeroCard: View {
                 .fill(Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color(hex: "FFD700").opacity(0.4), lineWidth: 1.5)
+                        .stroke(Self.settingsGreen.opacity(0.4), lineWidth: 1.5)
                 )
                 .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
         )
@@ -248,7 +246,7 @@ struct CoinIcon: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                        colors: [Color(hex: "2E7D32"), Color(hex: "1a5f1a")],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -258,7 +256,7 @@ struct CoinIcon: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FFE55C").opacity(0.6), Color.clear],
+                        colors: [Color(hex: "4CAF50").opacity(0.5), Color.clear],
                         startPoint: .topLeading,
                         endPoint: .center
                     )
@@ -267,7 +265,7 @@ struct CoinIcon: View {
             
             Text("₵")
                 .font(.system(size: size * 0.5, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "8B4513"))
+                .foregroundStyle(.white)
         }
     }
 }
@@ -280,32 +278,17 @@ struct CoinPackCard: View {
     let isPurchasing: Bool
     let action: () -> Void
     
-    private var tierGradient: [Color] {
-        switch tier {
-        case 0: // Ultra - Purple (no gold)
-            return [Color(hex: "9B59B6"), Color(hex: "6C3483")]
-        case 1: // Mega - Purple
-            return [Color(hex: "9B59B6"), Color(hex: "6C3483")]
-        case 2: // Super - Blue
-            return [Color(hex: "3498DB"), Color(hex: "2471A3")]
-        default: // Starter - Green
-            return [Color(hex: "27AE60"), Color(hex: "1E8449")]
-        }
-    }
-    
-    // Unified price button gradient for consistent appearance
-    private var priceButtonGradient: [Color] {
-        return [Color(hex: "4A90E2"), Color(hex: "357ABD")]
-    }
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let cream = Color(hex: "FFF8E7")
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
-                // Coin Icon
                 CoinIcon(size: 56)
-                    .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 8, y: 4)
+                    .shadow(color: Self.settingsGreen.opacity(0.3), radius: 8, y: 4)
                 
-                // Pack Info
                 VStack(alignment: .leading, spacing: 6) {
                     if let badge = pack.badge {
                         HStack(spacing: 8) {
@@ -316,13 +299,7 @@ struct CoinPackCard: View {
                                 .padding(.vertical, 3)
                                 .background(
                                     Capsule()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: tierGradient,
-                                                startPoint: .leading,
-                                                endPoint: .trailing
-                                            )
-                                        )
+                                        .fill(Self.settingsGreen)
                                 )
                         }
                     }
@@ -331,64 +308,42 @@ struct CoinPackCard: View {
                         CoinIcon(size: 18)
                         Text(formatCoins(pack.coins))
                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(Self.primaryText)
                         Text("coins")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.black.opacity(0.6))
+                            .foregroundStyle(Self.secondaryText)
                     }
                 }
                 
                 Spacer()
                 
-                // Price Button
                 if isPurchasing {
                     ProgressView()
                         .tint(.white)
                         .frame(width: 80, height: 44)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(
-                                    LinearGradient(
-                                        colors: priceButtonGradient,
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(Self.settingsGreen)
                         )
                 } else {
                     Text(priceText)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(width: 80, height: 44)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(
-                                LinearGradient(
-                                    colors: priceButtonGradient,
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .shadow(color: priceButtonGradient[0].opacity(0.4), radius: 6, y: 3)
-                    )
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .frame(width: 80, height: 44)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Self.settingsGreen)
+                                .shadow(color: Self.settingsGreen.opacity(0.35), radius: 6, y: 3)
+                        )
                 }
             }
             .padding(12)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                tierGradient[0].opacity(0.15),
-                                tierGradient[1].opacity(0.05)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .stroke(tierGradient[0].opacity(0.3), lineWidth: 1)
+                            .stroke(Self.settingsGreen.opacity(0.25), lineWidth: 1)
                     )
             )
         }

@@ -78,9 +78,14 @@ struct CatchTheOrangeView: View {
         }
     }
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     private var successOverlay: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
@@ -88,11 +93,11 @@ struct CatchTheOrangeView: View {
                     .font(.system(size: 64))
                 Text(L("orange.successTitle"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 Text(L("orange.successBody"))
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
                 Button(action: {
@@ -102,12 +107,12 @@ struct CatchTheOrangeView: View {
                 }) {
                     Text(L("common.gotIt"))
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(hex: "FFD700"))
+                                .fill(Self.settingsGreen)
                         )
                 }
                 .padding(.horizontal, 40)
@@ -116,7 +121,11 @@ struct CatchTheOrangeView: View {
             .padding(32)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
+                    )
             )
             .padding(40)
         }

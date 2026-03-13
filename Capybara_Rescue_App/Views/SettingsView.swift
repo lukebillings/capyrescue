@@ -55,6 +55,34 @@ struct SettingsView: View {
                                 .padding(.leading, 56)
                             
                             SettingsRow(
+                                icon: "music.note",
+                                title: L("settings.music"),
+                                subtitle: L("settings.musicSubtitle")
+                            ) {
+                                Toggle("", isOn: $settingsManager.musicEnabled)
+                                    .labelsHidden()
+                                    .tint(Color(hex: "1a5f1a"))
+                            }
+                            
+                            Divider()
+                                .background(Color.white.opacity(0.2))
+                                .padding(.leading, 56)
+                            
+                            SettingsRow(
+                                icon: "bell.fill",
+                                title: L("settings.notifications"),
+                                subtitle: L("settings.notificationsSubtitle")
+                            ) {
+                                Toggle("", isOn: $settingsManager.notificationsEnabled)
+                                    .labelsHidden()
+                                    .tint(Color(hex: "1a5f1a"))
+                            }
+                            
+                            Divider()
+                                .background(Color.white.opacity(0.2))
+                                .padding(.leading, 56)
+                            
+                            SettingsRow(
                                 icon: "hand.tap.fill",
                                 title: L("settings.hapticFeedback"),
                                 subtitle: L("settings.hapticSubtitle")

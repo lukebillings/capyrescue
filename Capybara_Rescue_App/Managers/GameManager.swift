@@ -846,6 +846,11 @@ class GameManager: ObservableObject {
     
     // MARK: - Schedule Future Notifications
     func scheduleFutureNotifications() {
+        guard SettingsManager.shared.notificationsEnabled else {
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            return
+        }
+        
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             guard settings.authorizationStatus == .authorized else { return }
             

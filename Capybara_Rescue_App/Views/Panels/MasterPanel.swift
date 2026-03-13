@@ -47,7 +47,7 @@ struct MasterPanel: View {
     }
 }
 
-// MARK: - Category Card
+// MARK: - Category Card (modern iOS style: SF Symbol, material-style background)
 struct CategoryCard: View {
     let icon: String
     let title: String
@@ -69,57 +69,27 @@ struct CategoryCard: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                // Large emoji - smaller size
-                Text(emoji)
-                    .font(.system(size: 40))
-                    .frame(height: 50)
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 28, weight: .medium))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(isShopButton ? Color(hex: "8B4513") : color)
+                    .frame(height: 44)
                 
-                // Title
                 Text(title)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(isShopButton ? .black : .primary)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12) // Reduced vertical padding
+            .padding(.vertical, 16)
             .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        // Use gold gradient for Shop button, subtle gradient for others
-                        isShopButton ? 
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "FFD700"),
-                                    Color(hex: "FF8C00")
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            ) :
-                            LinearGradient(
-                                colors: [
-                                    color.opacity(0.15),
-                                    color.opacity(0.05)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                    )
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.regularMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(
-                                isShopButton ? 
-                                    Color(hex: "FFD700").opacity(0.5) :
-                                    color.opacity(0.3),
-                                lineWidth: 1.5
-                            )
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(color.opacity(0.25), lineWidth: 1)
                     )
-            )
-                    .shadow(
-                color: isShopButton ? Color(hex: "FFD700").opacity(0.4) : .clear,
-                radius: 8,
-                x: 0,
-                y: 4
             )
         }
         .buttonStyle(ScaleButtonStyle())

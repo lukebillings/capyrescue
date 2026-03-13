@@ -29,8 +29,7 @@ struct FoodPanel: View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
             if horizontalSizeClass == .compact {
-                VStack(spacing: 16) {
-                    // Food items - horizontal scrolling row
+                VStack(spacing: 6) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
                             ForEach(availableFoodItems) { item in
@@ -40,52 +39,44 @@ struct FoodPanel: View {
                                 ) {
                                     handleFoodSelection(item)
                                 }
-                                .frame(width: 100) // Fixed width for horizontal scroll
+                                .frame(width: 100)
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8) // Add vertical padding to prevent cutoff
+                        .padding(.vertical, 8)
                     }
-                    .frame(maxHeight: .infinity) // Fill space so header sits lower
+                    .frame(maxHeight: .infinity)
                     
-                    // Header with back button - below items
-                    HStack {
+                    Spacer(minLength: 4)
+                    
+                    HStack(alignment: .center, spacing: 10) {
                         if let onBack = onBack {
                             Button(action: {
                                 HapticManager.shared.buttonPress()
                                 onBack()
                             }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.primary.opacity(0.8))
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 36, height: 36)
+                                    .background(Circle().fill(Color(hex: "1a5f1a")))
                             }
-                            .padding(.leading, 8)
+                            
+                            Text(L("common.back"))
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.primary)
                         }
-                        
-                        Spacer()
-                        
-                        Text(L("panel.feedTitle"))
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(.primary)
-                        
-                        Spacer()
-                        
-                        // Spacer for symmetry
-                        if onBack != nil {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.clear)
-                        }
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
                 }
-                .padding(.top, 80)
-                .padding(.bottom, 20)
+                .padding(.top, 140) // Match Items panel so back row is in same place on screen
+                .padding(.bottom, 12)
             } else {
                 // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
                 GeometryReader { geometry in
-                    VStack(spacing: 12) {
-                        // Food items - horizontal scrolling row
+                    VStack(spacing: 6) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ForEach(availableFoodItems) { item in
@@ -95,47 +86,38 @@ struct FoodPanel: View {
                                     ) {
                                         handleFoodSelection(item)
                                     }
-                                    .frame(width: 100) // Fixed width for horizontal scroll
+                                    .frame(width: 100)
                                 }
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                         }
-                        .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
+                        .frame(height: max(120, min(geometry.size.height * 0.65, 140)))
                         
-                        // Header with back button - moved below items
-                        HStack {
+                        Spacer(minLength: 4)
+                        
+                        HStack(alignment: .center, spacing: 10) {
                             if let onBack = onBack {
                                 Button(action: {
                                     HapticManager.shared.buttonPress()
                                     onBack()
                                 }) {
-                                    Image(systemName: "chevron.left.circle.fill")
-                                        .font(.system(size: 28))
-                                        .foregroundStyle(.primary.opacity(0.8))
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color(hex: "1a5f1a")))
                                 }
-                                .padding(.leading, 8)
+                                
+                                Text(L("common.back"))
+                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(.primary)
                             }
-                            
-                            Spacer()
-                            
-                            Text(L("panel.feedTitle"))
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                            
-                            Spacer()
-                            
-                            // Spacer for symmetry
-                            if onBack != nil {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.clear)
-                            }
+                            Spacer(minLength: 0)
                         }
                         .padding(.horizontal, 16)
-                        .frame(height: 60) // Fixed height for header to prevent cutoff
+                        .padding(.vertical, 8)
+                        .frame(height: 52)
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 8)

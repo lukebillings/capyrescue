@@ -30,7 +30,7 @@ struct ItemsPanel: View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
             if horizontalSizeClass == .compact {
-                VStack(spacing: 16) {
+                VStack(spacing: 6) {
                     // Items - horizontal scrolling row
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 16) {
@@ -45,20 +45,21 @@ struct ItemsPanel: View {
                                 ) {
                                     handleItemAction(item)
                                 }
-                                .frame(width: 100) // Fixed width for horizontal scroll
+                                .frame(width: 78)
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 8) // Add vertical padding to prevent cutoff
+                        .padding(.vertical, 6)
                     }
-                    .frame(maxHeight: .infinity) // Fill space so header sits lower
+                    .frame(maxHeight: .infinity)
                     
-                    // Header with back button - moved below items
-                    HStack {
+                    Spacer(minLength: 4)
+                    
+                    // Back button and text next to each other, centered, at bottom
+                    HStack(alignment: .center, spacing: 10) {
                         if let onBack = onBack {
                             Button(action: {
                                 HapticManager.shared.buttonPress()
-                                // Clear preview if unpurchased item is being previewed
                                 if let previewId = previewingItemId,
                                    !gameManager.gameState.ownedAccessories.contains(previewId) {
                                     previewingItemId = nil
@@ -66,37 +67,28 @@ struct ItemsPanel: View {
                                 }
                                 onBack()
                             }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(Color.primary.opacity(0.8))
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 36, height: 36)
+                                    .background(Circle().fill(Color(hex: "1a5f1a")))
                             }
-                            .padding(.leading, 8)
+                            
+                            Text(L("common.back"))
+                                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.primary)
                         }
-                        
-                        Spacer()
-                        
-                        Text(L("panel.accessoriseTitle"))
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(.primary)
-                        
-                        Spacer()
-                        
-                        // Spacer for symmetry
-                        if onBack != nil {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.clear)
-                        }
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
                 }
-                .padding(.top, 80)
-                .padding(.bottom, 20)
+                .padding(.top, 140)
+                .padding(.bottom, 12)
             } else {
                 // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
                 GeometryReader { geometry in
-                    VStack(spacing: 12) {
-                        // Items - horizontal scrolling row
+                    VStack(spacing: 6) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ForEach(filteredItems) { item in
@@ -110,20 +102,20 @@ struct ItemsPanel: View {
                                     ) {
                                         handleItemAction(item)
                                     }
-                                    .frame(width: 100) // Fixed width for horizontal scroll
+                                    .frame(width: 78)
                                 }
                             }
                             .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 6)
                         }
-                        .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
+                        .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
                         
-                        // Header with back button - moved below items
-                        HStack {
+                        Spacer(minLength: 4)
+                        
+                        HStack(alignment: .center, spacing: 10) {
                             if let onBack = onBack {
                                 Button(action: {
                                     HapticManager.shared.buttonPress()
-                                    // Clear preview if unpurchased item is being previewed
                                     if let previewId = previewingItemId,
                                        !gameManager.gameState.ownedAccessories.contains(previewId) {
                                         previewingItemId = nil
@@ -131,32 +123,22 @@ struct ItemsPanel: View {
                                     }
                                     onBack()
                                 }) {
-                                    Image(systemName: "chevron.left.circle.fill")
-                                        .font(.system(size: 28))
-                                        .foregroundStyle(Color.primary.opacity(0.8))
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color(hex: "1a5f1a")))
                                 }
-                                .padding(.leading, 8)
+                                
+                                Text(L("common.back"))
+                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(.primary)
                             }
-                            
-                            Spacer()
-                            
-                            Text(L("panel.accessoriseTitle"))
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                            
-                            Spacer()
-                            
-                            // Spacer for symmetry
-                            if onBack != nil {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.clear)
-                            }
+                            Spacer(minLength: 0)
                         }
                         .padding(.horizontal, 16)
-                        .frame(height: 60) // Fixed height for header to prevent cutoff
+                        .padding(.vertical, 8)
+                        .frame(height: 52)
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 8)
@@ -404,45 +386,41 @@ struct AccessoryItemButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                // 3D Model Preview
+            VStack(spacing: 4) {
+                // 3D Model Preview (smaller to fit reduced card)
                 ZStack {
                     Circle()
                         .fill(backgroundColor)
-                        .frame(width: 70, height: 70)
+                        .frame(width: 54, height: 54)
                     
                     if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
-                        // Show 3D model preview for items with models (hats and others)
                         HatPreview3DView(fileName: modelFileName)
-                            .frame(width: 70, height: 70)
+                            .frame(width: 54, height: 54)
                             .clipShape(Circle())
                     } else {
-                        // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
-                            .font(.system(size: 48))
+                            .font(.system(size: 32))
                     }
                     
-                    // Equipped indicator
                     if isEquipped {
                         Circle()
-                            .stroke(Color.green, lineWidth: 3)
-                            .frame(width: 70, height: 70)
+                            .stroke(Color.green, lineWidth: 2.5)
+                            .frame(width: 54, height: 54)
                         
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 20))
+                            .font(.system(size: 14))
                             .foregroundStyle(.green)
                             .background(Circle().fill(.black))
-                            .offset(x: 25, y: -25)
+                            .offset(x: 18, y: -18)
                     }
                     
-                    // Pro badge for Pro-only items
                     if item.isProOnly && !hasPro {
                         VStack {
                             Spacer()
                             HStack {
                                 Spacer()
                                 Image(systemName: "crown.fill")
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 12))
                                     .foregroundStyle(
                                         LinearGradient(
                                             colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -453,18 +431,18 @@ struct AccessoryItemButton: View {
                                     .background(
                                         Circle()
                                             .fill(Color.black.opacity(0.7))
-                                            .frame(width: 24, height: 24)
+                                            .frame(width: 18, height: 18)
                                     )
-                                    .offset(x: -5, y: -5)
+                                    .offset(x: -4, y: -4)
                             }
                         }
-                        .frame(width: 70, height: 70)
+                        .frame(width: 54, height: 54)
                     }
                 }
                 
                 // Name
                 Text(localizedAccessoryName(id: item.id))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -472,7 +450,7 @@ struct AccessoryItemButton: View {
                 // Status / Price
                 if isOwned {
                     Text(isEquipped ? L("common.equipped") : L("common.tapToEquip"))
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
                         .foregroundStyle(isEquipped ? .green : Color.primary.opacity(0.8))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 } else if item.isProOnly && !hasPro {
@@ -536,13 +514,13 @@ struct AccessoryItemButton: View {
                 }
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(.white.opacity(isOwned ? 0.1 : 0.05))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(borderColor, lineWidth: 1)
                     )
             )
@@ -800,37 +778,40 @@ struct LooksGoodModal: View {
     let onBuyNow: () -> Void
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
                 Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.primaryText)
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 6) {
                         Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppColors.accent)
+                            .foregroundStyle(Self.settingsGreen)
                         Text("•")
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Self.secondaryText)
                         Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Self.primaryText)
                     }
                 }
                 
@@ -844,18 +825,14 @@ struct LooksGoodModal: View {
                         Text(L("common.buyNow"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Self.settingsGreen)
                     )
-                    .cornerRadius(16)
-                    .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 8, x: 0, y: 4)
+                    .shadow(color: Self.settingsGreen.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 
                 Button(action: {
@@ -864,16 +841,16 @@ struct LooksGoodModal: View {
                 }) {
                     Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Self.settingsGreen)
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)
@@ -889,41 +866,44 @@ struct InsufficientCoinsOverlay: View {
     let onBuyCoins: () -> Void
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
                 Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.primaryText)
                 
                 VStack(spacing: 8) {
                     Text(L("common.youNeedMoreCoins"))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(Self.primaryText)
                     
                     HStack(spacing: 6) {
                         Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppColors.accent)
+                            .foregroundStyle(Self.settingsGreen)
                         Text("•")
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(Self.secondaryText)
                         Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Self.primaryText)
                     }
                 }
                 
@@ -937,18 +917,14 @@ struct InsufficientCoinsOverlay: View {
                         Text(L("common.buyMoreCoins"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Self.settingsGreen)
                     )
-                    .cornerRadius(16)
-                    .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 8, x: 0, y: 4)
+                    .shadow(color: Self.settingsGreen.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 
                 Button(action: {
@@ -957,16 +933,16 @@ struct InsufficientCoinsOverlay: View {
                 }) {
                     Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Self.settingsGreen)
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)
@@ -978,25 +954,28 @@ struct InsufficientCoinsOverlay: View {
 struct HatEquipErrorOverlay: View {
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
                 Text(L("hat.oneAtATime"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
                 Text(L("hat.deselectCurrent"))
                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
                 Button(action: {
@@ -1005,22 +984,22 @@ struct HatEquipErrorOverlay: View {
                 }) {
                     Text("OK")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.purple.opacity(0.6))
+                                .fill(Self.settingsGreen)
                         )
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)

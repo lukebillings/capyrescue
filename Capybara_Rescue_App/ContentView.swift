@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.requestReview) private var requestReview
     @ObservedObject private var localizationManager = LocalizationManager.shared
+    @ObservedObject private var settingsManager = SettingsManager.shared
     
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false
@@ -65,6 +66,14 @@ struct ContentView: View {
     
     private func checkOnboardingStatus() {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
+    }
+    
+    /// Formatted coin count for header (full number with commas, no K/M).
+    private func formattedCoinString(_ coins: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSNumber(value: coins)) ?? "\(coins)"
     }
     
     var body: some View {
@@ -128,111 +137,109 @@ struct ContentView: View {
                 
                 // Main content
                 VStack(spacing: 0) {
-                    // Combined header: Name, Badges, Coins, Get More, Settings
-                    HStack(spacing: 6) {
-                        // Name (tappable to rename)
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showRenameSheet = true
-                        }) {
-                            Text(gameManager.gameState.capybaraName)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                    // Header: two rows so name and coins don’t cramp; compact coin format for large balances
+                    VStack(spacing: 12) {
+                        // Line 1: Name (top left), medal + music + gear (top right)
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showRenameSheet = true
+                            }) {
+                                Text(gameManager.gameState.capybaraName)
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showAchievementsSheet = true
+                            }) {
+                                Image(systemName: "medal.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .tutorialHighlight(key: "achievements_button")
+                            
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                settingsManager.musicEnabled.toggle()
+                            }) {
+                                Image(systemName: "music.note")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(settingsManager.musicEnabled ? .primary : Color.primary.opacity(0.5))
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showSettingsSheet = true
+                            }) {
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
                         }
-                        .buttonStyle(PlainButtonStyle())
                         
-                        // Achievements button
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showAchievementsSheet = true
-                        }) {
-                            Image(systemName: "medal.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        .tutorialHighlight(key: "achievements_button")
-                        
-                        Spacer()
-                        
-                        // Coin icon and amount
-                        HStack(spacing: 2) {
-                            // Coin icon
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                        // Line 2: Coins (left), Get More (bottom right)
+                        HStack(spacing: 12) {
+                            HStack(spacing: 6) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
                                         )
-                                    )
-                                    .frame(width: 28, height: 28)
-                                    .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 6, x: 0, y: 2)
+                                        .frame(width: 28, height: 28)
+                                        .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 2)
+                                    
+                                    Text("₵")
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Color(hex: "8B4513"))
+                                }
                                 
-                                Text("₵")
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(hex: "8B4513"))
+                                Text(formattedCoinString(gameManager.gameState.capycoins))
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
                             }
                             
-                            Text("\(gameManager.gameState.capycoins)")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
-                        .padding(.leading, -8)
-                        
-                        // Get More button — opens shop (premium plans at top, then coin packs)
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showShopSheet = true
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 12, weight: .semibold))
-                                
-                                Text(L("common.getMore"))
-                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                            Spacer(minLength: 8)
+                            
+                            // Get More (bottom right)
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showShopSheet = true
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text(L("common.getMore"))
+                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(
+                                    Capsule()
+                                        .fill(Color(hex: "1a5f1a"))
+                                )
+                                .shadow(color: Color(hex: "1a5f1a").opacity(0.35), radius: 6, x: 0, y: 3)
                             }
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: "FFD700"), Color(hex: "FF8C00")],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            )
-                            .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 3)
+                            .buttonStyle(ScaleButtonStyle())
                         }
-                        .buttonStyle(ScaleButtonStyle())
-                        
-                        // Settings button
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showSettingsSheet = true
-                        }) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(.primary)
-                        }
-                        .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
                     .background(
                         GlassBackground()
                     )
@@ -283,7 +290,7 @@ struct ContentView: View {
                     VStack {
                         Spacer()
                         panelContent
-                            .frame(minHeight: 180, maxHeight: 220) // Adaptive height for panels - increased for iPad Mini
+                            .frame(minHeight: 180, maxHeight: 280) // Extra height so Items panel can sit below capybara
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                             .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? max(8, geometry.safeAreaInsets.bottom - 8) : 8)
                     }
@@ -836,9 +843,14 @@ struct ToastView: View {
 struct AchievementRewardPopup: View {
     let coins: Int
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
             
             VStack(spacing: 16) {
@@ -847,28 +859,21 @@ struct AchievementRewardPopup: View {
                 
                 Text("Good job!")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Self.primaryText)
                 
                 Text("You have been awarded \(coins) coins.")
                     .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.8))
+                    .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
             }
             .padding(.vertical, 28)
             .padding(.horizontal, 32)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.4)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
-                            )
+                            .stroke(Self.settingsGreen.opacity(0.5), lineWidth: 2)
                     )
             )
             .padding(.horizontal, 40)
