@@ -29,26 +29,9 @@ struct DrinkPanel: View {
             // Keep iPhone (compact width) submenu layout unchanged.
             if horizontalSizeClass == .compact {
                 VStack(spacing: 6) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(availableDrinkItems) { item in
-                                DrinkItemButton(
-                                    item: item,
-                                    canAfford: gameManager.canAfford(item.cost)
-                                ) {
-                                    handleDrinkSelection(item)
-                                }
-                                .frame(width: 100)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                    }
-                    .frame(maxHeight: .infinity)
+                    Spacer(minLength: 0)
                     
-                    Spacer(minLength: 4)
-                    
-                    HStack(alignment: .center, spacing: 10) {
+                    HStack(alignment: .center, spacing: 12) {
                         if let onBack = onBack {
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -60,24 +43,10 @@ struct DrinkPanel: View {
                                     .frame(width: 36, height: 36)
                                     .background(Circle().fill(Color(hex: "1a5f1a")))
                             }
-                            
-                            Text(L("common.back"))
-                                .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.primary)
                         }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                }
-                .padding(.top, 140) // Match Items panel so back row is in same place on screen
-                .padding(.bottom, 12)
-            } else {
-                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
-                GeometryReader { geometry in
-                    VStack(spacing: 6) {
+                        
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
+                            HStack(spacing: 12) {
                                 ForEach(availableDrinkItems) { item in
                                     DrinkItemButton(
                                         item: item,
@@ -85,17 +54,26 @@ struct DrinkPanel: View {
                                     ) {
                                         handleDrinkSelection(item)
                                     }
-                                    .frame(width: 100)
+                                    .frame(width: 72)
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
                         }
-                        .frame(height: max(120, min(geometry.size.height * 0.65, 140)))
+                        .frame(height: 100)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                .padding(.top, 240)
+                .padding(.bottom, 12)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 6) {
+                        Spacer(minLength: 0)
                         
-                        Spacer(minLength: 4)
-                        
-                        HStack(alignment: .center, spacing: 10) {
+                        HStack(alignment: .center, spacing: 12) {
                             if let onBack = onBack {
                                 Button(action: {
                                     HapticManager.shared.buttonPress()
@@ -107,12 +85,24 @@ struct DrinkPanel: View {
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color(hex: "1a5f1a")))
                                 }
-                                
-                                Text(L("common.back"))
-                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(.primary)
                             }
-                            Spacer(minLength: 0)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(availableDrinkItems) { item in
+                                        DrinkItemButton(
+                                            item: item,
+                                            canAfford: gameManager.canAfford(item.cost)
+                                        ) {
+                                            handleDrinkSelection(item)
+                                        }
+                                        .frame(width: 72)
+                                    }
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                            }
+                            .frame(height: 100)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -149,14 +139,6 @@ struct DrinkItemButton: View {
         canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7)
     }
     
-    private var backgroundFillOpacity: Double {
-        canAfford ? 0.08 : 0.03
-    }
-    
-    private var strokeOpacity: Double {
-        canAfford ? 0.15 : 0.05
-    }
-    
     private var showCNYBadge: Bool {
         item.name == "Jasmine Tea" && Date.isChineseNewYearEvent2026()
     }
@@ -171,51 +153,38 @@ struct DrinkItemButton: View {
     }
     
     private var drinkItemContent: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             Text(item.emoji)
-                .font(.system(size: 48))
-                .frame(width: 70, height: 70)
+                .font(.system(size: 28))
+                .frame(width: 44, height: 44)
             
             Text(localizedDrinkName(item.name))
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .foregroundStyle(nameForegroundStyle)
                 .lineLimit(1)
-                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
             
-            HStack(spacing: 8) {
-                HStack(spacing: 3) {
+            HStack(spacing: 6) {
+                HStack(spacing: 2) {
                     Text("₵")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                     Text("\(item.cost)")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
                 }
                 .foregroundStyle(costForegroundStyle)
-                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 
                 HStack(spacing: 2) {
                     Image(systemName: "drop.fill")
-                        .font(.system(size: 10))
+                        .font(.system(size: 8))
                     Text("+\(item.drinkValue)")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                 }
                 .foregroundStyle(AppColors.drinkBlue.opacity(canAfford ? 1 : 0.6))
-                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
             }
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
-        .background(buttonBackground)
         .opacity(canAfford ? 1 : 0.6)
         .overlay(cnyBadgeOverlay)
-    }
-    
-    private var buttonBackground: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(.white.opacity(backgroundFillOpacity))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(.white.opacity(strokeOpacity), lineWidth: 1)
-            )
     }
     
     @ViewBuilder

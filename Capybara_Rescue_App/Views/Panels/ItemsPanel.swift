@@ -31,32 +31,9 @@ struct ItemsPanel: View {
             // Keep iPhone (compact width) submenu layout unchanged.
             if horizontalSizeClass == .compact {
                 VStack(spacing: 6) {
-                    // Items - horizontal scrolling row
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(filteredItems) { item in
-                                AccessoryItemButton(
-                                    item: item,
-                                    isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
-                                    isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
-                                    canAfford: gameManager.canAfford(item.cost),
-                                    isPreviewing: previewingItemId == item.id,
-                                    hasPro: gameManager.hasProSubscription()
-                                ) {
-                                    handleItemAction(item)
-                                }
-                                .frame(width: 78)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                    }
-                    .frame(maxHeight: .infinity)
+                    Spacer(minLength: 0)
                     
-                    Spacer(minLength: 4)
-                    
-                    // Back button and text next to each other, centered, at bottom
-                    HStack(alignment: .center, spacing: 10) {
+                    HStack(alignment: .center, spacing: 12) {
                         if let onBack = onBack {
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -73,22 +50,8 @@ struct ItemsPanel: View {
                                     .frame(width: 36, height: 36)
                                     .background(Circle().fill(Color(hex: "1a5f1a")))
                             }
-                            
-                            Text(L("common.back"))
-                                .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.primary)
                         }
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                }
-                .padding(.top, 140)
-                .padding(.bottom, 12)
-            } else {
-                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
-                GeometryReader { geometry in
-                    VStack(spacing: 6) {
+                        
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ForEach(filteredItems) { item in
@@ -105,14 +68,23 @@ struct ItemsPanel: View {
                                     .frame(width: 78)
                                 }
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 8)
                             .padding(.vertical, 6)
                         }
-                        .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
+                        .frame(height: 100)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                .padding(.top, 240)
+                .padding(.bottom, 12)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 6) {
+                        Spacer(minLength: 0)
                         
-                        Spacer(minLength: 4)
-                        
-                        HStack(alignment: .center, spacing: 10) {
+                        HStack(alignment: .center, spacing: 12) {
                             if let onBack = onBack {
                                 Button(action: {
                                     HapticManager.shared.buttonPress()
@@ -129,18 +101,34 @@ struct ItemsPanel: View {
                                         .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color(hex: "1a5f1a")))
                                 }
-                                
-                                Text(L("common.back"))
-                                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(.primary)
                             }
-                            Spacer(minLength: 0)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(filteredItems) { item in
+                                        AccessoryItemButton(
+                                            item: item,
+                                            isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                            isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                            canAfford: gameManager.canAfford(item.cost),
+                                            isPreviewing: previewingItemId == item.id,
+                                            hasPro: gameManager.hasProSubscription()
+                                        ) {
+                                            handleItemAction(item)
+                                        }
+                                        .frame(width: 78)
+                                    }
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                            }
+                            .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .frame(height: 52)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 160)
                     .padding(.bottom, 8)
                 }
             }
@@ -404,12 +392,12 @@ struct AccessoryItemButton: View {
                     
                     if isEquipped {
                         Circle()
-                            .stroke(Color.green, lineWidth: 2.5)
+                            .stroke(Color(hex: "1a5f1a"), lineWidth: 2.5)
                             .frame(width: 54, height: 54)
                         
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color(hex: "1a5f1a"))
                             .background(Circle().fill(.black))
                             .offset(x: 18, y: -18)
                     }
@@ -493,7 +481,7 @@ struct AccessoryItemButton: View {
                     if isPreviewing {
                         Text(L("common.tapToBuy"))
                             .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color(hex: "1a5f1a"))
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                     } else {
                     VStack(spacing: 4) {
@@ -557,11 +545,21 @@ struct AccessoryItemButton: View {
             }
         )
         .overlay(
-            // Preview indicator and gold ring for CNY items
+            // Green ring when previewing (try on, not owned); gold ring when owned; CNY gold for Red Lantern
             Group {
-                if isPreviewing {
+                if isOwned {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue, lineWidth: 2)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2.5
+                        )
+                } else if isPreviewing {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(hex: "1a5f1a"), lineWidth: 2.5)
                 } else if item.id == "redlantern" && Date.isChineseNewYearEvent2026() {
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(
@@ -579,11 +577,11 @@ struct AccessoryItemButton: View {
     
     private var backgroundColor: Color {
         if isEquipped {
-            return .green.opacity(0.3)
+            return Color(hex: "1a5f1a").opacity(0.25)
         } else if isPreviewing {
-            return .blue.opacity(0.3)
+            return Color(hex: "1a5f1a").opacity(0.2)
         } else if isOwned {
-            return .purple.opacity(0.3)
+            return Color(hex: "FFD700").opacity(0.15)
         } else {
             return .white.opacity(0.1)
         }
@@ -591,11 +589,11 @@ struct AccessoryItemButton: View {
     
     private var borderColor: Color {
         if isEquipped {
-            return .green.opacity(0.5)
+            return Color(hex: "1a5f1a").opacity(0.5)
         } else if isPreviewing {
-            return .blue.opacity(0.6)
+            return Color(hex: "1a5f1a").opacity(0.5)
         } else if isOwned {
-            return .purple.opacity(0.3)
+            return Color(hex: "FFD700").opacity(0.5)
         } else {
             return .white.opacity(0.1)
         }

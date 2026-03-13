@@ -15,6 +15,7 @@ struct SettingsView: View {
     
     private let termsURL = "https://lukebillings.github.io/capyrescue/termsandconditions/"
     private let privacyURL = "https://lukebillings.github.io/capyrescue/privacypolicy/"
+    private let shareAppURL = "https://lukebillings.github.io/capyrescue/"
     
     var body: some View {
         NavigationView {
@@ -135,6 +136,18 @@ struct SettingsView: View {
                                 HapticManager.shared.buttonPress()
                                 requestReview()
                             }
+                            
+                            Divider()
+                                .background(Color.white.opacity(0.2))
+                                .padding(.leading, 56)
+                            
+                            SettingsShareRow(
+                                icon: "square.and.arrow.up",
+                                title: L("settings.shareApp"),
+                                subtitle: L("settings.shareSubtitle"),
+                                url: shareAppURL,
+                                message: L("settings.shareMessage")
+                            )
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
@@ -273,6 +286,47 @@ private struct SettingsActionRow: View {
             .padding(.vertical, 14)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Settings Share Row
+private struct SettingsShareRow: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let url: String
+    let message: String
+    
+    var body: some View {
+        ShareLink(item: URL(string: url)!, subject: Text("CapyRescue"), message: Text(message)) {
+            HStack(spacing: 16) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundStyle(Color(hex: "1a5f1a"))
+                    .frame(width: 28, alignment: .center)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text(subtitle)
+                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .foregroundStyle(.primary.opacity(0.8))
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary.opacity(0.7))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(TapGesture().onEnded { _ in
+            HapticManager.shared.buttonPress()
+        })
     }
 }
 
