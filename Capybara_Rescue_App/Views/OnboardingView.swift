@@ -133,12 +133,6 @@ struct OnboardingView: View {
                 Spacer()
                     .frame(height: 40)
                 
-                // Capybara emoji or icon
-                Image("iconcapybara")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 120, height: 120)
-                
                 Text("Thank you for rescuing a capybara!")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.onboardingPrimaryText)

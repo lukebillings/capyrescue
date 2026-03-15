@@ -317,9 +317,6 @@ struct RealityKitView: UIViewRepresentable {
         let anchor = AnchorEntity(world: [0, 0, 0])
         arView.scene.addAnchor(anchor)
         
-        // Grass in world space (not on capybara) so scale is predictable
-        addGrassToScene(anchor: anchor)
-        
         // Set up a custom camera positioned further back to see the whole model
         let camera = PerspectiveCamera()
         camera.position = [0, 0.4, 3.0] // Camera: x=center, y=higher up, z=back much further to see full model including head
