@@ -32,17 +32,17 @@ struct AchievementsView: View {
     private static let sectionOrder = ["Reach 100", "Do it again", "Care streak"]
     
     private let allAchievements: [Achievement] = [
-        Achievement(id: "first_100_food", name: "Food at 100", description: "Get food to 100", emoji: "🥗", coinReward: 200, section: "Reach 100"),
-        Achievement(id: "first_100_drink", name: "Drink at 100", description: "Get drink to 100", emoji: "💧", coinReward: 200, section: "Reach 100"),
-        Achievement(id: "first_100_happy", name: "Happy at 100", description: "Get happiness to 100", emoji: "😊", coinReward: 200, section: "Reach 100"),
-        Achievement(id: "first_all_100", name: "All at 100", description: "Get food, drink and happiness all to 100", emoji: "🌟", coinReward: 500, section: "Reach 100"),
-        Achievement(id: "feed_10", name: "Feed 10 times", description: "Feed 10 times. Reward every 10.", emoji: "🥬", coinReward: 50, section: "Do it again", countKey: "feed", milestone: 10),
-        Achievement(id: "pet_50", name: "Pet 50 times", description: "Pet 50 times. Reward every 50.", emoji: "❤️", coinReward: 75, section: "Do it again", countKey: "pet", milestone: 50),
-        Achievement(id: "streak_3", name: "3 day streak", description: "All stats above 50 for 3 days in a row", emoji: "🥈", coinReward: 600, section: "Care streak"),
-        Achievement(id: "streak_7", name: "7 day streak", description: "All stats above 50 for 7 days in a row", emoji: "🥇", coinReward: 700, section: "Care streak"),
-        Achievement(id: "streak_30", name: "30 day streak", description: "All stats above 50 for 30 days in a row", emoji: "🏆", coinReward: 800, section: "Care streak"),
-        Achievement(id: "streak_100", name: "100 day streak", description: "All stats above 50 for 100 days in a row", emoji: "💎", coinReward: 900, section: "Care streak"),
-        Achievement(id: "streak_365", name: "365 day streak", description: "All stats above 50 for 365 days in a row", emoji: "👑", coinReward: 1000, section: "Care streak")
+        Achievement(id: "first_100_food", name: "Food at 100", description: "Food stat to 100", emoji: "🥗", coinReward: 2000, section: "Reach 100"),
+        Achievement(id: "first_100_drink", name: "Drink at 100", description: "Drink stat to 100", emoji: "💧", coinReward: 2000, section: "Reach 100"),
+        Achievement(id: "first_100_happy", name: "Happy at 100", description: "Happiness to 100", emoji: "😊", coinReward: 2000, section: "Reach 100"),
+        Achievement(id: "first_all_100", name: "All at 100", description: "Food, drink & happiness all 100", emoji: "🌟", coinReward: 5000, section: "Reach 100"),
+        Achievement(id: "feed_10", name: "Feed 10 times", description: "Every 10 feeds", emoji: "🥬", coinReward: 500, section: "Do it again", countKey: "feed", milestone: 10),
+        Achievement(id: "pet_50", name: "Pet 50 times", description: "Every 50 pets", emoji: "❤️", coinReward: 750, section: "Do it again", countKey: "pet", milestone: 50),
+        Achievement(id: "streak_3", name: "3 day streak", description: "Stats above 50 for 3 days", emoji: "🥈", coinReward: 6000, section: "Care streak"),
+        Achievement(id: "streak_7", name: "7 day streak", description: "Stats above 50 for 7 days", emoji: "🥇", coinReward: 7000, section: "Care streak"),
+        Achievement(id: "streak_30", name: "30 day streak", description: "Stats above 50 for 30 days", emoji: "🏆", coinReward: 8000, section: "Care streak"),
+        Achievement(id: "streak_100", name: "100 day streak", description: "Stats above 50 for 100 days", emoji: "💎", coinReward: 9000, section: "Care streak"),
+        Achievement(id: "streak_365", name: "365 day streak", description: "Stats above 50 for 365 days", emoji: "👑", coinReward: 10000, section: "Care streak")
     ]
     
     private var achievementsBySection: [(String, [Achievement])] {
@@ -202,26 +202,43 @@ struct AchievementRow: View {
         if achievement.isRepeatable {
             let completed = repeatableCompletedCount
             if completed > 0 {
-                return "Completed \(completed) time\(completed == 1 ? "" : "s") · ₵\(achievement.coinReward) each time"
+                return "Done \(completed)×"
             }
-            return "Complete to earn ₵\(achievement.coinReward) (repeatable)"
+            return "Repeatable"
         }
-        if isEarned { return "You got this reward" }
-        return "Complete to earn this reward"
+        if isEarned { return "Earned" }
+        return "Complete to earn"
     }
     
     var body: some View {
         HStack(spacing: 16) {
-            // Coins first, big
-            HStack(spacing: 2) {
-                Text("₵")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(hex: "B8860B"))
-                Text("\(achievement.coinReward)")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(hex: "B8860B"))
+            // Coins: circular gold coin with white ¢, number with "coins" underneath
+            HStack(alignment: .top, spacing: 8) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 36, height: 36)
+                        .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 4, x: 0, y: 2)
+                    Text("₵")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(achievement.coinReward)")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                    Text(L("common.coins"))
+                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .foregroundStyle(Color.primary.opacity(0.8))
+                }
             }
-            .frame(minWidth: 56, alignment: .leading)
+            .frame(minWidth: 64, alignment: .leading)
             
             Text(achievement.emoji)
                 .font(.system(size: 40))
@@ -253,10 +270,6 @@ struct AchievementRow: View {
                             .foregroundStyle(Color(hex: "1a5f1a"))
                     }
                 }
-                
-                Text(achievement.description)
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color.primary.opacity(0.8))
                 
                 Text(rewardSubtitle)
                     .font(.system(size: 12, weight: .medium, design: .rounded))

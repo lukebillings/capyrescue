@@ -265,9 +265,9 @@ class GameManager: ObservableObject {
     ]
     
     private static let achievementCoins: [String: Int] = [
-        "streak_3": 600, "streak_7": 700, "streak_30": 800, "streak_100": 900, "streak_365": 1000,
-        "first_100_food": 200, "first_100_drink": 200, "first_100_happy": 200, "first_all_100": 500,
-        "feed_10": 50, "pet_50": 75
+        "streak_3": 6000, "streak_7": 7000, "streak_30": 8000, "streak_100": 9000, "streak_365": 10000,
+        "first_100_food": 2000, "first_100_drink": 2000, "first_100_happy": 2000, "first_all_100": 5000,
+        "feed_10": 500, "pet_50": 750
     ]
     
     private func grantAchievement(id: String, name: String? = nil, coins: Int? = nil) {
@@ -281,11 +281,11 @@ class GameManager: ObservableObject {
         let streak = gameState.statsStreak
         
         let achievementRewards: [Int: (String, Int)] = [
-            3: ("streak_3", 600),
-            7: ("streak_7", 700),
-            30: ("streak_30", 800),
-            100: ("streak_100", 900),
-            365: ("streak_365", 1000)
+            3: ("streak_3", 6000),
+            7: ("streak_7", 7000),
+            30: ("streak_30", 8000),
+            100: ("streak_100", 9000),
+            365: ("streak_365", 10000)
         ]
         
         var totalCoins = 0

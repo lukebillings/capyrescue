@@ -153,6 +153,8 @@ struct ContentView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityLabel("\(gameManager.gameState.capybaraName), \(L("settings.renameCapybara"))")
+                            .accessibilityHint("Double tap to rename your capybara")
                             
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -164,6 +166,8 @@ struct ContentView: View {
                             }
                             .buttonStyle(ScaleButtonStyle())
                             .tutorialHighlight(key: "achievements_button")
+                            .accessibilityLabel(L("tutorial.achievements"))
+                            .accessibilityHint("Opens achievements and streaks")
                             
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -174,6 +178,9 @@ struct ContentView: View {
                                     .foregroundStyle(settingsManager.musicEnabled ? .primary : Color.primary.opacity(0.5))
                             }
                             .buttonStyle(ScaleButtonStyle())
+                            .accessibilityLabel(L("settings.music"))
+                            .accessibilityValue(settingsManager.musicEnabled ? "On" : "Off")
+                            .accessibilityHint("Toggles background music")
                             
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -184,6 +191,8 @@ struct ContentView: View {
                                     .foregroundStyle(.primary)
                             }
                             .buttonStyle(ScaleButtonStyle())
+                            .accessibilityLabel(L("settings.title"))
+                            .accessibilityHint("Opens settings")
                         }
                         
                         // Line 2: Coins (left), Get More (bottom right)
@@ -236,6 +245,8 @@ struct ContentView: View {
                                 .shadow(color: Color(hex: "1a5f1a").opacity(0.35), radius: 6, x: 0, y: 3)
                             }
                             .buttonStyle(ScaleButtonStyle())
+                            .accessibilityLabel(L("common.getMore"))
+                            .accessibilityHint("Opens shop to get more coins")
                         }
                     }
                     .padding(.horizontal, 20)
@@ -529,6 +540,7 @@ private struct CapybaraFramePreferenceKey: PreferenceKey {
 // MARK: - Shop Sheet View
 struct ShopSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     var body: some View {
         NavigationView {
@@ -538,7 +550,7 @@ struct ShopSheetView: View {
                 
                 ShopPanel()
             }
-            .navigationTitle("")
+            .navigationTitle(L("menu.shop"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -822,7 +834,7 @@ struct ToastView: View {
     var body: some View {
         Text(message)
             .font(.system(size: 16, weight: .semibold, design: .rounded))
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
             .background(
@@ -864,7 +876,7 @@ struct AchievementRewardPopup: View {
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text("Here's \(coins) coins.")
+                Text(coins == 1 ? "Here's 1 coin." : "Here are \(coins) coins.")
                     .font(.system(size: 17, weight: .medium, design: .rounded))
                     .foregroundStyle(Self.secondaryText)
             }

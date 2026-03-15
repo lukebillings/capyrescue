@@ -128,9 +128,7 @@ struct CategoryCard: View {
         AppColors.background
             .ignoresSafeArea()
         
-        MasterPanel(onCategorySelected: { tab in
-            print("Selected: \(tab)")
-        })
+        MasterPanel(onCategorySelected: { _ in })
     }
 }
 

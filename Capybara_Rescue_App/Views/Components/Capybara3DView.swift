@@ -691,50 +691,6 @@ struct RealityKitView: UIViewRepresentable {
         return nil
     }
     
-    /// Grass in world space beside capybara feet (scale not affected by capybara).
-    private func addGrassToScene(anchor: AnchorEntity) {
-        guard let grass1 = loadHatModel(fileName: "Tuft of grass") else { return }
-        grass1.scale = [50.0, 50.0, 50.0]   // Big in world space so tuft is visible
-        grass1.position = [-0.14, -0.22, 0.06]
-        grass1.orientation = simd_quatf(angle: 0, axis: [0, 1, 0])
-        anchor.addChild(grass1)
-        guard let grass2 = loadHatModel(fileName: "Tuft of grass") else { return }
-        grass2.scale = [50.0, 50.0, 50.0]
-        grass2.position = [0.14, -0.22, 0.06]
-        grass2.orientation = simd_quatf(angle: 0, axis: [0, 1, 0])
-        anchor.addChild(grass2)
-    }
-    
-    /// Load grass USDZ (full hierarchy like hats) so all mesh children render.
-    private func loadGrassTuft() -> Entity? {
-        guard let grass = loadHatModel(fileName: "Tuft of grass") else { return nil }
-        return grass
-    }
-    
-    /// Adds two grass tufts beside the capybara's feet.
-    private func addGrassBesideFeet(to model: ModelEntity) {
-        let leftPos: SIMD3<Float> = [-0.32, -0.38, 0.08]
-        let rightPos: SIMD3<Float> = [0.32, -0.38, 0.08]
-        // Grass tuft is small in the USDZ; scale way up so it’s clearly visible beside feet
-        let grassScale: Float = 8000.0
-        
-        guard let grass1 = loadGrassTuft() else {
-            print("⚠️ Tuft of grass.usdz failed to load")
-            return
-        }
-        grass1.scale = [grassScale, grassScale, grassScale]
-        grass1.position = leftPos
-        grass1.orientation = simd_quatf(angle: 0, axis: [0, 1, 0])  // No rotation – try default orientation
-        model.addChild(grass1)
-        
-        guard let grass2 = loadGrassTuft() else { return }
-        grass2.scale = [grassScale, grassScale, grassScale]
-        grass2.position = rightPos
-        grass2.orientation = simd_quatf(angle: 0, axis: [0, 1, 0])
-        model.addChild(grass2)
-        print("✅ Grass tufts added beside feet")
-    }
-    
     private func createProceduralCapybara() -> ModelEntity? {
         // Create a simple capybara shape using basic meshes
         let body = ModelEntity(

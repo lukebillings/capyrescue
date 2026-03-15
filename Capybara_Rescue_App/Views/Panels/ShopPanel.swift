@@ -162,18 +162,12 @@ struct CatchTheOrangeCard: View {
             }
             .padding(.horizontal, 16)
             
-            // Coins per day (same style as coin pack number + "coins")
-            HStack(spacing: 8) {
-                CoinIcon(size: 26)
-                Text("\(coinsPerDay)")
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+            // Coins per day (standard font, weight, size throughout)
+            HStack(spacing: 6) {
+                CoinIcon(size: 22)
+                Text("\(coinsPerDay) coins per day")
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
                     .foregroundStyle(Self.primaryText)
-                Text("coins")
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(Self.primaryText)
-                Text("per day")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Self.secondaryText)
             }
             .padding(.horizontal, 16)
             

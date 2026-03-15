@@ -26,7 +26,6 @@
 		7AF44475E591A27725D43264 /* Tophat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1046EA5E3544FE9E73F9AD16 /* Tophat.usdz */; };
 		812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */; };
 		812FAA352F325E8C00EE08F7 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */; };
-		8148F4642F6483310058E0DB /* Tuft of grass.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8148F4632F6483310058E0DB /* Tuft of grass.usdz */; };
 		815001F72F0EC7DE00CFB91C /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 815001F62F0EC7DE00CFB91C /* StoreKit.framework */; };
 		8154EAB42F3B8ABB0054066B /* red-lantern.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 8154EAB32F3B8ABB0054066B /* red-lantern.usdz */; };
 		81AA0614DD5DB26596015C9A /* CapybaraNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26A7EEBCDB8E330F1A8ACA3 /* CapybaraNameView.swift */; };
@@ -79,7 +78,6 @@
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
 		8122291F2EF1EDE100E86DDC /* Cowboy Hat 2.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cowboy Hat 2.usdz"; sourceTree = "<group>"; };
 		812FAA342F325E8C00EE08F7 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
-		8148F4632F6483310058E0DB /* Tuft of grass.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Tuft of grass.usdz"; sourceTree = "<group>"; };
 		815001F62F0EC7DE00CFB91C /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Capybara_Rescue_App.entitlements; sourceTree = "<group>"; };
 		8154EAB32F3B8ABB0054066B /* red-lantern.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "red-lantern.usdz"; sourceTree = "<group>"; };
@@ -183,7 +181,6 @@
 		6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */ = {
 			isa = PBXGroup;
 			children = (
-				8148F4632F6483310058E0DB /* Tuft of grass.usdz */,
 				815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */,
 				8154EAB32F3B8ABB0054066B /* red-lantern.usdz */,
 				81B460112F328CB300F10BC3 /* Cone.usdz */,
@@ -346,7 +343,6 @@
 				3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */,
 				B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */,
 				9CF47036A79B74EB3558D9B5 /* Sunflower.usdz in Resources */,
-				8148F4642F6483310058E0DB /* Tuft of grass.usdz in Resources */,
 				7AF44475E591A27725D43264 /* Tophat.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
