@@ -10,7 +10,7 @@ When you add **any new user-facing text** in English to this app:
 
 1. **Add the key to `en.json`** first with the English value.
 2. **Add the same key to every other language file** in `Capybara_Rescue_App/Localizable/`:
-   - zh-Hant.json, ja.json, ko.json, pt-BR.json, es-MX.json, tr.json, hi.json, fr.json, de.json, it.json
+   - tr.json, es-MX.json, pt-BR.json, zh-Hant.json, ja.json, hi.json, ar.json, id.json, ko.json, ms.json
 3. **Use `L("key")`** in the Swift code instead of hardcoded strings.
 4. **Add `@ObservedObject private var localizationManager = LocalizationManager.shared`** to views that display localized text so the UI updates when the user changes language.
 

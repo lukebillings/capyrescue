@@ -9,19 +9,19 @@ class LocalizationManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let languageKey = "app_language_code"
     
-    /// Supported language codes
+    /// Supported language codes (English + 10 languages)
     static let supportedLanguages: [(code: String, displayName: String)] = [
         ("en", "English"),
+        ("tr", "Türkçe"),
+        ("es-MX", "Español (México)"),
+        ("pt-BR", "Português (Brasil)"),
         ("zh-Hant", "繁體中文"),
         ("ja", "日本語"),
-        ("ko", "한국어"),
-        ("pt-BR", "Português (Brasil)"),
-        ("es-MX", "Español (México)"),
-        ("tr", "Türkçe"),
         ("hi", "हिन्दी"),
-        ("fr", "Français"),
-        ("de", "Deutsch"),
-        ("it", "Italiano")
+        ("ar", "العربية"),
+        ("id", "Bahasa Indonesia"),
+        ("ko", "한국어"),
+        ("ms", "Bahasa Melayu")
     ]
     
     @Published var currentLanguage: String {

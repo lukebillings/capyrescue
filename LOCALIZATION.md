@@ -1,22 +1,22 @@
 # Localization Guide
 
-This app supports 12 languages. All user-facing text is stored in JSON files under `Capybara_Rescue_App/Localizable/`.
+This app supports 11 languages (English + 10). All user-facing text is stored in JSON files under `Capybara_Rescue_App/Localizable/`.
 
 ## Supported Languages
 
 | Code   | Language              |
 |--------|-----------------------|
 | en     | English               |
+| tr     | Türkçe (Turkish)      |
+| es-MX  | Español (México)      |
+| pt-BR  | Português (Brasil)     |
 | zh-Hant| 繁體中文 (Traditional Chinese) |
 | ja     | 日本語 (Japanese)      |
-| ko     | 한국어 (Korean)        |
-| pt-BR  | Português (Brasil)     |
-| es-MX  | Español (México)      |
-| tr     | Türkçe (Turkish)      |
 | hi     | हिन्दी (Hindi)         |
-| fr     | Français (French)     |
-| de     | Deutsch (German)      |
-| it     | Italiano (Italian)    |
+| ar     | العربية (Arabic)       |
+| id     | Bahasa Indonesia (Indonesian) |
+| ko     | 한국어 (Korean)        |
+| ms     | Bahasa Melayu (Malay)  |
 
 ## Adding New Text
 
@@ -30,16 +30,16 @@ This app supports 12 languages. All user-facing text is stored in JSON files und
    ```
 
 3. **Add to every other language file** – Add the same key with the translated value in:
+   - `tr.json`
+   - `es-MX.json`
+   - `pt-BR.json`
    - `zh-Hant.json`
    - `ja.json`
-   - `ko.json`
-   - `pt-BR.json`
-   - `es-MX.json`
-   - `tr.json`
    - `hi.json`
-   - `fr.json`
-   - `de.json`
-   - `it.json`
+   - `ar.json`
+   - `id.json`
+   - `ko.json`
+   - `ms.json`
 
 4. **Use in code** – Use the `L()` helper:
    ```swift

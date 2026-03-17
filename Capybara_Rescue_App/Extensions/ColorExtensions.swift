@@ -44,5 +44,10 @@ struct AppColors {
     static let foodGreen = Color(hex: "66BB6A")
     static let drinkBlue = Color(hex: "42A5F5")
     static let happyPink = Color(hex: "EC407A")
+    
+    /// Paywall CTA button background (dark green from design).
+    static let paywallCTAGreen = Color(hex: "3A7337")
+    /// Paywall CTA button border (lighter green).
+    static let paywallCTABorder = Color(hex: "9CC899")
 }
 

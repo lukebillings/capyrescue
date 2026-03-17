@@ -26,6 +26,7 @@ struct GameState: Codable {
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
     var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the 500 coins/week
+    var lastMonthlyCoinsGrantDate: Date? // For Pro Monthly: last time we granted the 10,000 coins/month
     var lastCatchTheOrangeCompletedDate: Date? // Last calendar day user completed Catch the Orange (once per day reward)
     /// Counters for repeatable achievements (e.g. "feed" -> total feeds, "pet" -> total pets).
     var achievementCounts: [String: Int]
@@ -38,7 +39,7 @@ struct GameState: Codable {
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
         case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
-        case lastWeeklyCoinsGrantDate, lastCatchTheOrangeCompletedDate
+        case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastCatchTheOrangeCompletedDate
         case achievementCounts, achievementRepeatLastGranted
     }
     
@@ -68,6 +69,7 @@ struct GameState: Codable {
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
         lastWeeklyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastWeeklyCoinsGrantDate)
+        lastMonthlyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastMonthlyCoinsGrantDate)
         lastCatchTheOrangeCompletedDate = try container.decodeIfPresent(Date.self, forKey: .lastCatchTheOrangeCompletedDate)
         achievementCounts = try container.decodeIfPresent([String: Int].self, forKey: .achievementCounts) ?? [:]
         achievementRepeatLastGranted = try container.decodeIfPresent([String: Int].self, forKey: .achievementRepeatLastGranted) ?? [:]
@@ -112,6 +114,7 @@ struct GameState: Codable {
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
         try container.encodeIfPresent(lastWeeklyCoinsGrantDate, forKey: .lastWeeklyCoinsGrantDate)
+        try container.encodeIfPresent(lastMonthlyCoinsGrantDate, forKey: .lastMonthlyCoinsGrantDate)
         try container.encodeIfPresent(lastCatchTheOrangeCompletedDate, forKey: .lastCatchTheOrangeCompletedDate)
         try container.encode(achievementCounts, forKey: .achievementCounts)
         try container.encode(achievementRepeatLastGranted, forKey: .achievementRepeatLastGranted)
@@ -143,6 +146,7 @@ struct GameState: Codable {
         lastSubscriptionCheckDate: Date?,
         hasSeenCNY2026Popup: Bool,
         lastWeeklyCoinsGrantDate: Date?,
+        lastMonthlyCoinsGrantDate: Date?,
         lastCatchTheOrangeCompletedDate: Date?,
         achievementCounts: [String: Int] = [:],
         achievementRepeatLastGranted: [String: Int] = [:]
@@ -171,6 +175,7 @@ struct GameState: Codable {
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
         self.lastWeeklyCoinsGrantDate = lastWeeklyCoinsGrantDate
+        self.lastMonthlyCoinsGrantDate = lastMonthlyCoinsGrantDate
         self.lastCatchTheOrangeCompletedDate = lastCatchTheOrangeCompletedDate
         self.achievementCounts = achievementCounts
         self.achievementRepeatLastGranted = achievementRepeatLastGranted
@@ -201,6 +206,7 @@ struct GameState: Codable {
         lastSubscriptionCheckDate: nil,
         hasSeenCNY2026Popup: false,
         lastWeeklyCoinsGrantDate: nil,
+        lastMonthlyCoinsGrantDate: nil,
         lastCatchTheOrangeCompletedDate: nil
     )
     

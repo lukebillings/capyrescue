@@ -105,6 +105,8 @@ struct ContentView: View {
                         #endif
                         // Pro Weekly: grant 500 coins every 7 days if eligible
                         gameManager.grantWeeklySubscriptionCoinsIfNeeded()
+                        // Pro Monthly: grant 10,000 coins every month if eligible
+                        gameManager.grantMonthlySubscriptionCoinsIfNeeded()
                         
                         // Check if we should show CNY popup
                         if shouldShowChineseNewYearTheme && !gameManager.gameState.hasSeenCNY2026Popup {

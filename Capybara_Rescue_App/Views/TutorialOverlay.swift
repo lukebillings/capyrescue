@@ -36,20 +36,13 @@ enum TutorialStep: Int, CaseIterable {
     
     var message: String {
         switch self {
-        case .food:
-            return "Try to keep food score over 80 points.\nIncrease food score by feeding it foods.\nMax food score is 100 points.\nFood score decrease 1 point per hour."
-        case .drink:
-            return "Try to keep drink score over 80 points.\nIncrease drink score by giving it drinks.\nMax drink score is 100 points.\nDrink score decrease 1 point per hour."
-        case .happy:
-            return "Try to keep happy score over 80 points.\nIncrease happy score by petting it.\nMax happy score is 100 points.\nHappy score decrease 1 point per hour."
-        case .statsWarning:
-            return "⚠️ If all stats reach 0, your capybara will run away!"
-        case .items:
-            return "Your capybara might like to have some accessories.\nYou can buy them using coins in the Items menu."
-        case .shop:
-            return "You can get more coins from Get More."
-        case .achievements:
-            return "Keep food, drink, and happiness all above 50 for consecutive days to earn achievement rewards!"
+        case .food: return L("tutorial.messageFood")
+        case .drink: return L("tutorial.messageDrink")
+        case .happy: return L("tutorial.messageHappy")
+        case .statsWarning: return L("tutorial.messageStatsWarning")
+        case .items: return L("tutorial.messageItems")
+        case .shop: return L("tutorial.messageShop")
+        case .achievements: return L("tutorial.messageAchievements")
         }
     }
     

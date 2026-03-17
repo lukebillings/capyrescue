@@ -36,7 +36,7 @@ class SubscriptionManager: ObservableObject {
             switch self {
             case .free: return 500
             case .weekly: return 1000
-            case .monthly: return 2000
+            case .monthly: return 15000
             case .annual: return 15000
             }
         }
@@ -45,7 +45,7 @@ class SubscriptionManager: ObservableObject {
             switch self {
             case .free: return 0
             case .weekly: return 0
-            case .monthly: return 2000
+            case .monthly: return 10000
             case .annual: return 10000
             }
         }
