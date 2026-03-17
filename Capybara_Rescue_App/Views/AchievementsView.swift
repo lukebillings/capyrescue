@@ -210,6 +210,13 @@ struct AchievementRow: View {
         return "Complete to earn"
     }
     
+    private func formattedCoinReward(_ value: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+    
     var body: some View {
         HStack(spacing: 16) {
             // Coins: circular gold coin with white ¢, number with "coins" underneath
@@ -230,9 +237,11 @@ struct AchievementRow: View {
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(achievement.coinReward)")
+                    Text(formattedCoinReward(achievement.coinReward))
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.primary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     Text(L("common.coins"))
                         .font(.system(size: 13, weight: .regular, design: .rounded))
                         .foregroundStyle(Color.primary.opacity(0.8))

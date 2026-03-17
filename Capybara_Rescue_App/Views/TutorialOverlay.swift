@@ -12,63 +12,57 @@ struct TutorialPreferenceKey: PreferenceKey {
     }
 }
 
-// MARK: - Tutorial Step
+// MARK: - Tutorial Step (3 windows only)
 enum TutorialStep: Int, CaseIterable {
-    case food = 0
-    case drink = 1
-    case happy = 2
-    case statsWarning = 3
-    case items = 4
-    case shop = 5
-    case achievements = 6
+    case stats = 0        // Food, drink & happiness circles + warning
+    case itemsAndShop = 1 // Items and Get More buttons
+    case achievements = 2  // Medal / achievements
     
     var title: String {
         switch self {
-        case .food: return L("tutorial.food")
-        case .drink: return L("tutorial.drink")
-        case .happy: return L("tutorial.happy")
-        case .statsWarning: return L("tutorial.statsWarning")
-        case .items: return L("tutorial.items")
-        case .shop: return L("tutorial.shop")
-        case .achievements: return L("tutorial.achievements")
+        case .stats: return L("tutorial.titleStats")
+        case .itemsAndShop: return L("tutorial.titleItemsAndShop")
+        case .achievements: return L("tutorial.titleAchievements")
         }
     }
     
     var message: String {
         switch self {
-        case .food: return L("tutorial.messageFood")
-        case .drink: return L("tutorial.messageDrink")
-        case .happy: return L("tutorial.messageHappy")
-        case .statsWarning: return L("tutorial.messageStatsWarning")
-        case .items: return L("tutorial.messageItems")
-        case .shop: return L("tutorial.messageShop")
+        case .stats: return L("tutorial.messageStats")
+        case .itemsAndShop: return L("tutorial.messageItemsAndShop")
         case .achievements: return L("tutorial.messageAchievements")
         }
     }
     
     var highlightKey: String {
-        // Highlight the stat/thing being talked about
         switch self {
-        case .food: return "food_stat"
-        case .drink: return "drink_stat"
-        case .happy: return "happy_stat"
-        case .statsWarning: return "food_stat" // Highlight all stats, but we'll use food_stat as anchor
-        case .items: return "items_button"
-        case .shop: return "shop_button"
+        case .stats: return "food_stat"
+        case .itemsAndShop: return "items_button"
         case .achievements: return "achievements_button"
         }
     }
     
     var targetKey: String? {
-        // Where to tap (button or capybara)
         switch self {
-        case .food: return "food_button"
-        case .drink: return "drink_button"
-        case .happy: return "capybara_tap"
-        case .statsWarning: return nil // No tap target for warning
-        case .items: return nil
-        case .shop: return nil
+        case .stats: return nil
+        case .itemsAndShop: return nil
         case .achievements: return nil
+        }
+    }
+    
+    /// Icons shown on the card (SF Symbol name, color).
+    var icons: [(name: String, color: Color)] {
+        switch self {
+        case .stats:
+            return [
+                ("leaf.fill", AppColors.foodGreen),
+                ("drop.fill", AppColors.drinkBlue),
+                ("heart.fill", AppColors.happyPink)
+            ]
+        case .itemsAndShop:
+            return [("tshirt.fill", .white)]
+        case .achievements:
+            return [("medal.fill", AppColors.accent)]
         }
     }
 }
@@ -111,13 +105,13 @@ struct TutorialOverlay: View {
                         
                         // Glow effect around highlighted element
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(AppColors.accent, lineWidth: 4)
+                            .stroke(AppColors.paywallCTAGreen, lineWidth: 4)
                             .frame(width: highlightFrame.width + 20, height: highlightFrame.height + 20)
                             .position(
                                 x: highlightFrame.midX,
                                 y: highlightFrame.midY
                             )
-                            .shadow(color: AppColors.accent.opacity(0.8), radius: 20)
+                            .shadow(color: AppColors.paywallCTAGreen.opacity(0.7), radius: 20)
                             .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: highlightFrame)
                             .zIndex(1)
                     } else {
@@ -203,31 +197,21 @@ struct TutorialOverlay: View {
                 .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
             
-            if step == .achievements {
-                VStack(spacing: 12) {
-                    Text(step.message)
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                    
-                    HStack(spacing: 8) {
-                        Text(L("tutorial.youCanCheckStreaks"))
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.9))
-                        
-                        Image(systemName: "medal.fill")
-                            .font(.system(size: 20))
-                            .foregroundStyle(.white)
-                    }
+            HStack(spacing: 20) {
+                ForEach(Array(step.icons.enumerated()), id: \.offset) { _, icon in
+                    Image(systemName: icon.name)
+                        .font(.system(size: step == .achievements ? 44 : 32))
+                        .foregroundStyle(icon.color)
                 }
-            } else {
-                Text(step.message)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(nil)
             }
+            .padding(.vertical, 4)
+            .frame(minHeight: 44)
+            
+            Text(step.message)
+                .font(.system(size: 16, weight: .medium, design: .rounded))
+                .foregroundStyle(.white.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .lineLimit(nil)
             
             Button(action: {
                 if let nextStep = TutorialStep(rawValue: step.rawValue + 1) {
@@ -240,12 +224,16 @@ struct TutorialOverlay: View {
             }) {
                 Text(step.rawValue < TutorialStep.allCases.count - 1 ? L("common.next") : L("common.gotIt"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(AppColors.accent)
+                            .fill(AppColors.paywallCTAGreen)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(AppColors.paywallCTABorder, lineWidth: 2)
+                            )
                     )
             }
         }

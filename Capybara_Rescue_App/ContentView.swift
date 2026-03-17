@@ -60,7 +60,7 @@ struct ContentView: View {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
         let hasCompletedTutorial = gameManager.gameState.hasCompletedTutorial
         if hasCompletedOnboarding && !hasCompletedTutorial && currentTutorialStep == nil {
-            currentTutorialStep = .food
+            currentTutorialStep = .stats
         }
     }
     
@@ -888,5 +888,29 @@ struct AchievementRewardPopup: View {
 #Preview {
     ContentView()
         .environmentObject(GameManager())
+}
+
+/// Preview that shows the homepage (main content) without going through onboarding.
+#Preview("Homepage") {
+    let manager = GameManager()
+    var state = manager.gameState
+    state.hasCompletedOnboarding = true
+    state.hasCompletedTutorial = true
+    state.capybaraName = "Capy"
+    manager.gameState = state
+    return ContentView()
+        .environmentObject(manager)
+}
+
+/// Preview that shows the homepage with the tutorial overlay active (click through steps).
+#Preview("Tutorial") {
+    let manager = GameManager()
+    var state = manager.gameState
+    state.hasCompletedOnboarding = true
+    state.hasCompletedTutorial = false
+    state.capybaraName = "Capy"
+    manager.gameState = state
+    return ContentView()
+        .environmentObject(manager)
 }
 
