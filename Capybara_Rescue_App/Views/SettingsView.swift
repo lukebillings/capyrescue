@@ -15,7 +15,7 @@ struct SettingsView: View {
     
     private let termsURL = "https://lukebillings.github.io/capyrescue/termsandconditions/"
     private let privacyURL = "https://lukebillings.github.io/capyrescue/privacypolicy/"
-    private let shareAppURL = "https://lukebillings.github.io/capyrescue/"
+    private let shareAppURL = "https://apps.apple.com/gb/app/capyrescue/id6756495842"
     
     var body: some View {
         NavigationView {
@@ -33,20 +33,6 @@ struct SettingsView: View {
                                 subtitle: L("settings.soundSubtitle")
                             ) {
                                 Toggle("", isOn: $settingsManager.soundEnabled)
-                                    .labelsHidden()
-                                    .tint(Color(hex: "1a5f1a"))
-                            }
-                            
-                            Divider()
-                                .background(Color.white.opacity(0.2))
-                                .padding(.leading, 56)
-                            
-                            SettingsRow(
-                                icon: "music.note",
-                                title: L("settings.music"),
-                                subtitle: L("settings.musicSubtitle")
-                            ) {
-                                Toggle("", isOn: $settingsManager.musicEnabled)
                                     .labelsHidden()
                                     .tint(Color(hex: "1a5f1a"))
                             }

@@ -2,78 +2,6 @@ import SwiftUI
 import UserNotifications
 import StoreKit
 
-// MARK: - Name field in its own view controller so keyboard input always works
-private struct OnboardingNameField: UIViewControllerRepresentable {
-    let placeholder: String
-    @Binding var text: String
-    
-    func makeUIViewController(context: Context) -> NameFieldViewController {
-        let vc = NameFieldViewController()
-        vc.placeholder = placeholder
-        vc.text = text
-        vc.onTextChange = { text = $0 }
-        return vc
-    }
-    
-    func updateUIViewController(_ vc: NameFieldViewController, context: Context) {
-        vc.placeholder = placeholder
-        vc.onTextChange = { text = $0 }
-        if vc.textField?.text != text {
-            vc.text = text
-            vc.textField?.text = text
-        }
-    }
-    
-    static func dismantleUIViewController(_ vc: NameFieldViewController, coordinator: ()) {
-        vc.textField?.resignFirstResponder()
-    }
-}
-
-private final class NameFieldViewController: UIViewController {
-    var placeholder: String = "" {
-        didSet { textField?.placeholder = placeholder }
-    }
-    var text: String = "" {
-        didSet { if textField?.text != text { textField?.text = text } }
-    }
-    var onTextChange: ((String) -> Void)?
-    weak var textField: UITextField?
-    
-    override func loadView() {
-        view = UIView()
-        view.backgroundColor = .clear
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        let field = UITextField()
-        field.translatesAutoresizingMaskIntoConstraints = false
-        field.placeholder = placeholder
-        field.text = text
-        field.font = .systemFont(ofSize: 18, weight: .semibold)
-        field.textColor = UIColor(red: 26/255, green: 26/255, blue: 46/255, alpha: 1)
-        field.backgroundColor = .clear
-        field.borderStyle = .none
-        field.autocapitalizationType = .words
-        field.autocorrectionType = .no
-        field.addTarget(self, action: #selector(textChanged), for: .editingChanged)
-        view.addSubview(field)
-        NSLayoutConstraint.activate([
-            field.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            field.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            field.topAnchor.constraint(equalTo: view.topAnchor),
-            field.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        self.textField = field
-    }
-    
-    @objc private func textChanged(_ sender: UITextField) {
-        let newText = sender.text ?? ""
-        text = newText
-        onTextChange?(newText)
-    }
-}
-
 // MARK: - Onboarding View
 struct OnboardingView: View {
     @EnvironmentObject var gameManager: GameManager
@@ -82,9 +10,6 @@ struct OnboardingView: View {
     @Binding var isPresented: Bool
     
     @State private var currentStep: OnboardingStep = .language
-    @State private var capybaraName: String = ""
-    @State private var showNameAlert: Bool = false
-    @State private var nameAlertInput: String = ""
     @State private var isPurchasingTrial: Bool = false
     @State private var paywallPurchaseError: String?
     @State private var isRestoring: Bool = false
@@ -92,7 +17,6 @@ struct OnboardingView: View {
     
     enum OnboardingStep {
         case language
-        case welcome
         case notifications
         case pledge
         case paywall
@@ -119,8 +43,6 @@ struct OnboardingView: View {
             switch currentStep {
             case .language:
                 languageView
-            case .welcome:
-                welcomeView
             case .notifications:
                 notificationsView
             case .pledge:
@@ -202,7 +124,7 @@ struct OnboardingView: View {
             
             Button(action: {
                 withAnimation {
-                    currentStep = .welcome
+                    currentStep = .notifications
                 }
             }) {
                 Text(L("common.next"))
@@ -219,117 +141,6 @@ struct OnboardingView: View {
                             )
                     )
             }
-            .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
-            .padding(.bottom, Self.onboardingCTABottomPadding)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-    
-    // MARK: - Welcome View
-    private var welcomeView: some View {
-        VStack(spacing: 12) {
-            Spacer()
-                .frame(height: Self.onboardingTopInset)
-            
-            if #available(iOS 17.0, *) {
-                Capybara3DView(
-                    emotion: gameManager.gameState.capybaraEmotion,
-                    equippedAccessories: gameManager.gameState.equippedAccessories,
-                    previewingAccessoryId: nil,
-                    onPet: { },
-                    initialRotation: nil
-                )
-                .frame(height: Self.onboardingCapybaraHeight)
-                .scaleEffect(0.38)
-                .frame(height: Self.onboardingCapybaraHeight)
-                .clipped()
-            } else {
-                Text("🐹")
-                    .font(.system(size: 80))
-                    .frame(height: Self.onboardingCapybaraHeight)
-            }
-            
-            Text(L("onboarding.welcomeTitle"))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(Self.onboardingPrimaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
-            Text(L("onboarding.welcomeSubtitle"))
-                .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundStyle(Self.onboardingSecondaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
-            Button(action: {
-                nameAlertInput = capybaraName
-                showNameAlert = true
-            }) {
-                HStack {
-                    Text(capybaraName.isEmpty ? L("onboarding.namePlaceholder") : capybaraName)
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundStyle(capybaraName.isEmpty ? Self.onboardingSecondaryText : Self.onboardingPrimaryText)
-                    Spacer()
-                    Image(systemName: "pencil.circle.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(AppColors.paywallCTAGreen)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Self.onboardingCardFill)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Self.onboardingCardStroke, lineWidth: 1)
-                        )
-                )
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 32)
-            .alert(L("onboarding.welcomeSubtitle"), isPresented: $showNameAlert) {
-                TextField(L("onboarding.namePlaceholder"), text: $nameAlertInput)
-                    .textInputAutocapitalization(.words)
-                    .autocorrectionDisabled()
-                Button(L("common.cancel"), role: .cancel) {
-                    showNameAlert = false
-                }
-                Button(L("common.save")) {
-                    let trimmed = nameAlertInput.trimmingCharacters(in: .whitespaces)
-                    if !trimmed.isEmpty {
-                        capybaraName = trimmed
-                    }
-                    showNameAlert = false
-                }
-            }
-            
-            Spacer()
-            
-            Button(action: {
-                if !capybaraName.trimmingCharacters(in: .whitespaces).isEmpty {
-                    gameManager.renameCapybara(to: capybaraName.trimmingCharacters(in: .whitespaces))
-                    withAnimation {
-                        currentStep = .notifications
-                    }
-                }
-            }) {
-                Text(L("onboarding.continue"))
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(AppColors.paywallCTAGreen)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(AppColors.paywallCTABorder, lineWidth: 2)
-                            )
-                    )
-            }
-            .disabled(capybaraName.trimmingCharacters(in: .whitespaces).isEmpty)
-            .opacity(capybaraName.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1.0)
             .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
             .padding(.bottom, Self.onboardingCTABottomPadding)
         }
@@ -373,7 +184,7 @@ struct OnboardingView: View {
                 .padding(.horizontal, 32)
             
             Spacer()
-                .frame(minHeight: 24)
+                .frame(minHeight: 8)
             
             Image(systemName: "bell.fill")
                 .font(.system(size: 88))

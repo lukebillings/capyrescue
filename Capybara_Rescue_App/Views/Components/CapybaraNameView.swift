@@ -36,8 +36,8 @@ struct CapybaraNameView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(hex: "FFD700").opacity(0.8),
-                                Color(hex: "FFD700").opacity(0.2),
+                                AppColors.paywallCTAGreen.opacity(0.7),
+                                AppColors.paywallCTAGreen.opacity(0.15),
                                 .clear
                             ],
                             startPoint: .leading,
@@ -90,27 +90,31 @@ struct RenameSheet: View {
         VStack(spacing: 24) {
             // Handle bar
             Capsule()
-                .fill(.white.opacity(0.3))
+                .fill(Color(hex: "1a1a2e").opacity(0.25))
                 .frame(width: 40, height: 4)
                 .padding(.top, 12)
             
             Text(L("rename.title"))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color(hex: "1a1a2e"))
             
             // Text field
             TextField("", text: $editedName)
                 .font(.system(size: 20, weight: .medium, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(Color(hex: "1a1a2e"))
                 .multilineTextAlignment(.center)
                 .focused($isFocused)
+                .tint(AppColors.paywallCTAGreen)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(.white.opacity(0.1))
+                        .fill(Color.white.opacity(0.75))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(.white.opacity(0.2), lineWidth: 1)
+                                .stroke(AppColors.paywallCTABorder.opacity(0.8), lineWidth: 1)
                         )
                 )
                 .padding(.horizontal, 24)
@@ -122,12 +126,16 @@ struct RenameSheet: View {
                     isPresented = false
                 }
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white.opacity(0.7))
+                .foregroundStyle(Color(hex: "1a1a2e").opacity(0.8))
                 .padding(.horizontal, 32)
                 .padding(.vertical, 14)
                 .background(
                     Capsule()
-                        .fill(.white.opacity(0.1))
+                        .fill(Color.white.opacity(0.65))
+                        .overlay(
+                            Capsule()
+                                .stroke(Color(hex: "1a1a2e").opacity(0.10), lineWidth: 1)
+                        )
                 )
                 
                 Button(L("common.save")) {
@@ -143,12 +151,10 @@ struct RenameSheet: View {
                 .padding(.vertical, 14)
                 .background(
                     Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: "4CAF50"), Color(hex: "2E7D32")],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                        .fill(AppColors.paywallCTAGreen)
+                        .overlay(
+                            Capsule()
+                                .stroke(AppColors.paywallCTABorder, lineWidth: 2)
                         )
                 )
             }
@@ -158,8 +164,7 @@ struct RenameSheet: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            Color(hex: "1a1a2e")
-                .ignoresSafeArea()
+            AppColors.background.ignoresSafeArea()
         )
         .onAppear {
             editedName = name

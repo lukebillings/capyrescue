@@ -173,19 +173,6 @@ struct ContentView: View {
                             
                             Button(action: {
                                 HapticManager.shared.buttonPress()
-                                settingsManager.musicEnabled.toggle()
-                            }) {
-                                Image(systemName: "music.note")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(settingsManager.musicEnabled ? .primary : Color.primary.opacity(0.5))
-                            }
-                            .buttonStyle(ScaleButtonStyle())
-                            .accessibilityLabel(L("settings.music"))
-                            .accessibilityValue(settingsManager.musicEnabled ? "On" : "Off")
-                            .accessibilityHint("Toggles background music")
-                            
-                            Button(action: {
-                                HapticManager.shared.buttonPress()
                                 showSettingsSheet = true
                             }) {
                                 Image(systemName: "gearshape.fill")

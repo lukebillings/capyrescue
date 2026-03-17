@@ -301,17 +301,8 @@ private struct DistractionFruitView: View {
     let size: CGFloat
     
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(Color.white.opacity(0.15))
-                .frame(width: size, height: size)
-                .overlay(
-                    Circle()
-                        .stroke(Color.primary.opacity(0.25), lineWidth: 2)
-                )
-            Text(emoji)
-                .font(.system(size: size * 0.65))
-        }
+        Text(emoji)
+            .font(.system(size: size * 0.65))
     }
 }
 
