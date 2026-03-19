@@ -259,15 +259,12 @@ class GameManager: ObservableObject {
         "first_100_food": "Food at 100",
         "first_100_drink": "Drink at 100",
         "first_100_happy": "Happy at 100",
-        "first_all_100": "All at 100",
-        "feed_10": "Feed 10 times",
-        "pet_50": "Pet 50 times"
+        "first_all_100": "All at 100"
     ]
     
     private static let achievementCoins: [String: Int] = [
-        "streak_3": 6000, "streak_7": 7000, "streak_30": 8000, "streak_100": 9000, "streak_365": 10000,
-        "first_100_food": 2000, "first_100_drink": 2000, "first_100_happy": 2000, "first_all_100": 5000,
-        "feed_10": 500, "pet_50": 750
+        "streak_3": 1500, "streak_7": 2500, "streak_30": 5000, "streak_100": 10000, "streak_365": 25000,
+        "first_100_food": 500, "first_100_drink": 500, "first_100_happy": 500, "first_all_100": 1500
     ]
     
     private func grantAchievement(id: String, name: String? = nil, coins: Int? = nil) {
@@ -281,11 +278,11 @@ class GameManager: ObservableObject {
         let streak = gameState.statsStreak
         
         let achievementRewards: [Int: (String, Int)] = [
-            3: ("streak_3", 6000),
-            7: ("streak_7", 7000),
-            30: ("streak_30", 8000),
-            100: ("streak_100", 9000),
-            365: ("streak_365", 10000)
+            3: ("streak_3", 1500),
+            7: ("streak_7", 2500),
+            30: ("streak_30", 5000),
+            100: ("streak_100", 10000),
+            365: ("streak_365", 25000)
         ]
         
         var totalCoins = 0
@@ -427,10 +424,6 @@ class GameManager: ObservableObject {
         
         gameState.capycoins -= item.cost
         
-        // Increment feed count for repeatable achievement
-        let feedKey = "feed"
-        gameState.achievementCounts[feedKey] = (gameState.achievementCounts[feedKey] ?? 0) + 1
-        
         let previousFood = gameState.food
         gameState.food = min(100, gameState.food + item.foodValue)
         
@@ -454,18 +447,6 @@ class GameManager: ObservableObject {
                 awardCoins += c
                 awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
             }
-        }
-        
-        // Repeatable: every 10 feeds
-        let feedCount = gameState.achievementCounts[feedKey] ?? 0
-        let feedMilestone = (feedCount / 10) * 10
-        let lastFeed10 = gameState.achievementRepeatLastGranted["feed_10"] ?? 0
-        if feedMilestone >= 10 && feedMilestone > lastFeed10 {
-            gameState.achievementRepeatLastGranted["feed_10"] = feedMilestone
-            let c = Self.achievementCoins["feed_10"] ?? 50
-            gameState.capycoins += c
-            awardCoins += c
-            awardNames.append((Self.achievementDisplayNames["feed_10"] ?? "Feed 10 Times") + " (\(feedMilestone))")
         }
         
         if !awardNames.isEmpty {
@@ -517,9 +498,6 @@ class GameManager: ObservableObject {
     }
     
     func petCapybara() {
-        let petKey = "pet"
-        gameState.achievementCounts[petKey] = (gameState.achievementCounts[petKey] ?? 0) + 1
-        
         let previousHappiness = gameState.happiness
         gameState.happiness = min(100, gameState.happiness + 1)
         
@@ -543,17 +521,6 @@ class GameManager: ObservableObject {
                 awardCoins += c
                 awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
             }
-        }
-        
-        let petCount = gameState.achievementCounts[petKey] ?? 0
-        let petMilestone = (petCount / 50) * 50
-        let lastPet50 = gameState.achievementRepeatLastGranted["pet_50"] ?? 0
-        if petMilestone >= 50 && petMilestone > lastPet50 {
-            gameState.achievementRepeatLastGranted["pet_50"] = petMilestone
-            let c = Self.achievementCoins["pet_50"] ?? 75
-            gameState.capycoins += c
-            awardCoins += c
-            awardNames.append((Self.achievementDisplayNames["pet_50"] ?? "Pet 50 Times") + " (\(petMilestone))")
         }
         
         if !awardNames.isEmpty {
@@ -1042,6 +1009,9 @@ class GameManager: ObservableObject {
                 
                 // Daily 8am reminder: "Catch the Orange" mini-game to earn coins
                 self.scheduleCatchTheOrangeDailyReminder()
+
+                // Weekly reminder: suggest an item if the user still has something to unlock
+                self.scheduleWeeklyUnlockableItemsReminder()
             }
         }
     }
@@ -1065,6 +1035,67 @@ class GameManager: ObservableObject {
                 print("✅ Scheduled daily 8am Catch the Orange reminder")
             }
         }
+    }
+
+    private func scheduleWeeklyUnlockableItemsReminder() {
+        guard hasUnlockableItemsForUser() else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Item time!"
+        content.body = "\(gameState.capybaraName) might want an item. Unlock it in the Items area."
+        content.sound = .default
+        
+        // Every Sunday at 8:00 PM (local time)
+        var dateComponents = DateComponents()
+        dateComponents.weekday = 1 // Sunday
+        dateComponents.hour = 20
+        dateComponents.minute = 0
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let identifier = "weekly_unlock_items_sun_8pm"
+        
+        UNUserNotificationCenter.current().getDeliveredNotifications { deliveredNotifications in
+            content.badge = NSNumber(value: deliveredNotifications.count + 1)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule weekly unlockable items reminder: \(error.localizedDescription)")
+                } else {
+                    print("✅ Scheduled weekly unlockable items reminder")
+                }
+            }
+        }
+    }
+    
+    private func hasUnlockableItemsForUser() -> Bool {
+        // Mirrors the "Items" affordance logic:
+        // - Only consider accessory items not already owned.
+        // - For non-Pro items, require sufficient coins to buy.
+        // - For Pro-only items (if any), treat them as unlockable if the user doesn't have Pro.
+        // - For CNY-limited item(s), only count if the item is currently visible or already owned.
+        
+        for item in AccessoryItem.allItems {
+            // Skip hidden CNY items unless already owned (ItemsPanel shows them this way)
+            if item.id == "redlantern" && !(Date.shouldShowCNYItems2026() || gameState.ownedAccessories.contains(item.id)) {
+                continue
+            }
+            
+            guard !gameState.ownedAccessories.contains(item.id) else { continue }
+            
+            if item.isProOnly {
+                if !hasProSubscription() {
+                    return true
+                }
+                // If the user has Pro but somehow doesn't own it, we can still count it.
+                return true
+            } else {
+                if canAfford(item.cost) {
+                    return true
+                }
+            }
+        }
+        
+        return false
     }
     
     private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {

@@ -8,8 +8,11 @@ struct OnboardingView: View {
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     @Binding var isPresented: Bool
+    /// When true, skip to paywall only (for returning users who already completed onboarding).
+    var startAtPaywall: Bool = false
     
     @State private var currentStep: OnboardingStep = .language
+    @State private var capybaraName: String = ""
     @State private var isPurchasingTrial: Bool = false
     @State private var paywallPurchaseError: String?
     @State private var isRestoring: Bool = false
@@ -17,6 +20,7 @@ struct OnboardingView: View {
     
     enum OnboardingStep {
         case language
+        case welcome
         case notifications
         case pledge
         case paywall
@@ -43,6 +47,8 @@ struct OnboardingView: View {
             switch currentStep {
             case .language:
                 languageView
+            case .welcome:
+                welcomeView
             case .notifications:
                 notificationsView
             case .pledge:
@@ -52,6 +58,11 @@ struct OnboardingView: View {
             }
         }
         .preferredColorScheme(.light)
+        .onAppear {
+            if startAtPaywall {
+                currentStep = .paywall
+            }
+        }
         .alert(L("onboarding.purchaseIssueAlert"), isPresented: Binding(
             get: { paywallPurchaseError != nil },
             set: { if !$0 { paywallPurchaseError = nil } }
@@ -124,7 +135,7 @@ struct OnboardingView: View {
             
             Button(action: {
                 withAnimation {
-                    currentStep = .notifications
+                    currentStep = .welcome
                 }
             }) {
                 Text(L("common.next"))
@@ -141,6 +152,94 @@ struct OnboardingView: View {
                             )
                     )
             }
+            .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
+            .padding(.bottom, Self.onboardingCTABottomPadding)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    // MARK: - Welcome / Name View
+    private var welcomeView: some View {
+        VStack(spacing: 12) {
+            Spacer()
+                .frame(height: Self.onboardingTopInset)
+            
+            if #available(iOS 17.0, *) {
+                Capybara3DView(
+                    emotion: gameManager.gameState.capybaraEmotion,
+                    equippedAccessories: gameManager.gameState.equippedAccessories,
+                    previewingAccessoryId: nil,
+                    onPet: { },
+                    initialRotation: nil
+                )
+                .frame(height: Self.onboardingCapybaraHeight)
+                .scaleEffect(0.38)
+                .frame(height: Self.onboardingCapybaraHeight)
+                .clipped()
+                .allowsHitTesting(false)
+            } else {
+                Text("🐹")
+                    .font(.system(size: 80))
+                    .frame(height: Self.onboardingCapybaraHeight)
+            }
+            
+            Text(L("onboarding.welcomeTitle"))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(Self.onboardingPrimaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            Text(L("onboarding.welcomeSubtitle"))
+                .font(.system(size: 18, weight: .medium, design: .rounded))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            TextField(L("onboarding.namePlaceholder"), text: $capybaraName)
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundStyle(Self.onboardingPrimaryText)
+                .tint(AppColors.paywallCTAGreen)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Self.onboardingCardFill)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Self.onboardingCardStroke, lineWidth: 1)
+                        )
+                )
+                .padding(.horizontal, 32)
+            
+            Spacer()
+            
+            Button(action: {
+                let trimmed = capybaraName.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return }
+                gameManager.renameCapybara(to: trimmed)
+                withAnimation {
+                    currentStep = .notifications
+                }
+            }) {
+                Text(L("onboarding.continue"))
+                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(AppColors.paywallCTAGreen)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(AppColors.paywallCTABorder, lineWidth: 2)
+                            )
+                    )
+            }
+            .disabled(capybaraName.trimmingCharacters(in: .whitespaces).isEmpty)
+            .opacity(capybaraName.trimmingCharacters(in: .whitespaces).isEmpty ? 0.5 : 1.0)
             .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
             .padding(.bottom, Self.onboardingCTABottomPadding)
         }
@@ -457,6 +556,18 @@ struct OnboardingView: View {
                 .disabled(isRestoring || isPurchasingTrial)
                 .padding(.top, 6)
                 
+                // Maybe later — temporarily shown on all devices (including iPad) so you can dismiss and use the app
+                Button(action: {
+                    completePaywallAndDismiss(subscribed: false)
+                }) {
+                    Text(L("common.maybeLater"))
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(Self.onboardingSecondaryText)
+                        .underline()
+                }
+                .disabled(isPurchasingTrial)
+                .padding(.top, 8)
+                
                 // Extra spacing so legal text sits further down the page
                 Spacer()
                     .frame(height: 24)
@@ -575,6 +686,9 @@ struct OnboardingView: View {
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {
+                if granted {
+                    gameManager.scheduleFutureNotifications()
+                }
                 withAnimation {
                     currentStep = .pledge
                 }

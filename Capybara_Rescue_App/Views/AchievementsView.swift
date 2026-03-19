@@ -1,26 +1,37 @@
+import Foundation
 import SwiftUI
 
 // MARK: - Achievements View
 struct AchievementsView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     struct Achievement: Identifiable {
         let id: String
-        let name: String
-        let description: String
+        let nameKey: String
+        let descriptionKey: String
         let emoji: String
         let coinReward: Int
-        let section: String
+        let section: String // Localization key
         let countKey: String?
         let milestone: Int?
         
         var isRepeatable: Bool { countKey != nil && milestone != nil }
         
-        init(id: String, name: String, description: String, emoji: String, coinReward: Int, section: String, countKey: String? = nil, milestone: Int? = nil) {
+        init(
+            id: String,
+            nameKey: String,
+            descriptionKey: String,
+            emoji: String,
+            coinReward: Int,
+            section: String,
+            countKey: String? = nil,
+            milestone: Int? = nil
+        ) {
             self.id = id
-            self.name = name
-            self.description = description
+            self.nameKey = nameKey
+            self.descriptionKey = descriptionKey
             self.emoji = emoji
             self.coinReward = coinReward
             self.section = section
@@ -29,20 +40,18 @@ struct AchievementsView: View {
         }
     }
     
-    private static let sectionOrder = ["Reach 100", "Do it again", "Care streak"]
+    private static let sectionOrder = ["achievements.section.reach100", "achievements.section.careStreak"]
     
     private let allAchievements: [Achievement] = [
-        Achievement(id: "first_100_food", name: "Food at 100", description: "Food stat to 100", emoji: "🥗", coinReward: 2000, section: "Reach 100"),
-        Achievement(id: "first_100_drink", name: "Drink at 100", description: "Drink stat to 100", emoji: "💧", coinReward: 2000, section: "Reach 100"),
-        Achievement(id: "first_100_happy", name: "Happy at 100", description: "Happiness to 100", emoji: "😊", coinReward: 2000, section: "Reach 100"),
-        Achievement(id: "first_all_100", name: "All at 100", description: "Food, drink & happiness all 100", emoji: "🌟", coinReward: 5000, section: "Reach 100"),
-        Achievement(id: "feed_10", name: "Feed 10 times", description: "Every 10 feeds", emoji: "🥬", coinReward: 500, section: "Do it again", countKey: "feed", milestone: 10),
-        Achievement(id: "pet_50", name: "Pet 50 times", description: "Every 50 pets", emoji: "❤️", coinReward: 750, section: "Do it again", countKey: "pet", milestone: 50),
-        Achievement(id: "streak_3", name: "3 day streak", description: "Stats above 50 for 3 days", emoji: "🥈", coinReward: 6000, section: "Care streak"),
-        Achievement(id: "streak_7", name: "7 day streak", description: "Stats above 50 for 7 days", emoji: "🥇", coinReward: 7000, section: "Care streak"),
-        Achievement(id: "streak_30", name: "30 day streak", description: "Stats above 50 for 30 days", emoji: "🏆", coinReward: 8000, section: "Care streak"),
-        Achievement(id: "streak_100", name: "100 day streak", description: "Stats above 50 for 100 days", emoji: "💎", coinReward: 9000, section: "Care streak"),
-        Achievement(id: "streak_365", name: "365 day streak", description: "Stats above 50 for 365 days", emoji: "👑", coinReward: 10000, section: "Care streak")
+        Achievement(id: "first_100_food", nameKey: "achievements.first_100_food.name", descriptionKey: "achievements.first_100_food.description", emoji: "🥗", coinReward: 500, section: "achievements.section.reach100"),
+        Achievement(id: "first_100_drink", nameKey: "achievements.first_100_drink.name", descriptionKey: "achievements.first_100_drink.description", emoji: "💧", coinReward: 500, section: "achievements.section.reach100"),
+        Achievement(id: "first_100_happy", nameKey: "achievements.first_100_happy.name", descriptionKey: "achievements.first_100_happy.description", emoji: "😊", coinReward: 500, section: "achievements.section.reach100"),
+        Achievement(id: "first_all_100", nameKey: "achievements.first_all_100.name", descriptionKey: "achievements.first_all_100.description", emoji: "🌟", coinReward: 1500, section: "achievements.section.reach100"),
+        Achievement(id: "streak_3", nameKey: "achievements.streak_3.name", descriptionKey: "achievements.streak_3.description", emoji: "🥈", coinReward: 1500, section: "achievements.section.careStreak"),
+        Achievement(id: "streak_7", nameKey: "achievements.streak_7.name", descriptionKey: "achievements.streak_7.description", emoji: "🥇", coinReward: 2500, section: "achievements.section.careStreak"),
+        Achievement(id: "streak_30", nameKey: "achievements.streak_30.name", descriptionKey: "achievements.streak_30.description", emoji: "🏆", coinReward: 5000, section: "achievements.section.careStreak"),
+        Achievement(id: "streak_100", nameKey: "achievements.streak_100.name", descriptionKey: "achievements.streak_100.description", emoji: "💎", coinReward: 10000, section: "achievements.section.careStreak"),
+        Achievement(id: "streak_365", nameKey: "achievements.streak_365.name", descriptionKey: "achievements.streak_365.description", emoji: "👑", coinReward: 25000, section: "achievements.section.careStreak")
     ]
     
     private var achievementsBySection: [(String, [Achievement])] {
@@ -66,11 +75,11 @@ struct AchievementsView: View {
                     VStack(spacing: 24) {
                         // Current streak display
                         VStack(spacing: 12) {
-                            Text("Current Care Streak")
+                            Text(L("achievements.currentCareStreakTitle"))
                                 .font(.system(size: 18, weight: .medium, design: .rounded))
                                 .foregroundStyle(Color.primary.opacity(0.8))
                             
-                            Text("Keep food, drink and happiness all above 50 each day")
+                            Text(L("achievements.currentCareStreakSubtitle"))
                                 .font(.system(size: 14, weight: .regular, design: .rounded))
                                 .foregroundStyle(Color.primary.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -90,7 +99,7 @@ struct AchievementsView: View {
                                     .font(.system(size: 48, weight: .bold, design: .rounded))
                                     .foregroundStyle(.primary)
                                 
-                                Text("days")
+                                Text(L("achievements.days"))
                                     .font(.system(size: 20, weight: .medium, design: .rounded))
                                     .foregroundStyle(Color.primary.opacity(0.8))
                             }
@@ -111,7 +120,7 @@ struct AchievementsView: View {
                         // Achievements by section
                         ForEach(achievementsBySection, id: \.0) { sectionTitle, sectionAchievements in
                             VStack(alignment: .leading, spacing: 12) {
-                                Text(sectionTitle)
+                                Text(L(sectionTitle))
                                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                                     .foregroundStyle(Color.primary.opacity(0.9))
                                     .padding(.horizontal, 4)
@@ -132,7 +141,7 @@ struct AchievementsView: View {
                     }
                 }
             }
-            .navigationTitle("Achievements")
+            .navigationTitle(L("achievements.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -202,12 +211,12 @@ struct AchievementRow: View {
         if achievement.isRepeatable {
             let completed = repeatableCompletedCount
             if completed > 0 {
-                return "Done \(completed)×"
+                return String(format: L("achievements.reward.doneRepeatFormat"), completed)
             }
-            return "Repeatable"
+            return L("achievements.reward.repeatable")
         }
-        if isEarned { return "Earned" }
-        return "Complete to earn"
+        if isEarned { return L("achievements.reward.earned") }
+        return L("achievements.reward.completeToEarn")
     }
     
     private func formattedCoinReward(_ value: Int) -> String {
@@ -243,7 +252,7 @@ struct AchievementRow: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                     Text(L("common.coins"))
-                        .font(.system(size: 13, weight: .regular, design: .rounded))
+                        .font(.system(size: 15, weight: .regular, design: .rounded))
                         .foregroundStyle(Color.primary.opacity(0.8))
                 }
             }
@@ -264,7 +273,7 @@ struct AchievementRow: View {
             
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text(achievement.name)
+                    Text(L(achievement.nameKey))
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .foregroundStyle(isEarned || repeatableCompletedCount > 0 ? Color.primary : Color.primary.opacity(0.8))
                     
@@ -310,7 +319,7 @@ struct AchievementRow: View {
                             .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundStyle(Color.primary.opacity(0.8))
                     } else {
-                        Text("\(Int(progress * 100))% complete")
+                        Text(String(format: L("achievements.progress.percentCompleteFormat"), Int(progress * 100)))
                             .font(.system(size: 12, weight: .medium, design: .rounded))
                             .foregroundStyle(Color.primary.opacity(0.8))
                     }

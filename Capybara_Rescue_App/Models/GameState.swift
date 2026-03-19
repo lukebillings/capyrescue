@@ -186,7 +186,7 @@ struct GameState: Codable {
         food: 60,
         drink: 60,
         happiness: 60,
-        capycoins: 10_000,
+        capycoins: 0,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -314,20 +314,20 @@ struct AccessoryItem: Identifiable, Equatable {
     
     private static let _allItems: [AccessoryItem] = [
         // Regular Hats
-        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap", isProOnly: false),
-        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 400, modelFileName: "Cowboy Hat 2", isProOnly: false),
-        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 1000, modelFileName: "Tophat", isProOnly: false),
-        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 2500, modelFileName: "Wizard hat", isProOnly: false),
-        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 4000, modelFileName: "Pirate hat", isProOnly: false),
-        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 6500, modelFileName: "Propeller hat", isProOnly: false),
-        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 10000, modelFileName: "Sombrero2hat", isProOnly: false),
-        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 20000, modelFileName: "Frog Hat", isProOnly: false),
-        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 15000, modelFileName: "Fox Hat", isProOnly: false),
-        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 25000, modelFileName: "Santahat", isProOnly: false),
+        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 300, modelFileName: "Baseball cap", isProOnly: false),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 1200, modelFileName: "Cowboy Hat 2", isProOnly: false),
+        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 3000, modelFileName: "Tophat", isProOnly: false),
+        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 7500, modelFileName: "Wizard hat", isProOnly: false),
+        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 12000, modelFileName: "Pirate hat", isProOnly: false),
+        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 19500, modelFileName: "Propeller hat", isProOnly: false),
+        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 30000, modelFileName: "Sombrero2hat", isProOnly: false),
+        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 60000, modelFileName: "Frog Hat", isProOnly: false),
+        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 45000, modelFileName: "Fox Hat", isProOnly: false),
+        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 75000, modelFileName: "Santahat", isProOnly: false),
         // Premium Hats (formerly Pro-only, now purchasable with coins)
-        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 30000, modelFileName: "Cone", isProOnly: false),
-        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 35000, modelFileName: "Pizza Hat", isProOnly: false),
-        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 40000, modelFileName: "red-lantern", isProOnly: false),
+        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 90000, modelFileName: "Cone", isProOnly: false),
+        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 105000, modelFileName: "Pizza Hat", isProOnly: false),
+        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 120000, modelFileName: "red-lantern", isProOnly: false),
     ]
     
     static var allItems: [AccessoryItem] {

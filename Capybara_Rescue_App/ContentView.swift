@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = false
+    @State private var showReturningUserPaywall = false
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var shouldApplyInitialRotation = false
     @State private var showCNYPopup = false
@@ -79,7 +80,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if showOnboarding {
-                OnboardingView(isPresented: $showOnboarding)
+                OnboardingView(isPresented: $showOnboarding, startAtPaywall: false)
                     .environmentObject(gameManager)
                     .onChange(of: showOnboarding) { oldValue, newValue in
                         if !newValue {
@@ -93,6 +94,10 @@ struct ContentView: View {
                             }
                         }
                     }
+            } else if showReturningUserPaywall, gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
+                // Returning user (previously downloaded) without Pro — show Pro Annual paywall; 15k coins added on subscribe
+                OnboardingView(isPresented: $showReturningUserPaywall, startAtPaywall: true)
+                    .environmentObject(gameManager)
             } else {
                 mainContentView
                     .onAppear {
@@ -119,6 +124,10 @@ struct ContentView: View {
         }
         .onAppear {
             checkOnboardingStatus()
+            // Returning users (already completed onboarding) without Pro see the Pro Annual paywall
+            if gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
+                showReturningUserPaywall = true
+            }
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
             checkOnboardingStatus()

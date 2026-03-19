@@ -50,6 +50,11 @@ struct SettingsView: View {
                                     .labelsHidden()
                                     .tint(Color(hex: "1a5f1a"))
                             }
+                            .onChange(of: settingsManager.notificationsEnabled) { _, enabled in
+                                if enabled {
+                                    gameManager.scheduleFutureNotifications()
+                                }
+                            }
                             
                             Divider()
                                 .background(Color.white.opacity(0.2))
