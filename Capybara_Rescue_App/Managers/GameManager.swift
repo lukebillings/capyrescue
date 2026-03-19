@@ -250,25 +250,30 @@ class GameManager: ObservableObject {
         }
     }
     
-    private static let achievementDisplayNames: [String: String] = [
-        "streak_3": "3 day streak",
-        "streak_7": "7 day streak",
-        "streak_30": "30 day streak",
-        "streak_100": "100 day streak",
-        "streak_365": "365 day streak",
-        "first_100_food": "Food at 100",
-        "first_100_drink": "Drink at 100",
-        "first_100_happy": "Happy at 100",
-        "first_all_100": "All at 100"
+    private static let achievementDisplayNameKeys: [String: String] = [
+        "streak_3": "achievements.streak_3.name",
+        "streak_7": "achievements.streak_7.name",
+        "streak_30": "achievements.streak_30.name",
+        "streak_100": "achievements.streak_100.name",
+        "streak_365": "achievements.streak_365.name",
+        "first_100_food": "achievements.first_100_food.name",
+        "first_100_drink": "achievements.first_100_drink.name",
+        "first_100_happy": "achievements.first_100_happy.name",
+        "first_all_100": "achievements.first_all_100.name"
     ]
     
     private static let achievementCoins: [String: Int] = [
         "streak_3": 1500, "streak_7": 2500, "streak_30": 5000, "streak_100": 10000, "streak_365": 25000,
         "first_100_food": 500, "first_100_drink": 500, "first_100_happy": 500, "first_all_100": 1500
     ]
+
+    private func localizedAchievementName(for id: String) -> String {
+        guard let key = Self.achievementDisplayNameKeys[id] else { return id }
+        return L(key)
+    }
     
     private func grantAchievement(id: String, name: String? = nil, coins: Int? = nil) {
-        let displayName = name ?? Self.achievementDisplayNames[id] ?? id
+        let displayName = name ?? localizedAchievementName(for: id)
         let coinAmount = coins ?? Self.achievementCoins[id] ?? 0
         gameState.capycoins += coinAmount
         recentAchievement = (displayName, coinAmount)
@@ -293,12 +298,12 @@ class GameManager: ObservableObject {
                 gameState.earnedAchievements.insert(achievementId)
                 gameState.capycoins += coins
                 totalCoins += coins
-                if let n = Self.achievementDisplayNames[achievementId] { names.append(n) }
+                names.append(localizedAchievementName(for: achievementId))
             }
         }
         
         if totalCoins > 0 {
-            let name = names.count == 1 ? names[0] : (names.isEmpty ? "Streak achievements" : names.joined(separator: " & "))
+            let name = names.isEmpty ? L("achievements.title") : names.joined(separator: " & ")
             recentAchievement = (name, totalCoins)
         }
     }
@@ -438,14 +443,14 @@ class GameManager: ObservableObject {
                 let c = Self.achievementCoins["first_100_food"] ?? 200
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_100_food"] ?? "First 100 Food")
+                awardNames.append(localizedAchievementName(for: "first_100_food"))
             }
             if gameState.drink == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
                 gameState.earnedAchievements.insert("first_all_100")
                 let c = Self.achievementCoins["first_all_100"] ?? 500
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
             }
         }
         
@@ -479,14 +484,14 @@ class GameManager: ObservableObject {
                 let c = Self.achievementCoins["first_100_drink"] ?? 200
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_100_drink"] ?? "First 100 Drink")
+                awardNames.append(localizedAchievementName(for: "first_100_drink"))
             }
             if gameState.food == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
                 gameState.earnedAchievements.insert("first_all_100")
                 let c = Self.achievementCoins["first_all_100"] ?? 500
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
             }
         }
         if !awardNames.isEmpty {
@@ -512,14 +517,14 @@ class GameManager: ObservableObject {
                 let c = Self.achievementCoins["first_100_happy"] ?? 200
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_100_happy"] ?? "First 100 Happy")
+                awardNames.append(localizedAchievementName(for: "first_100_happy"))
             }
             if gameState.food == 100 && gameState.drink == 100 && !gameState.earnedAchievements.contains("first_all_100") {
                 gameState.earnedAchievements.insert("first_all_100")
                 let c = Self.achievementCoins["first_all_100"] ?? 500
                 gameState.capycoins += c
                 awardCoins += c
-                awardNames.append(Self.achievementDisplayNames["first_all_100"] ?? "All Stats 100")
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
             }
         }
         
@@ -1125,43 +1130,5 @@ class GameManager: ObservableObject {
         }
     }
     
-    // MARK: - Test Notification (for debugging)
-    func testNotification() {
-        let name = gameState.capybaraName
-        
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                guard settings.authorizationStatus == .authorized else {
-                    print("❌ Notifications not authorized. Status: \(settings.authorizationStatus.rawValue)")
-                    self.showToast("Notifications not enabled!")
-                    return
-                }
-                
-                let content = UNMutableNotificationContent()
-                content.title = "Test Notification 🔔"
-                content.body = "This is a test! If you see this when the app is closed, notifications are working! \(name) says hi!"
-                content.sound = .default
-                content.badge = 1
-                
-                // Schedule for 5 seconds from now - gives you time to close the app
-                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5.0, repeats: false)
-                let request = UNNotificationRequest(identifier: "test_notification", content: content, trigger: trigger)
-                
-                UNUserNotificationCenter.current().add(request) { error in
-                    if let error = error {
-                        print("❌ Failed to schedule test notification: \(error.localizedDescription)")
-                        DispatchQueue.main.async {
-                            self.showToast("Failed to schedule notification")
-                        }
-                    } else {
-                        print("✅ Test notification scheduled for 5 seconds from now")
-                        DispatchQueue.main.async {
-                            self.showToast("Notification scheduled! Close app to test.")
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 

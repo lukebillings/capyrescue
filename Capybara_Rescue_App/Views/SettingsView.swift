@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var showLanguagePicker = false
     
     private let termsURL = "https://lukebillings.github.io/capyrescue/termsandconditions/"
+    private let termsOfUseURL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
     private let privacyURL = "https://lukebillings.github.io/capyrescue/privacypolicy/"
     private let shareAppURL = "https://apps.apple.com/gb/app/capyrescue/id6756495842"
     
@@ -141,6 +142,16 @@ struct SettingsView: View {
                                 url: termsURL
                             )
                             
+                            Divider()
+                                .background(Color.white.opacity(0.2))
+                                .padding(.leading, 56)
+
+                            SettingsLinkRow(
+                                icon: "doc.text.fill",
+                                title: L("onboarding.termsOfUseEula"),
+                                url: termsOfUseURL
+                            )
+
                             Divider()
                                 .background(Color.white.opacity(0.2))
                                 .padding(.leading, 56)
@@ -275,7 +286,7 @@ private struct SettingsShareRow: View {
     let message: String
     
     var body: some View {
-        ShareLink(item: URL(string: url)!, subject: Text("CapyRescue"), message: Text(message)) {
+        ShareLink(item: URL(string: url)!, subject: Text("Capyrescue"), message: Text(message)) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.system(size: 20))

@@ -178,7 +178,7 @@ struct ContentView: View {
                             .buttonStyle(ScaleButtonStyle())
                             .tutorialHighlight(key: "achievements_button")
                             .accessibilityLabel(L("tutorial.achievements"))
-                            .accessibilityHint("Opens achievements and streaks")
+                            .accessibilityHint("\(L("tutorial.youCanCheckStreaks")) \(L("tutorial.achievementsButton"))")
                             
                             Button(action: {
                                 HapticManager.shared.buttonPress()
@@ -869,12 +869,12 @@ struct AchievementRewardPopup: View {
                 Text("🏆")
                     .font(.system(size: 50))
                 
-                Text("Well done on \(achievementName)!")
+                Text(achievementName)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text(coins == 1 ? "Here's 1 coin." : "Here are \(coins) coins.")
+                Text("\(coins) \(L("common.coins"))")
                     .font(.system(size: 17, weight: .medium, design: .rounded))
                     .foregroundStyle(Self.secondaryText)
             }

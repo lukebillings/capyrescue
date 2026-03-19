@@ -21,7 +21,7 @@ struct ShopPanel: View {
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(Color(hex: "1a5f1a"))
                         
-                        Text("Play Daily Games")
+                        Text(L("panel.playDailyGames"))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(Color(hex: "1a1a2e"))
                         

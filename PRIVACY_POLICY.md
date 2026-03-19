@@ -1,7 +1,16 @@
 # Capybara Rescue Universe — Privacy Policy
 
-**Last updated:** 2026-01-09  
+**Last updated:** 2026-03-19  
 This Privacy Policy explains how the developer/publisher of Capybara Rescue Universe (the “App”) (“we,” “us,” “our,” or “Developer”) collects, uses, shares, and protects information when you use the App.
+
+---
+
+## Version notice (important)
+
+- **App versions before 1.12** may display Google AdMob ads and may process related ad data (for example ad impressions/clicks and identifiers permitted by Apple/platform rules).
+- **From version 1.12 onward**, Google AdMob ads and ad tracking are removed.
+
+This policy describes current data practices for the latest version. If you continue to use an older version that has not been updated, some data practices may differ until you update.
 
 ---
 
@@ -37,9 +46,9 @@ Depending on how the App is configured and which services are enabled, we and ou
 - **Local app storage**: we store game state on your device (e.g., progress, earned/purchased virtual items/currency, settings).
 - **iCloud Key-Value Store (optional)**: if you have iCloud enabled for the App, Apple may sync certain game state between your devices using iCloud. We do not receive your Apple ID; Apple handles iCloud syncing under your Apple account.
 
-### D) Advertising data (if ads are shown)
+### D) Advertising data in legacy versions (before 1.12)
 
-If the App displays ads (including rewarded ads):
+In app versions before 1.12 (if ads are shown):
 
 - **Ad interaction data**: ad impressions, clicks, reward completion, and anti-fraud signals.
 - **Device identifiers**: such as Apple’s Identifier for Advertisers (IDFA) if you opt in via Apple’s App Tracking Transparency prompt, or other identifiers permitted by platform rules.
@@ -63,7 +72,7 @@ We use information to:
 - **Provide and operate the App** (core gameplay, saving progress, features you request)
 - **Sync progress across your devices** (if you enable iCloud for the App)
 - **Improve the App** (analytics, debugging, crash/performance monitoring)
-- **Serve and measure ads** (if enabled), including rewarded ads
+- **Serve and measure ads** in legacy versions before 1.12 (if enabled)
 - **Provide support** and communicate with you
 - **Prevent fraud and abuse** and keep the App secure
 - **Comply with legal obligations** and enforce our Terms
@@ -76,7 +85,7 @@ If you are in the UK (or EEA), we process personal data under these lawful bases
 
 - **Contract**: to provide the App features you use and requested services.
 - **Legitimate interests**: to improve the App, ensure security, prevent fraud, and understand usage (balanced against your rights).
-- **Consent**: when required (e.g., App Tracking Transparency opt-in for IDFA-based tracking; certain ad/analytics settings where applicable).
+- **Consent**: when required (e.g., in legacy versions before 1.12 for App Tracking Transparency opt-in and certain ad/analytics settings where applicable).
 - **Legal obligation**: to comply with applicable laws and lawful requests.
 
 Where we rely on **consent**, you can withdraw it at any time (see “Your choices and rights”).
@@ -88,7 +97,7 @@ Where we rely on **consent**, you can withdraw it at any time (see “Your choic
 We may share information with:
 
 - **Apple** for App Store purchases (StoreKit) and, if enabled, iCloud syncing (iCloud Key-Value Store).
-- **Google** for advertising and consent management (if ads are enabled), including ad delivery, measurement, and fraud prevention.
+- **Google** for advertising and consent management in legacy versions before 1.12 (if ads are enabled), including ad delivery, measurement, and fraud prevention.
 - **Legal/Compliance**: if required by law, subpoena, court order, or to protect rights, safety, and security.
 
 We do **not** sell your personal data in exchange for money. Some jurisdictions define “sale”/“sharing” broadly (e.g., for cross-context advertising). See “Region-specific rights” below.
@@ -99,12 +108,12 @@ We do **not** sell your personal data in exchange for money. Some jurisdictions 
 
 This App uses the following third-party SDKs/frameworks:
 
-- **Google AdMob (Google Mobile Ads SDK)**: used to display banner ads and rewarded ads. Provider: Google LLC. See Google’s documentation/policies for how AdMob processes data.
-- **Google User Messaging Platform (UMP)**: used to request and manage consent in regions where required (for example, UK/EEA) for ads-related data processing.
-- **Apple App Tracking Transparency (ATT)**: used to request permission before accessing IDFA for “tracking” as defined by Apple.
+- **Google AdMob (Google Mobile Ads SDK)**: used in app versions before 1.12 to display banner ads and rewarded ads. Provider: Google LLC. See Google’s documentation/policies for how AdMob processes data.
+- **Google User Messaging Platform (UMP)**: used in app versions before 1.12 to request and manage consent in regions where required (for example, UK/EEA) for ads-related data processing.
+- **Apple App Tracking Transparency (ATT)**: used in app versions before 1.12 to request permission before accessing IDFA for “tracking” as defined by Apple.
 - **Apple StoreKit**: used to process in-app purchases and restore purchases.
 - **Apple iCloud Key-Value Store (NSUbiquitousKeyValueStore)**: used to sync certain game state across your devices when iCloud is enabled for the App.
-- **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used by ad partners (including via AdMob) for measuring ad campaign performance.
+- **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used by ad partners (including via AdMob in versions before 1.12) for measuring ad campaign performance.
 
 These providers may process data under their own privacy policies:
 
@@ -113,16 +122,16 @@ These providers may process data under their own privacy policies:
 
 ---
 
-## 7) Advertising and tracking (Apple App Tracking Transparency)
+## 7) Advertising and tracking (legacy versions before 1.12)
 
-If the App uses IDFA or other data for “tracking” as defined by Apple:
+If you use an app version before 1.12 and that version uses IDFA or other data for “tracking” as defined by Apple:
 
 - We will request permission via Apple’s **App Tracking Transparency (ATT)** prompt.
 - If you decline, we will not access IDFA for tracking, and ad personalization may be limited.
 
 You can manage tracking permissions in iOS settings at any time.
 
-In this App, the ATT prompt may be shown at relevant times (for example, when you choose to watch a rewarded ad for coins).
+In versions before 1.12, the ATT prompt may be shown at relevant times (for example, when you choose to watch a rewarded ad for coins).
 
 ---
 

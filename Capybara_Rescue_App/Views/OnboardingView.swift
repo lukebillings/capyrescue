@@ -461,7 +461,10 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(L("onboarding.paywallProTitle"))
+                            Text(subscriptionManager.displayName(
+                                for: SubscriptionManager.annualProductId,
+                                fallback: L("onboarding.paywallProTitle")
+                            ))
                                 .font(.system(size: 20, weight: .bold, design: .rounded))
                                 .foregroundStyle(Self.onboardingPrimaryText)
                             Text(String(format: L("onboarding.paywallPriceFormatAnnual"), subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99/year")))
@@ -555,18 +558,6 @@ struct OnboardingView: View {
                 }
                 .disabled(isRestoring || isPurchasingTrial)
                 .padding(.top, 6)
-                
-                // Maybe later — temporarily shown on all devices (including iPad) so you can dismiss and use the app
-                Button(action: {
-                    completePaywallAndDismiss(subscribed: false)
-                }) {
-                    Text(L("common.maybeLater"))
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                        .underline()
-                }
-                .disabled(isPurchasingTrial)
-                .padding(.top, 8)
                 
                 // Extra spacing so legal text sits further down the page
                 Spacer()

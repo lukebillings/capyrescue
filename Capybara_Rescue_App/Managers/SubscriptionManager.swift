@@ -190,6 +190,19 @@ class SubscriptionManager: ObservableObject {
         }
         return fallback
     }
+
+    /// Returns localized App Store Connect price when available.
+    func displayPrice(for productId: String) -> String? {
+        products[productId]?.displayPrice
+    }
+
+    /// Returns App Store Connect localized display name when available.
+    func displayName(for productId: String, fallback: String) -> String {
+        if let product = products[productId] {
+            return product.displayName
+        }
+        return fallback
+    }
     
     // Calculate monthly price for annual subscription
     func monthlyPriceForAnnual() -> String {
