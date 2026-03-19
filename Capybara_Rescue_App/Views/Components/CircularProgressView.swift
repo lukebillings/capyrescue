@@ -7,6 +7,7 @@ struct CircularProgressView: View {
     let maxValue: Int
     let color: Color
     let icon: String
+    var tutorialKey: String = ""
     
     private var progress: Double {
         Double(value) / Double(maxValue)
@@ -61,19 +62,19 @@ struct CircularProgressView: View {
                     
                     Text("\(value)")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
             }
             .frame(width: 80, height: 80)
             
             Text(title)
                 .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(.white.opacity(0.8))
+                .foregroundStyle(.primary.opacity(0.8))
         }
-        .tutorialHighlight(key: tutorialKey)
+        .tutorialHighlight(key: tutorialKey.isEmpty ? titleBasedTutorialKey : tutorialKey)
     }
     
-    private var tutorialKey: String {
+    private var titleBasedTutorialKey: String {
         switch title.lowercased() {
         case "food": return "food_stat"
         case "drink": return "drink_stat"
@@ -88,38 +89,43 @@ struct StatsDisplayView: View {
     let food: Int
     let drink: Int
     let happiness: Int
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     var body: some View {
-        HStack(spacing: 30) {
+        HStack(spacing: 0) {
             CircularProgressView(
-                title: "Food",
+                title: L("menu.food"),
                 value: food,
                 maxValue: 100,
                 color: .green,
-                icon: "leaf.fill"
+                icon: "leaf.fill",
+                tutorialKey: "food_stat"
             )
             
+            Spacer(minLength: 16)
+            
             CircularProgressView(
-                title: "Drink",
+                title: L("menu.drink"),
                 value: drink,
                 maxValue: 100,
                 color: .cyan,
-                icon: "drop.fill"
+                icon: "drop.fill",
+                tutorialKey: "drink_stat"
             )
             
+            Spacer(minLength: 16)
+            
             CircularProgressView(
-                title: "Happy",
+                title: L("tutorial.happy"),
                 value: happiness,
                 maxValue: 100,
                 color: .pink,
-                icon: "heart.fill"
+                icon: "heart.fill",
+                tutorialKey: "happy_stat"
             )
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 32)
-        .background(
-            GlassBackground()
-        )
     }
 }
 

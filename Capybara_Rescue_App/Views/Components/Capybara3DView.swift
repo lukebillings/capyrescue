@@ -12,7 +12,6 @@ struct Capybara3DView: View {
     let initialRotation: Double?
     
     @State private var isPressed = false
-    @State private var pulseScale: CGFloat = 1.0
     @State private var heartOffset: CGFloat = 0
     @State private var showHeart = false
     @State private var rotationAngle: Double = 0
@@ -20,6 +19,14 @@ struct Capybara3DView: View {
     @State private var lastDragValue: CGFloat = 0
     @State private var useProceduralModel = false // Try to load USDZ model first
     @State private var hasAppliedInitialRotation = false
+    /// Idle rotation: slow right→left sway over front 180° only. When user drags, we resume from current angle.
+    @State private var isUserDragging = false
+    @State private var idleRotationStartTime = Date()
+    @State private var idlePhase: Double = 0
+    @State private var idleRotationTimer: Timer?
+    
+    /// Front 180° range: right = +90°, left = -90°. Full cycle (right→left→right) duration in seconds.
+    private static let idleRotationPeriod: Double = 16
     
     init(emotion: CapybaraEmotion, equippedAccessories: [String], previewingAccessoryId: String?, onPet: @escaping () -> Void, initialRotation: Double? = nil) {
         self.emotion = emotion
@@ -31,23 +38,6 @@ struct Capybara3DView: View {
     
     var body: some View {
         ZStack {
-            // Glow effect behind capybara
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            emotionColor.opacity(0.3),
-                            emotionColor.opacity(0.1),
-                            .clear
-                        ],
-                        center: .center,
-                        startRadius: 50,
-                        endRadius: 180
-                    )
-                )
-                .frame(width: 360, height: 360)
-                .scaleEffect(pulseScale)
-            
             // 3D Capybara Model (iOS 17+ compatible using ARView)
             RealityKitView(
                 rotationAngle: $rotationAngle,
@@ -63,12 +53,20 @@ struct Capybara3DView: View {
             .gesture(
                 DragGesture()
                     .onChanged { value in
+                        isUserDragging = true
                         let delta = value.translation.width - lastDragValue
                         rotationAngle += Double(delta) * 0.5 // Adjust sensitivity
+                        rotationAngle = min(90, max(-90, rotationAngle)) // Clamp to front 180°
                         lastDragValue = value.translation.width
                     }
                     .onEnded { _ in
                         lastDragValue = 0
+                        rotationAngle = min(90, max(-90, rotationAngle))
+                        // Resume idle rotation from current angle (phase so cos matches)
+                        let clamped = max(-1, min(1, rotationAngle / 90))
+                        idlePhase = acos(clamped)
+                        idleRotationStartTime = Date()
+                        isUserDragging = false
                     }
             )
             
@@ -90,19 +88,32 @@ struct Capybara3DView: View {
             isPressed = pressing
         }, perform: {})
         .onAppear {
-            startPulseAnimation()
-            
             // Apply initial rotation on first load
             if !hasAppliedInitialRotation {
                 if let initialRotation = initialRotation {
-                    // Use provided initial rotation if available
-                    rotationAngle = initialRotation
+                    rotationAngle = min(90, max(-90, initialRotation))
                 } else {
-                    // Default to 30 degrees angle when first loading the main screen
                     rotationAngle = 30
                 }
                 hasAppliedInitialRotation = true
+                idlePhase = acos(max(-1, min(1, rotationAngle / 90)))
+                idleRotationStartTime = Date()
             }
+            // Slow idle rotation: right → left → right over front 180° only
+            idleRotationTimer?.invalidate()
+            let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
+                guard !isUserDragging else { return }
+                let elapsed = Date().timeIntervalSince(idleRotationStartTime)
+                let angle = 90 * cos(2 * .pi * elapsed / Self.idleRotationPeriod + idlePhase)
+                rotationAngle = angle
+            }
+            timer.tolerance = 0.02
+            RunLoop.main.add(timer, forMode: .common)
+            idleRotationTimer = timer
+        }
+        .onDisappear {
+            idleRotationTimer?.invalidate()
+            idleRotationTimer = nil
         }
         .onChange(of: initialRotation) { oldValue, newValue in
             // Apply rotation when it becomes available
@@ -110,14 +121,6 @@ struct Capybara3DView: View {
                 rotationAngle = newRotation
                 hasAppliedInitialRotation = true
             }
-        }
-    }
-    
-    private var emotionColor: Color {
-        switch emotion {
-        case .happy: return .pink
-        case .neutral: return .orange
-        case .sad: return .blue
         }
     }
     
@@ -168,15 +171,6 @@ struct Capybara3DView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             showHeart = false
             heartOffset = 0
-        }
-    }
-    
-    private func startPulseAnimation() {
-        withAnimation(
-            .easeInOut(duration: 2)
-            .repeatForever(autoreverses: true)
-        ) {
-            pulseScale = 1.1
         }
     }
     
@@ -344,7 +338,7 @@ struct RealityKitView: UIViewRepresentable {
         
         // Try to load the USDZ model first
         if !useProceduralModel, let model = loadCapybaraModel() {
-            model.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            model.scale = [0.30, 0.30, 0.30] // Slightly smaller so hats don't clip at top
             model.position = [0, -0.1, 0] // Slightly lower to center better in view
             
             // Try to disable shadows on all entities to avoid rendering pipeline issues
@@ -378,7 +372,7 @@ struct RealityKitView: UIViewRepresentable {
             }
         } else if let proceduralModel = createProceduralCapybara() {
             // Fallback to procedural model if USDZ fails to load
-            proceduralModel.scale = [0.3, 0.3, 0.3] // Smaller scale to fit entire model including head
+            proceduralModel.scale = [0.30, 0.30, 0.30] // Slightly smaller so hats don't clip at top
             proceduralModel.position = [0, -0.1, 0] // Slightly lower to center better in view
             anchor.addChild(proceduralModel)
             context.coordinator.modelEntity = proceduralModel

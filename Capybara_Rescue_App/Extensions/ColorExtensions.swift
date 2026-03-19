@@ -31,7 +31,7 @@ extension Color {
 // MARK: - App Colors
 struct AppColors {
     static let background = LinearGradient(
-        colors: [Color(hex: "0f0c29"), Color(hex: "302b63"), Color(hex: "24243e")],
+        colors: [Color(hex: "FFF8E7"), Color(hex: "FFF8E7")],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -44,5 +44,10 @@ struct AppColors {
     static let foodGreen = Color(hex: "66BB6A")
     static let drinkBlue = Color(hex: "42A5F5")
     static let happyPink = Color(hex: "EC407A")
+    
+    /// Paywall CTA button background (dark green from design).
+    static let paywallCTAGreen = Color(hex: "3A7337")
+    /// Paywall CTA button border (lighter green).
+    static let paywallCTABorder = Color(hex: "9CC899")
 }
 

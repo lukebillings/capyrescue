@@ -7,29 +7,11 @@ struct CapybaraView: View {
     let onPet: () -> Void
     
     @State private var isPressed = false
-    @State private var pulseScale: CGFloat = 1.0
     @State private var heartOffset: CGFloat = 0
     @State private var showHeart = false
     
     var body: some View {
         ZStack {
-            // Glow effect behind capybara
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            emotionColor.opacity(0.3),
-                            emotionColor.opacity(0.1),
-                            .clear
-                        ],
-                        center: .center,
-                        startRadius: 50,
-                        endRadius: 180
-                    )
-                )
-                .frame(width: 360, height: 360)
-                .scaleEffect(pulseScale)
-            
             // Main capybara body
             VStack(spacing: 0) {
                 // Accessories on top (hats)
@@ -81,17 +63,7 @@ struct CapybaraView: View {
         .onLongPressGesture(minimumDuration: 0.1, pressing: { pressing in
             isPressed = pressing
         }, perform: {})
-        .onAppear {
-            startPulseAnimation()
-        }
-    }
-    
-    private var emotionColor: Color {
-        switch emotion {
-        case .happy: return .pink
-        case .neutral: return .orange
-        case .sad: return .blue
-        }
+        .onAppear { }
     }
     
     private var equippedHat: AccessoryItem? {
@@ -129,14 +101,6 @@ struct CapybaraView: View {
         }
     }
     
-    private func startPulseAnimation() {
-        withAnimation(
-            .easeInOut(duration: 2)
-            .repeatForever(autoreverses: true)
-        ) {
-            pulseScale = 1.1
-        }
-    }
 }
 
 // MARK: - Capybara Body

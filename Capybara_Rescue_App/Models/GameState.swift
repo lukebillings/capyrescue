@@ -25,6 +25,13 @@ struct GameState: Codable {
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
+    var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the 500 coins/week
+    var lastMonthlyCoinsGrantDate: Date? // For Pro Monthly: last time we granted the 10,000 coins/month
+    var lastCatchTheOrangeCompletedDate: Date? // Last calendar day user completed Catch the Orange (once per day reward)
+    /// Counters for repeatable achievements (e.g. "feed" -> total feeds, "pet" -> total pets).
+    var achievementCounts: [String: Int]
+    /// For repeatable achievements, last milestone we granted (e.g. "feed_10" -> 30 means granted at 10, 20, 30).
+    var achievementRepeatLastGranted: [String: Int]
     
     enum CodingKeys: String, CodingKey {
         case capybaraName, food, drink, happiness, capycoins, lastUpdateTime, hasRunAway
@@ -32,6 +39,8 @@ struct GameState: Codable {
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
         case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
+        case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastCatchTheOrangeCompletedDate
+        case achievementCounts, achievementRepeatLastGranted
     }
     
     // Custom decoding for backward compatibility
@@ -59,6 +68,11 @@ struct GameState: Codable {
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
+        lastWeeklyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastWeeklyCoinsGrantDate)
+        lastMonthlyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastMonthlyCoinsGrantDate)
+        lastCatchTheOrangeCompletedDate = try container.decodeIfPresent(Date.self, forKey: .lastCatchTheOrangeCompletedDate)
+        achievementCounts = try container.decodeIfPresent([String: Int].self, forKey: .achievementCounts) ?? [:]
+        achievementRepeatLastGranted = try container.decodeIfPresent([String: Int].self, forKey: .achievementRepeatLastGranted) ?? [:]
         // Backward compatibility: try earnedAchievements first, then fall back to earnedMedals
         if let achievements = try container.decodeIfPresent(Set<String>.self, forKey: .earnedAchievements) {
             earnedAchievements = achievements
@@ -99,6 +113,11 @@ struct GameState: Codable {
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
+        try container.encodeIfPresent(lastWeeklyCoinsGrantDate, forKey: .lastWeeklyCoinsGrantDate)
+        try container.encodeIfPresent(lastMonthlyCoinsGrantDate, forKey: .lastMonthlyCoinsGrantDate)
+        try container.encodeIfPresent(lastCatchTheOrangeCompletedDate, forKey: .lastCatchTheOrangeCompletedDate)
+        try container.encode(achievementCounts, forKey: .achievementCounts)
+        try container.encode(achievementRepeatLastGranted, forKey: .achievementRepeatLastGranted)
     }
     
     // Manual initializer for default state
@@ -125,7 +144,12 @@ struct GameState: Codable {
         hasCompletedPaywall: Bool,
         subscriptionTier: String?,
         lastSubscriptionCheckDate: Date?,
-        hasSeenCNY2026Popup: Bool
+        hasSeenCNY2026Popup: Bool,
+        lastWeeklyCoinsGrantDate: Date?,
+        lastMonthlyCoinsGrantDate: Date?,
+        lastCatchTheOrangeCompletedDate: Date?,
+        achievementCounts: [String: Int] = [:],
+        achievementRepeatLastGranted: [String: Int] = [:]
     ) {
         self.capybaraName = capybaraName
         self.food = food
@@ -150,6 +174,11 @@ struct GameState: Codable {
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
+        self.lastWeeklyCoinsGrantDate = lastWeeklyCoinsGrantDate
+        self.lastMonthlyCoinsGrantDate = lastMonthlyCoinsGrantDate
+        self.lastCatchTheOrangeCompletedDate = lastCatchTheOrangeCompletedDate
+        self.achievementCounts = achievementCounts
+        self.achievementRepeatLastGranted = achievementRepeatLastGranted
     }
     
     static let defaultState = GameState(
@@ -157,7 +186,7 @@ struct GameState: Codable {
         food: 60,
         drink: 60,
         happiness: 60,
-        capycoins: 500,
+        capycoins: 0,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -175,7 +204,10 @@ struct GameState: Codable {
         hasCompletedPaywall: false,
         subscriptionTier: nil,
         lastSubscriptionCheckDate: nil,
-        hasSeenCNY2026Popup: false
+        hasSeenCNY2026Popup: false,
+        lastWeeklyCoinsGrantDate: nil,
+        lastMonthlyCoinsGrantDate: nil,
+        lastCatchTheOrangeCompletedDate: nil
     )
     
     var hasActiveSubscription: Bool {
@@ -282,20 +314,20 @@ struct AccessoryItem: Identifiable, Equatable {
     
     private static let _allItems: [AccessoryItem] = [
         // Regular Hats
-        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 100, modelFileName: "Baseball cap", isProOnly: false),
-        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 400, modelFileName: "Cowboy Hat 2", isProOnly: false),
-        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 1000, modelFileName: "Tophat", isProOnly: false),
-        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 2500, modelFileName: "Wizard hat", isProOnly: false),
-        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 4000, modelFileName: "Pirate hat", isProOnly: false),
-        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 6500, modelFileName: "Propeller hat", isProOnly: false),
-        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 10000, modelFileName: "Sombrero2hat", isProOnly: false),
-        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 20000, modelFileName: "Frog Hat", isProOnly: false),
-        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 15000, modelFileName: "Fox Hat", isProOnly: false),
-        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 25000, modelFileName: "Santahat", isProOnly: false),
-        // Pro-Only Hats (modelFileName must match exact file name without .usdz extension)
-        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 0, modelFileName: "Cone", isProOnly: true),
-        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 0, modelFileName: "Pizza Hat", isProOnly: true),
-        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 0, modelFileName: "red-lantern", isProOnly: true),
+        AccessoryItem(id: "baseballcap", emoji: "🧢", name: "Baseball cap", category: .gardenItems, cost: 300, modelFileName: "Baseball cap", isProOnly: false),
+        AccessoryItem(id: "cowboyhat", emoji: "🤠", name: "Cowboy hat", category: .gardenItems, cost: 1200, modelFileName: "Cowboy Hat 2", isProOnly: false),
+        AccessoryItem(id: "tophat", emoji: "🎩", name: "Top hat", category: .gardenItems, cost: 3000, modelFileName: "Tophat", isProOnly: false),
+        AccessoryItem(id: "wizardhat", emoji: "🧙", name: "Wizard hat", category: .gardenItems, cost: 7500, modelFileName: "Wizard hat", isProOnly: false),
+        AccessoryItem(id: "piratehat", emoji: "🏴‍☠️", name: "Pirate hat", category: .gardenItems, cost: 12000, modelFileName: "Pirate hat", isProOnly: false),
+        AccessoryItem(id: "propellerhat", emoji: "🪁", name: "Propeller hat", category: .gardenItems, cost: 19500, modelFileName: "Propeller hat", isProOnly: false),
+        AccessoryItem(id: "sombrerohat", emoji: "🪶", name: "Sombrero", category: .gardenItems, cost: 30000, modelFileName: "Sombrero2hat", isProOnly: false),
+        AccessoryItem(id: "froghat", emoji: "🐸", name: "Frog Hat", category: .gardenItems, cost: 60000, modelFileName: "Frog Hat", isProOnly: false),
+        AccessoryItem(id: "foxhat", emoji: "🦊", name: "Fox Hat", category: .gardenItems, cost: 45000, modelFileName: "Fox Hat", isProOnly: false),
+        AccessoryItem(id: "santahat", emoji: "🎅", name: "Santa Hat", category: .gardenItems, cost: 75000, modelFileName: "Santahat", isProOnly: false),
+        // Premium Hats (formerly Pro-only, now purchasable with coins)
+        AccessoryItem(id: "cone", emoji: "🚦", name: "Cone", category: .gardenItems, cost: 90000, modelFileName: "Cone", isProOnly: false),
+        AccessoryItem(id: "pizzahat", emoji: "🍕", name: "Pizza Hat", category: .gardenItems, cost: 105000, modelFileName: "Pizza Hat", isProOnly: false),
+        AccessoryItem(id: "redlantern", emoji: "🏮", name: "Red Lantern", category: .gardenItems, cost: 120000, modelFileName: "red-lantern", isProOnly: false),
     ]
     
     static var allItems: [AccessoryItem] {
@@ -391,6 +423,24 @@ enum MenuTab: String, CaseIterable {
     case drink = "Drink"
     case items = "Items"
     case shop = "Shop"
+    
+    var localizedTitle: String {
+        switch self {
+        case .food: return L("menu.food")
+        case .drink: return L("menu.drink")
+        case .items: return L("menu.items")
+        case .shop: return L("menu.shop")
+        }
+    }
+    
+    var localizedSubtitle: String {
+        switch self {
+        case .food: return L("menu.foodSubtitle")
+        case .drink: return L("menu.drinkSubtitle")
+        case .items: return L("menu.itemsSubtitle")
+        case .shop: return L("menu.shopSubtitle")
+        }
+    }
     
     var icon: String {
         switch self {

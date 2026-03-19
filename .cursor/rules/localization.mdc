@@ -1,0 +1,19 @@
+---
+description: When adding new user-facing text, add the key to ALL language files in Localizable/
+globs: Capybara_Rescue_App/**/*.swift
+alwaysApply: false
+---
+
+# Localization Rule
+
+When you add **any new user-facing text** in English to this app:
+
+1. **Add the key to `en.json`** first with the English value.
+2. **Add the same key to every other language file** in `Capybara_Rescue_App/Localizable/`:
+   - tr.json, es-MX.json, pt-BR.json, zh-Hant.json, ja.json, hi.json, ar.json, id.json, ko.json, ms.json
+3. **Use `L("key")`** in the Swift code instead of hardcoded strings.
+4. **Add `@ObservedObject private var localizationManager = LocalizationManager.shared`** to views that display localized text so the UI updates when the user changes language.
+
+Key naming: `section.name` (e.g. `settings.title`, `menu.food`, `common.cancel`).
+
+See `LOCALIZATION.md` for the full guide.

@@ -3,6 +3,7 @@ import SwiftUI
 // MARK: - Liquid Glass Menu Bar
 struct LiquidMenuBar: View {
     @Binding var selectedTab: MenuTab
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let onTabSelected: (MenuTab) -> Void
     
     var body: some View {
@@ -66,13 +67,13 @@ struct MenuTabButton: View {
                         .overlay(
                             Image(systemName: tab.icon)
                                 .font(.system(size: 20, weight: isSelected ? .bold : .medium))
-                                .foregroundStyle(isSelected ? tabColor : .white.opacity(0.6))
+                                .foregroundStyle(isSelected ? tabColor : Color.primary.opacity(0.8))
                         )
                 }
                 
-                Text(tab.rawValue)
+                Text(tab.localizedTitle)
                     .font(.system(size: 11, weight: isSelected ? .semibold : .medium, design: .rounded))
-                    .foregroundStyle(isSelected ? .white : .white.opacity(0.5))
+                    .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.8))
             }
             .frame(maxWidth: .infinity)
         }

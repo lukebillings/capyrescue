@@ -4,6 +4,7 @@ import SceneKit
 // MARK: - Items Panel
 struct ItemsPanel: View {
     @EnvironmentObject var gameManager: GameManager
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let onBack: (() -> Void)?
     let onOpenShop: (() -> Void)?
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -12,8 +13,6 @@ struct ItemsPanel: View {
     @State private var showInsufficientCoinsMessage: Bool = false
     @State private var showLooksGoodModal: Bool = false
     @State private var showHatEquipError: Bool = false
-    @State private var showPaywall: Bool = false
-    @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
     
     init(onBack: (() -> Void)? = nil, onOpenShop: (() -> Void)? = nil) {
         self.onBack = onBack
@@ -25,53 +24,19 @@ struct ItemsPanel: View {
             .overlay(insufficientCoinsOverlay)
             .overlay(looksGoodModalOverlay)
             .overlay(hatEquipErrorOverlay)
-            .sheet(isPresented: $showPaywall) {
-                PaywallView(selectedTier: $selectedSubscriptionTier, hideFreeOption: true, showDismissButton: true)
-                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
-                        if let tier = newValue {
-                            // Use upgradeSubscription to ADD coins, not override
-                            gameManager.upgradeSubscription(to: tier)
-                            gameManager.showToast("\(tier.startingCoins) coins added! 🎉")
-                            showPaywall = false
-                            selectedSubscriptionTier = nil
-                        }
-                    }
-            }
     }
     
     private var mainContent: some View {
         Group {
             // Keep iPhone (compact width) submenu layout unchanged.
             if horizontalSizeClass == .compact {
-                VStack(spacing: 16) {
-                    // Items - horizontal scrolling row
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 16) {
-                            ForEach(filteredItems) { item in
-                                AccessoryItemButton(
-                                    item: item,
-                                    isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
-                                    isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
-                                    canAfford: gameManager.canAfford(item.cost),
-                                    isPreviewing: previewingItemId == item.id,
-                                    hasPro: gameManager.hasProSubscription()
-                                ) {
-                                    handleItemAction(item)
-                                }
-                                .frame(width: 100) // Fixed width for horizontal scroll
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8) // Add vertical padding to prevent cutoff
-                    }
-                    .frame(maxHeight: .infinity) // Fill space so header sits lower
+                VStack(spacing: 6) {
+                    Spacer(minLength: 0)
                     
-                    // Header with back button - moved below items
-                    HStack {
+                    HStack(alignment: .center, spacing: 12) {
                         if let onBack = onBack {
                             Button(action: {
                                 HapticManager.shared.buttonPress()
-                                // Clear preview if unpurchased item is being previewed
                                 if let previewId = previewingItemId,
                                    !gameManager.gameState.ownedAccessories.contains(previewId) {
                                     previewingItemId = nil
@@ -79,36 +44,14 @@ struct ItemsPanel: View {
                                 }
                                 onBack()
                             }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.white.opacity(0.7))
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 36, height: 36)
+                                    .background(Circle().fill(Color(hex: "1a5f1a")))
                             }
                         }
                         
-                        Spacer()
-                        
-                        Text("Accessorise Your Capybara")
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                        
-                        Spacer()
-                        
-                        // Spacer for symmetry
-                        if onBack != nil {
-                            Image(systemName: "chevron.left.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundStyle(.clear)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                }
-                .padding(.top, 80)
-                .padding(.bottom, 36)
-            } else {
-                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
-                GeometryReader { geometry in
-                    VStack(spacing: 12) {
-                        // Items - horizontal scrolling row
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 16) {
                                 ForEach(filteredItems) { item in
@@ -122,20 +65,29 @@ struct ItemsPanel: View {
                                     ) {
                                         handleItemAction(item)
                                     }
-                                    .frame(width: 100) // Fixed width for horizontal scroll
+                                    .frame(width: 78)
                                 }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
                         }
-                        .frame(height: max(120, min(geometry.size.height * 0.65, 140))) // Adaptive height
+                        .frame(height: 100)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                .padding(.top, 240)
+                .padding(.bottom, 12)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 6) {
+                        Spacer(minLength: 0)
                         
-                        // Header with back button - moved below items
-                        HStack {
+                        HStack(alignment: .center, spacing: 12) {
                             if let onBack = onBack {
                                 Button(action: {
                                     HapticManager.shared.buttonPress()
-                                    // Clear preview if unpurchased item is being previewed
                                     if let previewId = previewingItemId,
                                        !gameManager.gameState.ownedAccessories.contains(previewId) {
                                         previewingItemId = nil
@@ -143,33 +95,40 @@ struct ItemsPanel: View {
                                     }
                                     onBack()
                                 }) {
-                                    Image(systemName: "chevron.left.circle.fill")
-                                        .font(.system(size: 28))
-                                        .foregroundStyle(.white.opacity(0.7))
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(Circle().fill(Color(hex: "1a5f1a")))
                                 }
                             }
                             
-                            Spacer()
-                            
-                            Text("Accessorise Your Capybara")
-                                .font(.system(size: 22, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                            
-                            Spacer()
-                            
-                            // Spacer for symmetry
-                            if onBack != nil {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.clear)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(filteredItems) { item in
+                                        AccessoryItemButton(
+                                            item: item,
+                                            isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                            isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                            canAfford: gameManager.canAfford(item.cost),
+                                            isPreviewing: previewingItemId == item.id,
+                                            hasPro: gameManager.hasProSubscription()
+                                        ) {
+                                            handleItemAction(item)
+                                        }
+                                        .frame(width: 78)
+                                    }
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
                             }
+                            .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
                         }
                         .padding(.horizontal, 16)
-                        .frame(height: 60) // Fixed height for header to prevent cutoff
+                        .padding(.vertical, 8)
+                        .frame(height: 52)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 160)
                     .padding(.bottom, 8)
                 }
             }
@@ -194,7 +153,7 @@ struct ItemsPanel: View {
            !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             InsufficientCoinsOverlay(
-                itemName: item.name,
+                itemName: localizedAccessoryName(id: item.id),
                 itemCost: item.cost,
                 currentCoins: gameManager.gameState.capycoins,
                 onBuyCoins: {
@@ -218,7 +177,7 @@ struct ItemsPanel: View {
            !previewingId.isEmpty,
            let item = AccessoryItem.allItems.first(where: { $0.id == previewingId }) {
             LooksGoodModal(
-                itemName: item.name,
+                itemName: localizedAccessoryName(id: item.id),
                 itemCost: item.cost,
                 currentCoins: gameManager.gameState.capycoins,
                 onBuyNow: {
@@ -282,9 +241,9 @@ struct ItemsPanel: View {
         if item.isProOnly && !gameManager.hasProSubscription() {
             // Allow preview
             if previewingItemId == item.id {
-                // Second click - show paywall
+                // Second click - open shop to subscribe
                 HapticManager.shared.buttonPress()
-                showPaywall = true
+                onOpenShop?()
             } else {
                 // First click - preview it (same as regular items)
                 HapticManager.shared.selection()
@@ -387,7 +346,7 @@ struct CategoryTab: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
-                .foregroundStyle(isSelected ? .white : .white.opacity(0.5))
+                .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.8))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
                 .background(
@@ -415,45 +374,41 @@ struct AccessoryItemButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
-                // 3D Model Preview
+            VStack(spacing: 4) {
+                // 3D Model Preview (smaller to fit reduced card)
                 ZStack {
                     Circle()
                         .fill(backgroundColor)
-                        .frame(width: 70, height: 70)
+                        .frame(width: 54, height: 54)
                     
                     if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
-                        // Show 3D model preview for items with models (hats and others)
                         HatPreview3DView(fileName: modelFileName)
-                            .frame(width: 70, height: 70)
+                            .frame(width: 54, height: 54)
                             .clipShape(Circle())
                     } else {
-                        // Fallback to emoji only for items without 3D models
                         Text(item.emoji)
-                            .font(.system(size: 48))
+                            .font(.system(size: 32))
                     }
                     
-                    // Equipped indicator
                     if isEquipped {
                         Circle()
-                            .stroke(Color.green, lineWidth: 3)
-                            .frame(width: 70, height: 70)
+                            .stroke(Color(hex: "1a5f1a"), lineWidth: 2.5)
+                            .frame(width: 54, height: 54)
                         
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundStyle(.green)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color(hex: "1a5f1a"))
                             .background(Circle().fill(.black))
-                            .offset(x: 25, y: -25)
+                            .offset(x: 18, y: -18)
                     }
                     
-                    // Pro badge for Pro-only items
                     if item.isProOnly && !hasPro {
                         VStack {
                             Spacer()
                             HStack {
                                 Spacer()
                                 Image(systemName: "crown.fill")
-                                    .font(.system(size: 16))
+                                    .font(.system(size: 12))
                                     .foregroundStyle(
                                         LinearGradient(
                                             colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -464,32 +419,32 @@ struct AccessoryItemButton: View {
                                     .background(
                                         Circle()
                                             .fill(Color.black.opacity(0.7))
-                                            .frame(width: 24, height: 24)
+                                            .frame(width: 18, height: 18)
                                     )
-                                    .offset(x: -5, y: -5)
+                                    .offset(x: -4, y: -4)
                             }
                         }
-                        .frame(width: 70, height: 70)
+                        .frame(width: 54, height: 54)
                     }
                 }
                 
                 // Name
-                Text(item.name)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.white)
+                Text(localizedAccessoryName(id: item.id))
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 
                 // Status / Price
                 if isOwned {
-                    Text(isEquipped ? "Equipped" : "Tap to Equip")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(isEquipped ? .green : .white.opacity(0.8))
+                    Text(isEquipped ? L("common.equipped") : L("common.tapToEquip"))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundStyle(isEquipped ? .green : Color.primary.opacity(0.8))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 } else if item.isProOnly && !hasPro {
                     // Pro-only item without subscription
                     if isPreviewing {
-                        Text("Unlock on Pro")
+                        Text(L("common.unlockOnPro"))
                             .font(.system(size: 11, weight: .bold, design: .rounded))
                             .foregroundStyle(
                                 LinearGradient(
@@ -516,7 +471,7 @@ struct AccessoryItemButton: View {
                             )
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                             
-                            Text("Tap to Preview")
+                            Text(L("common.tapToPreview"))
                                 .font(.system(size: 10, weight: .semibold, design: .rounded))
                                 .foregroundStyle(.green)
                                 .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -524,22 +479,23 @@ struct AccessoryItemButton: View {
                     }
                 } else {
                     if isPreviewing {
-                        Text("Tap to buy")
+                        Text(L("common.tapToBuy"))
                             .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color(hex: "1a5f1a"))
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                     } else {
                     VStack(spacing: 4) {
                         HStack(spacing: 3) {
                             Text("₵")
                                 .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(Color(hex: "B8860B"))
                             Text("\(item.cost)")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .foregroundStyle(canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7))
                         }
-                        .foregroundStyle(canAfford ? AppColors.accent : .white.opacity(0.5))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         
-                        Text("Tap to Preview")
+                        Text(L("common.tapToPreview"))
                             .font(.system(size: 10, weight: .semibold, design: .rounded))
                             .foregroundStyle(.green)
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
@@ -547,13 +503,13 @@ struct AccessoryItemButton: View {
                 }
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(.white.opacity(isOwned ? 0.1 : 0.05))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(borderColor, lineWidth: 1)
                     )
             )
@@ -567,7 +523,7 @@ struct AccessoryItemButton: View {
                     VStack {
                         HStack {
                             Spacer()
-                            Text("NEW!")
+                            Text(L("common.new"))
                                 .font(.system(size: 10, weight: .black, design: .rounded))
                                 .foregroundStyle(Color(hex: "8B0000"))
                                 .padding(.horizontal, 8)
@@ -590,11 +546,21 @@ struct AccessoryItemButton: View {
             }
         )
         .overlay(
-            // Preview indicator and gold ring for CNY items
+            // Green ring when previewing (try on, not owned); gold ring when owned; CNY gold for Red Lantern
             Group {
-                if isPreviewing {
+                if isOwned {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.blue, lineWidth: 2)
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2.5
+                        )
+                } else if isPreviewing {
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(hex: "1a5f1a"), lineWidth: 2.5)
                 } else if item.id == "redlantern" && Date.isChineseNewYearEvent2026() {
                     RoundedRectangle(cornerRadius: 16)
                         .stroke(
@@ -612,11 +578,11 @@ struct AccessoryItemButton: View {
     
     private var backgroundColor: Color {
         if isEquipped {
-            return .green.opacity(0.3)
+            return Color(hex: "1a5f1a").opacity(0.25)
         } else if isPreviewing {
-            return .blue.opacity(0.3)
+            return Color(hex: "1a5f1a").opacity(0.2)
         } else if isOwned {
-            return .purple.opacity(0.3)
+            return Color(hex: "FFD700").opacity(0.15)
         } else {
             return .white.opacity(0.1)
         }
@@ -624,11 +590,11 @@ struct AccessoryItemButton: View {
     
     private var borderColor: Color {
         if isEquipped {
-            return .green.opacity(0.5)
+            return Color(hex: "1a5f1a").opacity(0.5)
         } else if isPreviewing {
-            return .blue.opacity(0.6)
+            return Color(hex: "1a5f1a").opacity(0.5)
         } else if isOwned {
-            return .purple.opacity(0.3)
+            return Color(hex: "FFD700").opacity(0.5)
         } else {
             return .white.opacity(0.1)
         }
@@ -811,37 +777,40 @@ struct LooksGoodModal: View {
     let onBuyNow: () -> Void
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
-                Text("Looks Good?")
+                Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Self.primaryText)
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 6) {
-                        Text("Cost:")
+                        Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppColors.accent)
+                            .foregroundStyle(Color(hex: "B8860B"))
                         Text("•")
-                            .foregroundStyle(.white.opacity(0.5))
-                        Text("You have:")
+                            .foregroundStyle(Self.secondaryText)
+                        Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Self.primaryText)
                     }
                 }
                 
@@ -852,39 +821,35 @@ struct LooksGoodModal: View {
                     HStack(spacing: 8) {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Buy Now")
+                        Text(L("common.buyNow"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Self.settingsGreen)
                     )
-                    .cornerRadius(16)
-                    .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 8, x: 0, y: 4)
+                    .shadow(color: Self.settingsGreen.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 
                 Button(action: {
                     HapticManager.shared.buttonPress()
                     onDismiss()
                 }) {
-                    Text("Maybe Later")
+                    Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Self.settingsGreen)
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)
@@ -900,41 +865,44 @@ struct InsufficientCoinsOverlay: View {
     let onBuyCoins: () -> Void
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
-                Text("Looks Good?")
+                Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Self.primaryText)
                 
                 VStack(spacing: 8) {
-                    Text("You need more coins")
+                    Text(L("common.youNeedMoreCoins"))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(Self.primaryText)
                     
                     HStack(spacing: 6) {
-                        Text("Cost:")
+                        Text(L("common.cost"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(itemCost)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(AppColors.accent)
+                            .foregroundStyle(Color(hex: "B8860B"))
                         Text("•")
-                            .foregroundStyle(.white.opacity(0.5))
-                        Text("You have:")
+                            .foregroundStyle(Self.secondaryText)
+                        Text(L("common.youHave"))
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(Self.secondaryText)
                         Text("₵\(currentCoins)")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Self.primaryText)
                     }
                 }
                 
@@ -945,39 +913,35 @@ struct InsufficientCoinsOverlay: View {
                     HStack(spacing: 8) {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
-                        Text("Buy More Coins")
+                        Text(L("common.buyMoreCoins"))
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 14)
                     .background(
-                        LinearGradient(
-                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Self.settingsGreen)
                     )
-                    .cornerRadius(16)
-                    .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 8, x: 0, y: 4)
+                    .shadow(color: Self.settingsGreen.opacity(0.4), radius: 8, x: 0, y: 4)
                 }
                 
                 Button(action: {
                     HapticManager.shared.buttonPress()
                     onDismiss()
                 }) {
-                    Text("Maybe Later")
+                    Text(L("common.maybeLater"))
                         .font(.system(size: 14, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
+                        .foregroundStyle(Self.settingsGreen)
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)
@@ -989,25 +953,28 @@ struct InsufficientCoinsOverlay: View {
 struct HatEquipErrorOverlay: View {
     let onDismiss: () -> Void
     
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    
     var body: some View {
         ZStack {
-            // Semi-transparent background
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onDismiss()
                 }
             
-            // Message card
             VStack(spacing: 20) {
-                Text("Only one hat can be equipped at a time")
+                Text(L("hat.oneAtATime"))
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
-                Text("Please deselect current hat")
+                Text(L("hat.deselectCurrent"))
                     .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.8))
+                    .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
                 Button(action: {
@@ -1021,17 +988,17 @@ struct HatEquipErrorOverlay: View {
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.purple.opacity(0.6))
+                                .fill(Self.settingsGreen)
                         )
                 }
             }
             .padding(24)
             .background(
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color(hex: "1a1a2e").opacity(0.95))
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Self.primaryText.opacity(0.12), lineWidth: 1)
                     )
             )
             .padding(.horizontal, 32)

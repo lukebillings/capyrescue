@@ -5,25 +5,23 @@ import StoreKit
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.requestReview) private var requestReview
-    @ObservedObject private var consentManager = ConsentManager.shared
-    @ObservedObject private var trackingManager = TrackingManager.shared
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    @ObservedObject private var settingsManager = SettingsManager.shared
     
     @State private var selectedTab: MenuTab = .food
     @State private var showRenameSheet = false
     @State private var showShopSheet = false
     @State private var showAchievementsSheet = false
+    @State private var showSettingsSheet = false
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = false
+    @State private var showReturningUserPaywall = false
     @State private var currentTutorialStep: TutorialStep? = nil
-    @State private var showAdRemovalPromo = false
     @State private var shouldApplyInitialRotation = false
-    @State private var showPaywall = false
-    @State private var selectedSubscriptionTier: SubscriptionManager.SubscriptionTier? = nil
     @State private var showCNYPopup = false
-    @State private var isCheckingSubscription = false
 
-    private let capybaraVisualOffsetY: CGFloat = -40
+    private let capybaraVisualOffsetY: CGFloat = 15
     
     // Chinese New Year background date checking
     private var shouldShowChineseNewYearTheme: Bool {
@@ -63,7 +61,7 @@ struct ContentView: View {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
         let hasCompletedTutorial = gameManager.gameState.hasCompletedTutorial
         if hasCompletedOnboarding && !hasCompletedTutorial && currentTutorialStep == nil {
-            currentTutorialStep = .food
+            currentTutorialStep = .stats
         }
     }
     
@@ -71,98 +69,49 @@ struct ContentView: View {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
     }
     
-    private func checkPaywallStatus() {
-        // Check if user has already completed the paywall
-        if gameManager.gameState.hasCompletedPaywall {
-            showPaywall = false
-            isCheckingSubscription = false
-            return
-        }
-        
-        // Check if user has an active subscription (e.g., from promo code)
-        isCheckingSubscription = true
-        Task {
-            let subscriptionManager = SubscriptionManager.shared
-            await subscriptionManager.checkSubscriptionStatus()
-            
-            await MainActor.run {
-                if subscriptionManager.activeSubscription != .free {
-                    // User has active subscription - skip paywall and grant initial coins
-                    let tier = subscriptionManager.activeSubscription ?? .free
-                    gameManager.completePaywall(with: tier)
-                    showPaywall = false
-                } else {
-                    // No subscription - show paywall
-                    showPaywall = true
-                }
-                isCheckingSubscription = false
-            }
-        }
+    /// Formatted coin count for header (full number with commas, no K/M).
+    private func formattedCoinString(_ coins: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSNumber(value: coins)) ?? "\(coins)"
     }
     
     var body: some View {
         Group {
-            if isCheckingSubscription {
-                // Show loading screen while checking subscription status
-                ZStack {
-                    AnimatedBackground()
-                        .ignoresSafeArea()
-                    
-                    VStack(spacing: 20) {
-                        Image("iconcapybara")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 100, height: 100)
-                            .clipShape(Circle())
-                        
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
-                        
-                        Text("Loading...")
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                }
-            } else if showPaywall {
-                PaywallView(selectedTier: $selectedSubscriptionTier)
-                    .onChange(of: selectedSubscriptionTier) { oldValue, newValue in
-                        if let tier = newValue {
-                            // User selected a tier, complete paywall and award initial coins
-                            gameManager.completePaywall(with: tier)
-                            showPaywall = false
-                            // Check if we need to show onboarding next
-                            checkOnboardingStatus()
-                        }
-                    }
-            } else if showOnboarding {
-                OnboardingView(isPresented: $showOnboarding)
+            if showOnboarding {
+                OnboardingView(isPresented: $showOnboarding, startAtPaywall: false)
                     .environmentObject(gameManager)
                     .onChange(of: showOnboarding) { oldValue, newValue in
                         if !newValue {
-                            // Onboarding completed, apply initial rotation and check if tutorial should show
+                            // Onboarding (including pledge) completed — go to main content
                             shouldApplyInitialRotation = true
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 checkTutorialStatus()
                             }
-                            // Reset after a short delay so it only applies once
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 shouldApplyInitialRotation = false
                             }
                         }
                     }
+            } else if showReturningUserPaywall, gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
+                // Returning user (previously downloaded) without Pro — show Pro Annual paywall; 15k coins added on subscribe
+                OnboardingView(isPresented: $showReturningUserPaywall, startAtPaywall: true)
+                    .environmentObject(gameManager)
             } else {
                 mainContentView
                     .onAppear {
                         checkTutorialStatus()
-                        // Track app open and check if we should show ad removal promo
-                        gameManager.incrementAppOpenCount()
-                        if AdsConfig.bannerAdsEnabled && gameManager.shouldShowAdRemovalPromo() {
-                            // Small delay to ensure UI is ready
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                showAdRemovalPromo = true
-                            }
-                        }
+                        // TEMPORARY: Debug-only 100k coins for testing (remove for release)
+                        #if DEBUG
+                        var state = gameManager.gameState
+                        state.capycoins = 100_000
+                        gameManager.gameState = state
+                        #endif
+                        // Pro Weekly: grant 500 coins every 7 days if eligible
+                        gameManager.grantWeeklySubscriptionCoinsIfNeeded()
+                        // Pro Monthly: grant 10,000 coins every month if eligible
+                        gameManager.grantMonthlySubscriptionCoinsIfNeeded()
                         
                         // Check if we should show CNY popup
                         if shouldShowChineseNewYearTheme && !gameManager.gameState.hasSeenCNY2026Popup {
@@ -174,11 +123,11 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            checkPaywallStatus()
             checkOnboardingStatus()
-        }
-        .onChange(of: gameManager.gameState.hasCompletedPaywall) { oldValue, newValue in
-            checkPaywallStatus()
+            // Returning users (already completed onboarding) without Pro see the Pro Annual paywall
+            if gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
+                showReturningUserPaywall = true
+            }
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
             checkOnboardingStatus()
@@ -199,124 +148,111 @@ struct ContentView: View {
                 
                 // Main content
                 VStack(spacing: 0) {
-                    // Banner Ad at the top (only show if consent allows and user hasn't removed ads)
-                    if AdsConfig.bannerAdsEnabled &&
-                        consentManager.canRequestAds &&
-                        !gameManager.gameState.hasRemovedBannerAds &&
-                        trackingManager.trackingAuthorizationStatus != .notDetermined {
-                        BannerAdView(adUnitID: AdMobIDs.bannerTop)
-                            .frame(height: 50)
-                    }
-                    
-                    // Combined header: Profile, Name, Badges, Coins, Get More
-                    HStack(spacing: 6) {
-                        // Capybara image in circle
-                        Image("iconcapybara")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 40, height: 40)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(.white.opacity(0.3), lineWidth: 2)
-                            )
-                        
-                        // Name (tappable to rename)
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showRenameSheet = true
-                        }) {
-                            Text(gameManager.gameState.capybaraName)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [.white, .white.opacity(0.8)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                    // Header: two rows so name and coins don’t cramp; compact coin format for large balances
+                    VStack(spacing: 12) {
+                        // Line 1: Name (top left), medal + music + gear (top right)
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showRenameSheet = true
+                            }) {
+                                Text(gameManager.gameState.capybaraName)
+                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityLabel("\(gameManager.gameState.capybaraName), \(L("settings.renameCapybara"))")
+                            .accessibilityHint("Double tap to rename your capybara")
+                            
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showAchievementsSheet = true
+                            }) {
+                                Image(systemName: "medal.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .tutorialHighlight(key: "achievements_button")
+                            .accessibilityLabel(L("tutorial.achievements"))
+                            .accessibilityHint("\(L("tutorial.youCanCheckStreaks")) \(L("tutorial.achievementsButton"))")
+                            
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showSettingsSheet = true
+                            }) {
+                                Image(systemName: "gearshape.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            .accessibilityLabel(L("settings.title"))
+                            .accessibilityHint("Opens settings")
                         }
-                        .buttonStyle(PlainButtonStyle())
                         
-                        // Achievements button
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showAchievementsSheet = true
-                        }) {
-                            Image(systemName: "medal.fill")
-                                .font(.system(size: 20))
-                                .foregroundStyle(.white.opacity(0.6))
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                        .tutorialHighlight(key: "achievements_button")
-                        
-                        Spacer()
-                        
-                        // Coin icon and amount
-                        HStack(spacing: 2) {
-                            // Coin icon
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
+                        // Line 2: Coins (left), Get More (bottom right)
+                        HStack(spacing: 12) {
+                            HStack(spacing: 6) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
                                         )
-                                    )
-                                    .frame(width: 28, height: 28)
-                                    .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 6, x: 0, y: 2)
+                                        .frame(width: 28, height: 28)
+                                        .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 2)
+                                    
+                                    Text("₵")
+                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .foregroundStyle(.white)
+                                }
                                 
-                                Text("₵")
-                                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(hex: "8B4513"))
+                                Text(formattedCoinString(gameManager.gameState.capycoins))
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
                             }
                             
-                            Text("\(gameManager.gameState.capycoins)")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                            Spacer(minLength: 8)
+                            
+                            // Get More (bottom right)
+                            Button(action: {
+                                HapticManager.shared.buttonPress()
+                                showShopSheet = true
+                            }) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text(L("common.getMore"))
+                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                }
                                 .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
-                        .padding(.leading, -8)
-                        
-                        // Get More button — opens shop (premium plans at top, then coin packs)
-                        Button(action: {
-                            HapticManager.shared.buttonPress()
-                            showShopSheet = true
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.system(size: 12, weight: .semibold))
-                                
-                                Text("Get More")
-                                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 10)
+                                .background(
+                                    Capsule()
+                                        .fill(Color(hex: "1a5f1a"))
+                                )
+                                .shadow(color: Color(hex: "1a5f1a").opacity(0.35), radius: 6, x: 0, y: 3)
                             }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(
-                                Capsule()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color(hex: "FFD700"), Color(hex: "FF8C00")],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                            )
-                            .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 3)
+                            .buttonStyle(ScaleButtonStyle())
+                            .accessibilityLabel(L("common.getMore"))
+                            .accessibilityHint("Opens shop to get more coins")
                         }
-                        .buttonStyle(ScaleButtonStyle())
                     }
-                    .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
-                    .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
                     .background(
                         GlassBackground()
                     )
+                    .padding(.horizontal, 16)
                     .padding(.top, 8)
                     
                     // Stats display
@@ -341,7 +277,7 @@ struct ContentView: View {
                         },
                         initialRotation: shouldApplyInitialRotation ? 45 : nil
                     )
-                    .frame(height: 320) // Increased height to show full capybara including head
+                    .frame(height: 420) // Taller container so hats aren't cut off at top
                     .offset(y: capybaraVisualOffsetY) // Move up higher on the page
                     .zIndex(100) // Ensure capybara and accessories appear above stats
                     .tutorialHighlight(key: "capybara_tap")
@@ -363,9 +299,9 @@ struct ContentView: View {
                     VStack {
                         Spacer()
                         panelContent
-                            .frame(minHeight: 180, maxHeight: 220) // Adaptive height for panels - increased for iPad Mini
+                            .frame(minHeight: 180, maxHeight: 280) // Extra height so Items panel can sit below capybara
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-                            .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom + 4 : 8)
+                            .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? max(8, geometry.safeAreaInsets.bottom - 8) : 8)
                     }
                     .zIndex(99) // Below master panel overlay but above main content
                 }
@@ -389,7 +325,7 @@ struct ContentView: View {
                         })
                         .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
                         .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
-                        .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? geometry.safeAreaInsets.bottom : 4)
+                        .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? max(8, geometry.safeAreaInsets.bottom - 12) : 4)
                     }
                 }
                 .zIndex(100) // Ensure master panel is always on top
@@ -400,6 +336,24 @@ struct ContentView: View {
                     capybaraPosition: capybaraPosition,
                     onAnimationComplete: {}
                 )
+                
+                // Confetti (stat 100 or achievement earned)
+                ConfettiView(
+                    isActive: gameManager.stat100ConfettiTrigger != nil || gameManager.recentAchievement != nil,
+                    onComplete: {
+                        gameManager.stat100ConfettiTrigger = nil
+                    }
+                )
+                .id(gameManager.stat100ConfettiTrigger ?? (gameManager.recentAchievement != nil ? "achievement" : "idle"))
+                .zIndex(200)
+                .onChange(of: gameManager.stat100ConfettiTrigger) { _, newValue in
+                    guard newValue != nil else { return }
+                    let state = gameManager.gameState
+                    guard state.food == 100, state.drink == 100, state.happiness == 100 else { return }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        requestReview()
+                    }
+                }
                 
                 // Love hearts overlay (when happiness >= 80)
                 LoveHeartsOverlay(
@@ -444,12 +398,6 @@ struct ContentView: View {
                     .zIndex(201) // Above everything including tutorial
                 }
                 
-                // Ad removal promo popup
-                if showAdRemovalPromo {
-                    RemoveBannerAdPromoView(isPresented: $showAdRemovalPromo)
-                        .zIndex(202) // Above everything
-                }
-                
                 // Chinese New Year popup
                 if showCNYPopup {
                     ChineseNewYearPopup(onDismiss: {
@@ -459,17 +407,19 @@ struct ContentView: View {
                     .zIndex(203) // Above everything
                 }
                 
-                // Achievement reward popup → then Apple review prompt
-                if let coins = gameManager.recentAchievementCoinReward {
-                    AchievementRewardPopup(coins: coins)
+                // Achievement reward popup + confetti ("Well done on [achievement], here's [X] coins")
+                if let achievement = gameManager.recentAchievement {
+                    AchievementRewardPopup(achievementName: achievement.name, coins: achievement.coins)
                         .zIndex(204)
                         .onAppear {
-                            // Dismiss popup after a few seconds, then show Apple review
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                                 gameManager.clearRecentAchievementReward()
                             }
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                                requestReview()
+                                let state = gameManager.gameState
+                                if state.food == 100, state.drink == 100, state.happiness == 100 {
+                                    requestReview()
+                                }
                             }
                         }
                 }
@@ -502,6 +452,12 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showAchievementsSheet) {
             AchievementsView()
+                .environmentObject(gameManager)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsView()
                 .environmentObject(gameManager)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
@@ -582,6 +538,7 @@ private struct CapybaraFramePreferenceKey: PreferenceKey {
 // MARK: - Shop Sheet View
 struct ShopSheetView: View {
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     
     var body: some View {
         NavigationView {
@@ -591,7 +548,7 @@ struct ShopSheetView: View {
                 
                 ShopPanel()
             }
-            .navigationTitle("")
+            .navigationTitle(L("menu.shop"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -601,7 +558,7 @@ struct ShopSheetView: View {
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(.primary.opacity(0.7))
                     }
                 }
             }
@@ -609,94 +566,13 @@ struct ShopSheetView: View {
     }
 }
 
-// MARK: - Regular Animated Background (Purple Theme)
+// MARK: - Regular Background (solid color, respects dark mode)
 struct AnimatedBackground: View {
-    @State private var phase: CGFloat = 0
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        ZStack {
-            // Base gradient - Original purple theme
-            LinearGradient(
-                colors: [
-                    Color(hex: "0f0c29"),
-                    Color(hex: "302b63"),
-                    Color(hex: "24243e")
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
-            // Animated orbs
-            GeometryReader { geometry in
-                ZStack {
-                    // Large purple orb 1
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.purple.opacity(0.3),
-                                    Color.purple.opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 200
-                            )
-                        )
-                        .frame(width: 400, height: 400)
-                        .offset(
-                            x: sin(phase) * 30 - 100,
-                            y: cos(phase * 0.7) * 40 - 200
-                        )
-                    
-                    // Large blue orb 2
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color.blue.opacity(0.2),
-                                    Color.blue.opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 250
-                            )
-                        )
-                        .frame(width: 500, height: 500)
-                        .offset(
-                            x: cos(phase * 0.8) * 40 + 100,
-                            y: sin(phase * 0.6) * 50 + 200
-                        )
-                    
-                    // Small gold accent orb
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    Color(hex: "FFD700").opacity(0.15),
-                                    Color(hex: "FFD700").opacity(0)
-                                ],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: 100
-                            )
-                        )
-                        .frame(width: 200, height: 200)
-                        .offset(
-                            x: sin(phase * 1.2) * 50,
-                            y: cos(phase) * 30 + 100
-                        )
-                }
-                .frame(width: geometry.size.width, height: geometry.size.height)
-            }
-        }
-        .onAppear {
-            withAnimation(
-                .linear(duration: 10)
-                .repeatForever(autoreverses: false)
-            ) {
-                phase = .pi * 2
-            }
-        }
+        Color(hex: colorScheme == .dark ? "1a1a2e" : "FFF8E7")
+            .ignoresSafeArea()
     }
 }
 
@@ -711,9 +587,6 @@ struct ChineseNewYearBackground: View {
             
             GeometryReader { geometry in
                 ZStack {
-                    goldOrb
-                    redOrb
-                    accentOrb
                     horseElements
                     lanternElements
                 }
@@ -746,69 +619,6 @@ struct ChineseNewYearBackground: View {
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
-    }
-    
-    private var goldOrb: some View {
-        Circle()
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color(hex: "FFD700").opacity(0.4),
-                        Color(hex: "FFA500").opacity(0.2),
-                        Color(hex: "FFD700").opacity(0)
-                    ],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 200
-                )
-            )
-            .frame(width: 400, height: 400)
-            .offset(
-                x: sin(phase) * 30 - 100,
-                y: cos(phase * 0.7) * 40 - 200
-            )
-    }
-    
-    private var redOrb: some View {
-        Circle()
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color(hex: "FF6B6B").opacity(0.3),
-                        Color(hex: "DC143C").opacity(0.1),
-                        Color.red.opacity(0)
-                    ],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 250
-                )
-            )
-            .frame(width: 500, height: 500)
-            .offset(
-                x: cos(phase * 0.8) * 40 + 100,
-                y: sin(phase * 0.6) * 50 + 200
-            )
-    }
-    
-    private var accentOrb: some View {
-        Circle()
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color(hex: "FFD700").opacity(0.3),
-                        Color(hex: "FFA500").opacity(0.15),
-                        Color(hex: "FFD700").opacity(0)
-                    ],
-                    center: .center,
-                    startRadius: 0,
-                    endRadius: 120
-                )
-            )
-            .frame(width: 240, height: 240)
-            .offset(
-                x: sin(phase * 1.2) * 50,
-                y: cos(phase) * 30 + 100
-            )
     }
     
     private var horseElements: some View {
@@ -1022,7 +832,7 @@ struct ToastView: View {
     var body: some View {
         Text(message)
             .font(.system(size: 16, weight: .semibold, design: .rounded))
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
             .background(
@@ -1040,43 +850,42 @@ struct ToastView: View {
     }
 }
 
-// MARK: - Achievement Reward Popup (then Apple review)
+// MARK: - Achievement Reward Popup ("Well done on [achievement], here's [X] coins")
 struct AchievementRewardPopup: View {
+    let achievementName: String
     let coins: Int
+    
+    private static let cream = Color(hex: "FFF8E7")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let settingsGreen = Color(hex: "1a5f1a")
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.6)
+            Color.black.opacity(0.35)
                 .ignoresSafeArea()
             
             VStack(spacing: 16) {
                 Text("🏆")
                     .font(.system(size: 50))
                 
-                Text("Good job!")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                
-                Text("You have been awarded \(coins) coins.")
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.9))
+                Text(achievementName)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
+                
+                Text("\(coins) \(L("common.coins"))")
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .foregroundStyle(Self.secondaryText)
             }
             .padding(.vertical, 28)
             .padding(.horizontal, 32)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
+                    .fill(Self.cream)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [Color(hex: "FFD700").opacity(0.6), Color(hex: "FFA500").opacity(0.4)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2
-                            )
+                            .stroke(Self.settingsGreen.opacity(0.5), lineWidth: 2)
                     )
             )
             .padding(.horizontal, 40)
@@ -1088,5 +897,29 @@ struct AchievementRewardPopup: View {
 #Preview {
     ContentView()
         .environmentObject(GameManager())
+}
+
+/// Preview that shows the homepage (main content) without going through onboarding.
+#Preview("Homepage") {
+    let manager = GameManager()
+    var state = manager.gameState
+    state.hasCompletedOnboarding = true
+    state.hasCompletedTutorial = true
+    state.capybaraName = "Capy"
+    manager.gameState = state
+    return ContentView()
+        .environmentObject(manager)
+}
+
+/// Preview that shows the homepage with the tutorial overlay active (click through steps).
+#Preview("Tutorial") {
+    let manager = GameManager()
+    var state = manager.gameState
+    state.hasCompletedOnboarding = true
+    state.hasCompletedTutorial = false
+    state.capybaraName = "Capy"
+    manager.gameState = state
+    return ContentView()
+        .environmentObject(manager)
 }
 

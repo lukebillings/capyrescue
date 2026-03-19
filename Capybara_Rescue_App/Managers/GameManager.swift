@@ -19,10 +19,12 @@ class GameManager: ObservableObject {
     
     @Published var thrownItem: ThrownItem?
     @Published var showRunAwayAlert: Bool = false
+    /// When set to "food", "drink", or "happiness", triggers confetti + sound (stat reached 100). Cleared by UI after animation.
+    @Published var stat100ConfettiTrigger: String? = nil
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
     @Published var toastMessage: String? = nil // For showing toast messages to user
-    /// When non-nil, UI shows "Good job! You have been awarded X coins." popup, then requests App Store review after dismiss.
-    @Published var recentAchievementCoinReward: Int? = nil
+    /// When set, UI shows celebration popup + confetti: "Well done on [name], here's [X] coins."
+    @Published var recentAchievement: (name: String, coins: Int)? = nil
     
     private var decayTimer: Timer?
     private let storageKey = "capybara_rescue_game_state"
@@ -30,7 +32,6 @@ class GameManager: ObservableObject {
     private let cloudStore = NSUbiquitousKeyValueStore.default
 
     // MARK: - StoreKit (IAP)
-    static let removeBannerAdsProductId = "remove_banner_ads"
     @Published private(set) var iapProducts: [String: Product] = [:]
     @Published private(set) var isIAPLoading: Bool = false
     @Published var iapLastErrorMessage: String? = nil
@@ -81,12 +82,38 @@ class GameManager: ObservableObject {
         // Start decay timer
         startDecayTimer()
 
-        // Load StoreKit products + sync non-consumable entitlements (e.g. Remove Ads)
+        // Load StoreKit products
         Task {
             await loadIAPProducts()
-            await syncNonConsumableEntitlements()
             // Unlock Pro items if user has Pro subscription
             unlockProItemsIfNeeded()
+        }
+        
+        // Listen for transaction updates (e.g. Ask to Buy, delayed completion) so successful purchases are never missed
+        Task {
+            await listenForTransactionUpdates()
+        }
+    }
+    
+    /// Listens for transaction updates at launch. Handles coin pack purchases that may complete asynchronously (e.g. Ask to Buy).
+    private func listenForTransactionUpdates() async {
+        for await result in Transaction.updates {
+            do {
+                let transaction = try checkVerified(result)
+                let productId = transaction.productID
+                
+                // Coin pack purchase
+                if let pack = CoinPack.packs.first(where: { $0.productId == productId }) {
+                    gameState.capycoins += pack.coins
+                    showToast("\(pack.coins) coins added! 🎉")
+                }
+                // Subscription purchases are handled by SubscriptionManager's listener
+                
+                await transaction.finish()
+                print("✅ Processed transaction update for \(productId)")
+            } catch {
+                print("❌ Failed to process transaction update: \(error)")
+            }
         }
     }
     
@@ -223,41 +250,67 @@ class GameManager: ObservableObject {
         }
     }
     
+    private static let achievementDisplayNameKeys: [String: String] = [
+        "streak_3": "achievements.streak_3.name",
+        "streak_7": "achievements.streak_7.name",
+        "streak_30": "achievements.streak_30.name",
+        "streak_100": "achievements.streak_100.name",
+        "streak_365": "achievements.streak_365.name",
+        "first_100_food": "achievements.first_100_food.name",
+        "first_100_drink": "achievements.first_100_drink.name",
+        "first_100_happy": "achievements.first_100_happy.name",
+        "first_all_100": "achievements.first_all_100.name"
+    ]
+    
+    private static let achievementCoins: [String: Int] = [
+        "streak_3": 1500, "streak_7": 2500, "streak_30": 5000, "streak_100": 10000, "streak_365": 25000,
+        "first_100_food": 500, "first_100_drink": 500, "first_100_happy": 500, "first_all_100": 1500
+    ]
+
+    private func localizedAchievementName(for id: String) -> String {
+        guard let key = Self.achievementDisplayNameKeys[id] else { return id }
+        return L(key)
+    }
+    
+    private func grantAchievement(id: String, name: String? = nil, coins: Int? = nil) {
+        let displayName = name ?? localizedAchievementName(for: id)
+        let coinAmount = coins ?? Self.achievementCoins[id] ?? 0
+        gameState.capycoins += coinAmount
+        recentAchievement = (displayName, coinAmount)
+    }
+    
     private func checkAchievements() {
         let streak = gameState.statsStreak
         
-        // Achievement rewards: 3 days = 600, 7 days = 700, 30 days = 800, 100 days = 900, 365 days = 1000
         let achievementRewards: [Int: (String, Int)] = [
-            3: ("streak_3", 600),
-            7: ("streak_7", 700),
-            30: ("streak_30", 800),
-            100: ("streak_100", 900),
-            365: ("streak_365", 1000)
+            3: ("streak_3", 1500),
+            7: ("streak_7", 2500),
+            30: ("streak_30", 5000),
+            100: ("streak_100", 10000),
+            365: ("streak_365", 25000)
         ]
         
-        var totalCoinsAwardedThisCheck = 0
+        var totalCoins = 0
+        var names: [String] = []
         
-        // Check each achievement threshold
-        // IMPORTANT: Achievements can only be earned once. If a user earns a 30-day achievement,
-        // breaks their streak, and then reaches 30 days again, they will NOT receive the coins again
-        // because the achievement is already in earnedAchievements.
         for (days, (achievementId, coins)) in achievementRewards.sorted(by: { $0.key < $1.key }) {
-            // Only award if streak meets threshold AND achievement hasn't been earned before
             if streak >= days && !gameState.earnedAchievements.contains(achievementId) {
                 gameState.earnedAchievements.insert(achievementId)
                 gameState.capycoins += coins
-                totalCoinsAwardedThisCheck += coins
+                totalCoins += coins
+                names.append(localizedAchievementName(for: achievementId))
             }
         }
         
-        if totalCoinsAwardedThisCheck > 0 {
-            recentAchievementCoinReward = totalCoinsAwardedThisCheck
+        if totalCoins > 0 {
+            let name = names.isEmpty ? L("achievements.title") : names.joined(separator: " & ")
+            recentAchievement = (name, totalCoins)
         }
     }
     
-    /// Call when the achievement reward popup has been dismissed so we can clear the reward and optionally request review.
+    /// Call when the achievement reward popup has been dismissed.
     func clearRecentAchievementReward() {
-        recentAchievementCoinReward = nil
+        recentAchievement = nil
     }
     
     // MARK: - Persistence
@@ -334,6 +387,29 @@ class GameManager: ObservableObject {
         applyOfflineDecay(now: Date())
     }
     
+    /// Returns false so the "remove ads" / subscription promo popup is never shown.
+    /// Call this from UI instead of showing any periodic remove-ads prompt.
+    func shouldShowAdRemovalPromo() -> Bool {
+        return false
+    }
+    
+    // MARK: - Catch the Orange (daily mini-game)
+    /// Coins awarded when user catches 20 oranges in one run (once per day).
+    static let catchTheOrangeCoinsReward = 100
+    
+    /// True if the user has not yet completed Catch the Orange today (calendar day).
+    func canPlayCatchTheOrangeToday() -> Bool {
+        guard let last = gameState.lastCatchTheOrangeCompletedDate else { return true }
+        return !Calendar.current.isDateInToday(last)
+    }
+    
+    /// Call when user catches 20 oranges. Awards coins and marks day as completed.
+    func completeCatchTheOrangeGame() {
+        gameState.capycoins += Self.catchTheOrangeCoinsReward
+        gameState.lastCatchTheOrangeCompletedDate = Date()
+        showToast("\(Self.catchTheOrangeCoinsReward) coins earned! 🍊")
+    }
+    
     private func checkRunAway() {
         if gameState.food == 0 && gameState.drink == 0 && gameState.happiness == 0 {
             gameState.hasRunAway = true
@@ -353,37 +429,109 @@ class GameManager: ObservableObject {
         
         gameState.capycoins -= item.cost
         
+        let previousFood = gameState.food
         gameState.food = min(100, gameState.food + item.foodValue)
         
-        // Reschedule notifications based on new stat value
-        scheduleFutureNotifications()
+        var awardNames: [String] = []
+        var awardCoins = 0
         
+        if gameState.food == 100 && previousFood < 100 {
+            stat100ConfettiTrigger = "food"
+            SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_food") {
+                gameState.earnedAchievements.insert("first_100_food")
+                let c = Self.achievementCoins["first_100_food"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_100_food"))
+            }
+            if gameState.drink == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
+            }
+        }
+        
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
+        }
+        
+        scheduleFutureNotifications()
         return true
     }
     
     func giveWater(with item: DrinkItem) -> Bool {
-        // Check if drink is already at max
         guard gameState.drink < 100 else {
             showToast("CAPYBARA HAS HAD ENOUGH TO DRINK 😊")
             return false
         }
-        
         guard canAfford(item.cost) else { return false }
         
         gameState.capycoins -= item.cost
-        
+        let previousDrink = gameState.drink
         gameState.drink = min(100, gameState.drink + item.drinkValue)
         
-        // Reschedule notifications based on new stat value
-        scheduleFutureNotifications()
+        var awardNames: [String] = []
+        var awardCoins = 0
         
+        if gameState.drink == 100 && previousDrink < 100 {
+            stat100ConfettiTrigger = "drink"
+            SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_drink") {
+                gameState.earnedAchievements.insert("first_100_drink")
+                let c = Self.achievementCoins["first_100_drink"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_100_drink"))
+            }
+            if gameState.food == 100 && gameState.happiness == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
+            }
+        }
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
+        }
+        
+        scheduleFutureNotifications()
         return true
     }
     
     func petCapybara() {
+        let previousHappiness = gameState.happiness
         gameState.happiness = min(100, gameState.happiness + 1)
         
-        // Reschedule notifications based on new stat value
+        var awardNames: [String] = []
+        var awardCoins = 0
+        
+        if gameState.happiness == 100 && previousHappiness < 100 {
+            stat100ConfettiTrigger = "happiness"
+            SoundManager.shared.playStat100Celebration()
+            if !gameState.earnedAchievements.contains("first_100_happy") {
+                gameState.earnedAchievements.insert("first_100_happy")
+                let c = Self.achievementCoins["first_100_happy"] ?? 200
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_100_happy"))
+            }
+            if gameState.food == 100 && gameState.drink == 100 && !gameState.earnedAchievements.contains("first_all_100") {
+                gameState.earnedAchievements.insert("first_all_100")
+                let c = Self.achievementCoins["first_all_100"] ?? 500
+                gameState.capycoins += c
+                awardCoins += c
+                awardNames.append(localizedAchievementName(for: "first_all_100"))
+            }
+        }
+        
+        if !awardNames.isEmpty {
+            recentAchievement = (awardNames.joined(separator: " & "), awardCoins)
+        }
+        
         scheduleFutureNotifications()
     }
     
@@ -418,11 +566,6 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Coins & Purchases
-    func watchAd() {
-        // Simulate watching a 10-second ad
-        gameState.capycoins += 10
-    }
-    
     func displayPrice(forProductId productId: String, fallback: String) -> String {
         if let product = iapProducts[productId] {
             return product.displayPrice
@@ -454,57 +597,13 @@ class GameManager: ObservableObject {
         }
     }
     
-    func purchaseRemoveBannerAds() async -> Bool {
-        do {
-            let product = try await product(for: Self.removeBannerAdsProductId)
-            _ = try await purchase(product: product)
-
-            // Unlock non-consumable
-            gameState.hasRemovedBannerAds = true
-            showToast("Banner ads removed! 🎉")
-            return true
-        } catch is CancellationError {
-            // no-op
-            return false
-        } catch {
-            let message = "Purchase failed: \(error.localizedDescription)"
-            iapLastErrorMessage = message
-            showToast(message)
-            return false
-        }
-    }
-
-    func restorePurchases() async -> Bool {
-        do {
-            try await AppStore.sync()
-            await syncNonConsumableEntitlements()
-
-            if gameState.hasRemovedBannerAds {
-                showToast("Purchases restored ✅")
-                return true
-            } else {
-                showToast("No purchases found to restore.")
-                iapLastErrorMessage = "No purchases found to restore for this Apple ID / Sandbox tester."
-                return false
-            }
-        } catch is CancellationError {
-            // no-op
-            return false
-        } catch {
-            let message = "Restore failed: \(error.localizedDescription)"
-            iapLastErrorMessage = message
-            showToast(message)
-            return false
-        }
-    }
-
     // MARK: - StoreKit helpers
     private func loadIAPProducts() async {
         guard !isIAPLoading else { return }
         isIAPLoading = true
         defer { isIAPLoading = false }
 
-        let ids = Set(CoinPack.packs.map(\.productId) + [Self.removeBannerAdsProductId])
+        let ids = Set(CoinPack.packs.map(\.productId))
 
         do {
             let products = try await Product.products(for: Array(ids))
@@ -553,25 +652,6 @@ class GameManager: ObservableObject {
         }
     }
 
-    private func syncNonConsumableEntitlements() async {
-        var hasRemoveAds = false
-
-        for await result in StoreKit.Transaction.currentEntitlements {
-            do {
-                let transaction = try checkVerified(result)
-                if transaction.productID == Self.removeBannerAdsProductId {
-                    hasRemoveAds = true
-                }
-            } catch {
-                // Ignore unverified entitlements
-            }
-        }
-
-        if hasRemoveAds && !gameState.hasRemovedBannerAds {
-            gameState.hasRemovedBannerAds = true
-        }
-    }
-
     private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified:
@@ -581,20 +661,8 @@ class GameManager: ObservableObject {
         }
     }
     
-    func incrementAppOpenCount() {
-        gameState.appOpenCount += 1
-    }
-    
     func markCNYPopupSeen() {
         gameState.hasSeenCNY2026Popup = true
-    }
-    
-    func shouldShowAdRemovalPromo() -> Bool {
-        // Show every 5th time the app is opened, but only if:
-        // 1. User hasn't already purchased ad removal
-        // 2. App has been opened at least a few times (5, 10, 15, etc.)
-        guard !gameState.hasRemovedBannerAds else { return false }
-        return gameState.appOpenCount > 0 && gameState.appOpenCount % 5 == 0
     }
     
     func renameCapybara(to newName: String) {
@@ -602,28 +670,6 @@ class GameManager: ObservableObject {
     }
     
     // MARK: - Subscription Management
-    
-    /// Completes the initial paywall on first app launch.
-    /// This SETS the coin balance to the tier's starting amount (does not add).
-    /// Use this ONLY for the first-time paywall in ContentView.
-    /// For subscription upgrades after the user is already in the game, use `upgradeSubscription(to:)` instead.
-    func completePaywall(with tier: SubscriptionManager.SubscriptionTier) {
-        gameState.hasCompletedPaywall = true
-        gameState.subscriptionTier = tier.rawValue
-        gameState.lastSubscriptionCheckDate = Date()
-        
-        // Award initial coins based on tier (SET to exact amount, not add)
-        gameState.capycoins = tier.startingCoins
-        
-        // If Pro tier, remove banner ads and unlock Pro items
-        if tier != .free {
-            gameState.hasRemovedBannerAds = true
-            unlockProItemsIfNeeded()
-        }
-        
-        print("✅ Paywall completed with \(tier.displayName) tier")
-        print("   Set coins to \(tier.startingCoins)")
-    }
     
     /// Upgrades the user's subscription tier and grants coins.
     /// This ADDS the tier's starting coins to the user's existing balance (does not override).
@@ -642,6 +688,15 @@ class GameManager: ObservableObject {
         if tier != .free {
             gameState.hasRemovedBannerAds = true
             unlockProItemsIfNeeded()
+        }
+        
+        // Pro Weekly: mark grant date so first 500/week is in 7 days
+        if tier == .weekly {
+            gameState.lastWeeklyCoinsGrantDate = Date()
+        }
+        // Pro Monthly / Annual: mark grant date so first 10k/month is in 1 month (15k already given as startingCoins)
+        if tier == .monthly || tier == .annual {
+            gameState.lastMonthlyCoinsGrantDate = Date()
         }
         
         print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
@@ -665,6 +720,35 @@ class GameManager: ObservableObject {
         return tier
     }
     
+    /// Grants 500 coins to Pro Weekly subscribers every 7 days. Call from main content onAppear.
+    func grantWeeklySubscriptionCoinsIfNeeded() {
+        guard currentSubscriptionTier() == .weekly else { return }
+        let amount = SubscriptionManager.SubscriptionTier.weekly.weeklyCoins
+        let now = Date()
+#if DEBUG
+        // In Debug: use 7-second interval so you can test without waiting 7 days
+        let interval: TimeInterval = 7
+        let useSeconds = true
+#else
+        let interval: TimeInterval = 7 * 24 * 60 * 60 // 7 days in seconds
+        let useSeconds = false
+#endif
+        
+        if let last = gameState.lastWeeklyCoinsGrantDate {
+            let nextGrant = useSeconds ? last.addingTimeInterval(interval) : Calendar.current.date(byAdding: .day, value: 7, to: last)
+            guard let next = nextGrant, now >= next else {
+                return
+            }
+            gameState.capycoins += amount
+            gameState.lastWeeklyCoinsGrantDate = now
+            showToast("Weekly Pro reward: \(amount) coins! 🎉")
+            print("✅ Granted \(amount) weekly coins (Pro Weekly). New balance: \(gameState.capycoins)")
+        } else {
+            // First time we see weekly subscriber (e.g. existing user before this feature): start 7-day window
+            gameState.lastWeeklyCoinsGrantDate = now
+        }
+    }
+    
     // MARK: - Pro Items Management
     private func unlockProItemsIfNeeded() {
         // If user has Pro subscription, automatically unlock all Pro-only items
@@ -686,9 +770,29 @@ class GameManager: ObservableObject {
         }
     }
     
+    /// Grants 10,000 coins to Pro Monthly/Annual subscribers every calendar month. Call from main content onAppear.
+    func grantMonthlySubscriptionCoinsIfNeeded() {
+        let tier = currentSubscriptionTier()
+        guard tier == .monthly || tier == .annual else { return }
+        let amount = tier.monthlyCoins
+        let now = Date()
+        let calendar = Calendar.current
+        if let last = gameState.lastMonthlyCoinsGrantDate {
+            guard let nextGrant = calendar.date(byAdding: .month, value: 1, to: last), now >= nextGrant else {
+                return
+            }
+            gameState.capycoins += amount
+            gameState.lastMonthlyCoinsGrantDate = now
+            showToast("Monthly Pro reward: \(amount) coins! 🎉")
+            print("✅ Granted \(amount) monthly coins (Pro). New balance: \(gameState.capycoins)")
+        } else {
+            gameState.lastMonthlyCoinsGrantDate = now
+        }
+    }
+    
     // MARK: - Reset
     
-    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, paywall, and all other progress.
+    /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, and all other progress.
     func rescueNewCapybara() {
         var state = gameState
         state.food = GameState.defaultState.food
@@ -846,6 +950,11 @@ class GameManager: ObservableObject {
     
     // MARK: - Schedule Future Notifications
     func scheduleFutureNotifications() {
+        guard SettingsManager.shared.notificationsEnabled else {
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            return
+        }
+        
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             guard settings.authorizationStatus == .authorized else { return }
             
@@ -902,8 +1011,96 @@ class GameManager: ObservableObject {
                         badgeNumber: index + 1
                     )
                 }
+                
+                // Daily 8am reminder: "Catch the Orange" mini-game to earn coins
+                self.scheduleCatchTheOrangeDailyReminder()
+
+                // Weekly reminder: suggest an item if the user still has something to unlock
+                self.scheduleWeeklyUnlockableItemsReminder()
             }
         }
+    }
+    
+    private func scheduleCatchTheOrangeDailyReminder() {
+        let content = UNMutableNotificationContent()
+        content.title = "Catch the Orange! 🍊"
+        content.body = "Let's catch some oranges to earn some coins!"
+        content.sound = .default
+        
+        var dateComponents = DateComponents()
+        dateComponents.hour = 8
+        dateComponents.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let request = UNNotificationRequest(identifier: "catch_orange_8am", content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to schedule Catch the Orange reminder: \(error.localizedDescription)")
+            } else {
+                print("✅ Scheduled daily 8am Catch the Orange reminder")
+            }
+        }
+    }
+
+    private func scheduleWeeklyUnlockableItemsReminder() {
+        guard hasUnlockableItemsForUser() else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Item time!"
+        content.body = "\(gameState.capybaraName) might want an item. Unlock it in the Items area."
+        content.sound = .default
+        
+        // Every Sunday at 8:00 PM (local time)
+        var dateComponents = DateComponents()
+        dateComponents.weekday = 1 // Sunday
+        dateComponents.hour = 20
+        dateComponents.minute = 0
+        
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        let identifier = "weekly_unlock_items_sun_8pm"
+        
+        UNUserNotificationCenter.current().getDeliveredNotifications { deliveredNotifications in
+            content.badge = NSNumber(value: deliveredNotifications.count + 1)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule weekly unlockable items reminder: \(error.localizedDescription)")
+                } else {
+                    print("✅ Scheduled weekly unlockable items reminder")
+                }
+            }
+        }
+    }
+    
+    private func hasUnlockableItemsForUser() -> Bool {
+        // Mirrors the "Items" affordance logic:
+        // - Only consider accessory items not already owned.
+        // - For non-Pro items, require sufficient coins to buy.
+        // - For Pro-only items (if any), treat them as unlockable if the user doesn't have Pro.
+        // - For CNY-limited item(s), only count if the item is currently visible or already owned.
+        
+        for item in AccessoryItem.allItems {
+            // Skip hidden CNY items unless already owned (ItemsPanel shows them this way)
+            if item.id == "redlantern" && !(Date.shouldShowCNYItems2026() || gameState.ownedAccessories.contains(item.id)) {
+                continue
+            }
+            
+            guard !gameState.ownedAccessories.contains(item.id) else { continue }
+            
+            if item.isProOnly {
+                if !hasProSubscription() {
+                    return true
+                }
+                // If the user has Pro but somehow doesn't own it, we can still count it.
+                return true
+            } else {
+                if canAfford(item.cost) {
+                    return true
+                }
+            }
+        }
+        
+        return false
     }
     
     private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {
@@ -933,43 +1130,5 @@ class GameManager: ObservableObject {
         }
     }
     
-    // MARK: - Test Notification (for debugging)
-    func testNotification() {
-        let name = gameState.capybaraName
-        
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                guard settings.authorizationStatus == .authorized else {
-                    print("❌ Notifications not authorized. Status: \(settings.authorizationStatus.rawValue)")
-                    self.showToast("Notifications not enabled!")
-                    return
-                }
-                
-                let content = UNMutableNotificationContent()
-                content.title = "Test Notification 🔔"
-                content.body = "This is a test! If you see this when the app is closed, notifications are working! \(name) says hi!"
-                content.sound = .default
-                content.badge = 1
-                
-                // Schedule for 5 seconds from now - gives you time to close the app
-                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5.0, repeats: false)
-                let request = UNNotificationRequest(identifier: "test_notification", content: content, trigger: trigger)
-                
-                UNUserNotificationCenter.current().add(request) { error in
-                    if let error = error {
-                        print("❌ Failed to schedule test notification: \(error.localizedDescription)")
-                        DispatchQueue.main.async {
-                            self.showToast("Failed to schedule notification")
-                        }
-                    } else {
-                        print("✅ Test notification scheduled for 5 seconds from now")
-                        DispatchQueue.main.async {
-                            self.showToast("Notification scheduled! Close app to test.")
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 

@@ -1,6 +1,6 @@
 # Capybara Rescue App — Terms & Conditions
 
-**Last updated:** 2026-01-09  
+**Last updated:** 2026-03-19  
 **App name:** Capybara Rescue Universe (also referred to as “Capybara Rescue App”) (the “App”)  
 These Terms & Conditions (“Terms”) govern your use of the App. By downloading, accessing, or using the App, you agree to these Terms.
 
@@ -62,23 +62,28 @@ If you purchase a subscription, it may automatically renew unless cancelled in y
 
 ## 6) Ads, analytics, and third-party services
 
-The App may display advertisements (including banner ads and rewarded ads) and uses third-party services to operate these features.
+Google AdMob ads and ad tracking were removed from the App starting with version 1.12.
+
+### Version scope
+
+- **App versions before 1.12** may display advertisements (including banner ads and rewarded ads) and use third-party ad services.
+- **From version 1.12 onward**, the App does not include Google AdMob ads or ad tracking.
 
 ### Third-party SDKs/services used by this App
 
-- **Google AdMob (Google Mobile Ads SDK)**: used to serve banner ads and rewarded ads.
-- **Google User Messaging Platform (UMP)**: used to request/manage consent for ads-related data processing in regions where required.
-- **Apple App Tracking Transparency (ATT)**: used to request permission before accessing IDFA for “tracking” as defined by Apple.
+- **Google AdMob (Google Mobile Ads SDK)**: used in app versions before 1.12 to serve banner ads and rewarded ads.
+- **Google User Messaging Platform (UMP)**: used in app versions before 1.12 to request/manage consent for ads-related data processing in regions where required.
+- **Apple App Tracking Transparency (ATT)**: used in app versions before 1.12 to request permission before accessing IDFA for “tracking” as defined by Apple.
 - **Apple StoreKit**: used to process in-app purchases and restore purchases (e.g., “Remove Banner Ads”).
 - **Apple iCloud Key-Value Store**: used to sync certain game state across your devices if iCloud is enabled.
-- **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used for ad campaign measurement.
+- **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used for ad campaign measurement in ad-enabled versions before 1.12.
 
 - Third parties may collect information as described in our Privacy Policy (if provided) and in their own policies.
 - If the App offers “Remove Ads” or similar features, some elements may still appear (e.g., cross-promo, app notices, or required disclosures), as described in the App.
 
 ### Tracking permission
 
-Some ads may use “tracking” as defined by Apple. If so, we will request permission via the iOS **App Tracking Transparency** prompt. If you decline, ad personalization may be limited.
+In versions before 1.12, some ads may use “tracking” as defined by Apple. If so, we will request permission via the iOS **App Tracking Transparency** prompt. If you decline, ad personalization may be limited.
 
 ---
 
