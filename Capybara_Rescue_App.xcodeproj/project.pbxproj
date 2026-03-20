@@ -14,7 +14,6 @@
 		1C07EB86F886E8B1B3E67559 /* ItemsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */; };
 		23760ED5FE467A95BAB98DB1 /* AchievementsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */; };
 		2379E584C1E32E56C84434C8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE772C5EE05A58130807151 /* GameState.swift */; };
-		256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BDABA03E65FB27F57C697 /* TrackingManager.swift */; };
 		3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */; };
 		45ACED2714568A69CD89746F /* DrinkPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */; };
 		4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A019515F35C24D4A2E6263BD /* TutorialOverlay.swift */; };
@@ -106,7 +105,6 @@
 		D929CE28E0EC27ED19506142 /* Sunflower.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Sunflower.usdz; sourceTree = "<group>"; };
 		DD00AFDAF6C0FC6B7C5350F9 /* Capybara3DView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capybara3DView.swift; sourceTree = "<group>"; };
 		DD9345C3C8F050A3CBF9485B /* DrinkPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrinkPanel.swift; sourceTree = "<group>"; };
-		E35BDABA03E65FB27F57C697 /* TrackingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingManager.swift; sourceTree = "<group>"; };
 		E4D94C222145C0127922292B /* CapybaraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapybaraView.swift; sourceTree = "<group>"; };
 		EB93563846587619659B7D5E /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		F0E1D2C3B4A5968778695A4B /* AdsConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsConfig.swift; sourceTree = "<group>"; };
@@ -244,7 +242,6 @@
 				L10N00022F325EB500F10BC3 /* LocalizationManager.swift */,
 				SOUNDMGR0022F325EB500F10BC3 /* SoundManager.swift */,
 				SETTINGS0022F325EB500F10BC3 /* SettingsManager.swift */,
-				E35BDABA03E65FB27F57C697 /* TrackingManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -380,7 +377,6 @@
 				4FC7881539BBB5269361A473 /* RunAwayView.swift in Sources */,
 				C29F5483F205BFB9583E30A9 /* ShopPanel.swift in Sources */,
 				041EF1FD9F7972D5847CE73E /* ThrownItemView.swift in Sources */,
-				256A94D7E2A860EEBF4626DE /* TrackingManager.swift in Sources */,
 				4DAF5D1CF52AB7C1BF2E962C /* TutorialOverlay.swift in Sources */,
 				CONFETTI0012F325EB500F10BC3 /* ConfettiView.swift in Sources */,
 				L10N00012F325EB500F10BC3 /* LocalizationManager.swift in Sources */,
@@ -401,7 +397,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -419,7 +415,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -435,7 +431,7 @@
 				CODE_SIGN_ENTITLEMENTS = Capybara_Rescue_App/Capybara_Rescue_App.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
@@ -453,7 +449,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12;
+				MARKETING_VERSION = 1.13;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
