@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
-import UserNotifications
+@preconcurrency import UserNotifications
 import StoreKit
 
 // MARK: - Game Manager
@@ -728,15 +728,13 @@ class GameManager: ObservableObject {
 #if DEBUG
         // In Debug: use 7-second interval so you can test without waiting 7 days
         let interval: TimeInterval = 7
-        let useSeconds = true
 #else
         let interval: TimeInterval = 7 * 24 * 60 * 60 // 7 days in seconds
-        let useSeconds = false
 #endif
         
         if let last = gameState.lastWeeklyCoinsGrantDate {
-            let nextGrant = useSeconds ? last.addingTimeInterval(interval) : Calendar.current.date(byAdding: .day, value: 7, to: last)
-            guard let next = nextGrant, now >= next else {
+            let nextGrant = last.addingTimeInterval(interval)
+            guard now >= nextGrant else {
                 return
             }
             gameState.capycoins += amount
@@ -1044,23 +1042,23 @@ class GameManager: ObservableObject {
 
     private func scheduleWeeklyUnlockableItemsReminder() {
         guard hasUnlockableItemsForUser() else { return }
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Item time!"
-        content.body = "\(gameState.capybaraName) might want an item. Unlock it in the Items area."
-        content.sound = .default
-        
-        // Every Sunday at 8:00 PM (local time)
-        var dateComponents = DateComponents()
-        dateComponents.weekday = 1 // Sunday
-        dateComponents.hour = 20
-        dateComponents.minute = 0
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         let identifier = "weekly_unlock_items_sun_8pm"
+        let body = "\(gameState.capybaraName) might want an item. Unlock it in the Items area."
         
         UNUserNotificationCenter.current().getDeliveredNotifications { deliveredNotifications in
+            let content = UNMutableNotificationContent()
+            content.title = "Item time!"
+            content.body = body
+            content.sound = .default
             content.badge = NSNumber(value: deliveredNotifications.count + 1)
+            
+            // Every Sunday at 8:00 PM (local time)
+            var dateComponents = DateComponents()
+            dateComponents.weekday = 1 // Sunday
+            dateComponents.hour = 20
+            dateComponents.minute = 0
+            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+            
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
             UNUserNotificationCenter.current().add(request) { error in
                 if let error = error {
