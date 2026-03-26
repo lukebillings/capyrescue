@@ -56,20 +56,6 @@ struct SettingsView: View {
                                     gameManager.scheduleFutureNotifications()
                                 }
                             }
-                            
-                            Divider()
-                                .background(Color.white.opacity(0.2))
-                                .padding(.leading, 56)
-                            
-                            SettingsRow(
-                                icon: "hand.tap.fill",
-                                title: L("settings.hapticFeedback"),
-                                subtitle: L("settings.hapticSubtitle")
-                            ) {
-                                Toggle("", isOn: $settingsManager.hapticEnabled)
-                                    .labelsHidden()
-                                    .tint(Color(hex: "1a5f1a"))
-                            }
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
