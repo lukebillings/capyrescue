@@ -12,6 +12,7 @@ struct SettingsView: View {
     
     @State private var showRenameSheet = false
     @State private var showLanguagePicker = false
+    @State private var showResetProgressConfirm = false
     
     private let termsURL = "https://lukebillings.github.io/capyrescue/termsandconditions/"
     private let termsOfUseURL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
@@ -112,6 +113,19 @@ struct SettingsView: View {
                                 url: shareAppURL,
                                 message: L("settings.shareMessage")
                             )
+                            
+                            Divider()
+                                .background(Color.white.opacity(0.2))
+                                .padding(.leading, 56)
+                            
+                            SettingsActionRow(
+                                icon: "arrow.counterclockwise",
+                                title: L("settings.resetProgress"),
+                                subtitle: L("settings.resetProgressSubtitle")
+                            ) {
+                                HapticManager.shared.buttonPress()
+                                showResetProgressConfirm = true
+                            }
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
@@ -190,6 +204,19 @@ struct SettingsView: View {
             )
             .presentationDetents([.height(280)])
             .presentationDragIndicator(.visible)
+        }
+        .confirmationDialog(
+            L("settings.resetProgressConfirmTitle"),
+            isPresented: $showResetProgressConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(L("settings.resetProgressConfirmButton"), role: .destructive) {
+                gameManager.resetProgressToBeginning()
+                dismiss()
+            }
+            Button(L("common.cancel"), role: .cancel) { }
+        } message: {
+            Text(L("settings.resetProgressConfirmMessage"))
         }
     }
 }

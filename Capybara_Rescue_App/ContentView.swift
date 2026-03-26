@@ -1,10 +1,10 @@
 import SwiftUI
-import StoreKit
 
 // MARK: - Main Content View
 struct ContentView: View {
     @EnvironmentObject var gameManager: GameManager
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @ObservedObject private var settingsManager = SettingsManager.shared
     
@@ -16,12 +16,13 @@ struct ContentView: View {
     @State private var showPanel = false // Hide panel by default - show only menu bar
     @State private var capybaraPosition: CGPoint = .zero
     @State private var showOnboarding = false
-    @State private var showReturningUserPaywall = false
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var shouldApplyInitialRotation = false
     @State private var showCNYPopup = false
 
     private let capybaraVisualOffsetY: CGFloat = 15
+    
+    private static let pendingOpenItemsDefaultsKey = "pending_open_items"
     
     // Chinese New Year background date checking
     private var shouldShowChineseNewYearTheme: Bool {
@@ -61,12 +62,27 @@ struct ContentView: View {
         let hasCompletedOnboarding = gameManager.gameState.hasCompletedOnboarding
         let hasCompletedTutorial = gameManager.gameState.hasCompletedTutorial
         if hasCompletedOnboarding && !hasCompletedTutorial && currentTutorialStep == nil {
-            currentTutorialStep = .stats
+            currentTutorialStep = .feedFood
         }
     }
     
     private func checkOnboardingStatus() {
         showOnboarding = !gameManager.gameState.hasCompletedOnboarding
+    }
+    
+    private func openItemsFromNotification() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            selectedTab = .items
+            showPanel = true
+            showShopSheet = false
+        }
+    }
+    
+    private func consumePendingOpenItemsIfNeeded() {
+        if UserDefaults.standard.bool(forKey: Self.pendingOpenItemsDefaultsKey) {
+            UserDefaults.standard.set(false, forKey: Self.pendingOpenItemsDefaultsKey)
+            openItemsFromNotification()
+        }
     }
     
     /// Formatted coin count for header (full number with commas, no K/M).
@@ -80,7 +96,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if showOnboarding {
-                OnboardingView(isPresented: $showOnboarding, startAtPaywall: false)
+                OnboardingView(isPresented: $showOnboarding)
                     .environmentObject(gameManager)
                     .onChange(of: showOnboarding) { oldValue, newValue in
                         if !newValue {
@@ -94,20 +110,11 @@ struct ContentView: View {
                             }
                         }
                     }
-            } else if showReturningUserPaywall, gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
-                // Returning user (previously downloaded) without Pro — show Pro Annual paywall; 15k coins added on subscribe
-                OnboardingView(isPresented: $showReturningUserPaywall, startAtPaywall: true)
-                    .environmentObject(gameManager)
             } else {
                 mainContentView
                     .onAppear {
                         checkTutorialStatus()
-                        // TEMPORARY: Debug-only 100k coins for testing (remove for release)
-                        #if DEBUG
-                        var state = gameManager.gameState
-                        state.capycoins = 100_000
-                        gameManager.gameState = state
-                        #endif
+                        consumePendingOpenItemsIfNeeded()
                         // Pro Weekly: grant 500 coins every 7 days if eligible
                         gameManager.grantWeeklySubscriptionCoinsIfNeeded()
                         // Pro Monthly: grant 10,000 coins every month if eligible
@@ -124,13 +131,25 @@ struct ContentView: View {
         }
         .onAppear {
             checkOnboardingStatus()
-            // Returning users (already completed onboarding) without Pro see the Pro Annual paywall
-            if gameManager.gameState.hasCompletedOnboarding, !gameManager.hasProSubscription() {
-                showReturningUserPaywall = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .capybaraOpenItems)) { _ in
+            guard !showOnboarding else { return }
+            openItemsFromNotification()
+        }
+        .onChange(of: localizationManager.currentLanguage) { _, _ in
+            gameManager.refreshHatPromotionNotification()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active, !showOnboarding {
+                consumePendingOpenItemsIfNeeded()
             }
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
             checkOnboardingStatus()
+            if !newValue {
+                currentTutorialStep = nil
+                showPanel = false
+            }
         }
     }
     
@@ -227,11 +246,10 @@ struct ContentView: View {
                                 HapticManager.shared.buttonPress()
                                 showShopSheet = true
                             }) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "plus.circle.fill")
-                                        .font(.system(size: 14, weight: .semibold))
+                                HStack(spacing: 8) {
                                     Text(L("common.getMore"))
                                         .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    CoinIcon(size: 24)
                                 }
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 14)
@@ -384,7 +402,7 @@ struct ContentView: View {
                 
                 // Tutorial overlay
                 if currentTutorialStep != nil {
-                    TutorialOverlay(currentStep: $currentTutorialStep)
+                    TutorialOverlay(currentStep: $currentTutorialStep, showPanel: $showPanel)
                         .zIndex(200) // Above everything else
                 }
                 

@@ -45,12 +45,10 @@ struct CoinDisplayView: View {
                 HapticManager.shared.buttonPress()
                 onGetMore()
             }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                    
+                HStack(spacing: 8) {
                     Text(L("common.getMore"))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    CoinIcon(size: 24)
                 }
                 .foregroundStyle(.black)
                 .padding(.horizontal, 16)

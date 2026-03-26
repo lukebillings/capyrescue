@@ -30,6 +30,9 @@ class GameManager: ObservableObject {
     private let storageKey = "capybara_rescue_game_state"
     private var isSaving = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
+    
+    /// Repeating local notification (every 3 days) to nudge Items / hats. Preserved when rescheduling stat alerts.
+    private static let hatPromoNotificationId = "hat_promo_every_3_days"
 
     // MARK: - StoreKit (IAP)
     @Published private(set) var iapProducts: [String: Product] = [:]
@@ -417,6 +420,25 @@ class GameManager: ObservableObject {
         }
     }
     
+    // MARK: - Walkthrough
+    enum WalkthroughPlayStat {
+        case food, drink, happiness
+    }
+    
+    /// If a walkthrough step waits for food/drink/pet to increase but that stat is already 100 (e.g. user filled it early),
+    /// clamp it to 99 so the next action can still land at 100 with full effects. No-op after tutorial is finished.
+    func prepareWalkthroughPlayStep(stat: WalkthroughPlayStat) {
+        guard !gameState.hasCompletedTutorial else { return }
+        switch stat {
+        case .food:
+            if gameState.food >= 100 { gameState.food = 99 }
+        case .drink:
+            if gameState.drink >= 100 { gameState.drink = 99 }
+        case .happiness:
+            if gameState.happiness >= 100 { gameState.happiness = 99 }
+        }
+    }
+    
     // MARK: - Actions
     func feedCapybara(with item: FoodItem) -> Bool {
         // Check if food is already at max
@@ -667,6 +689,17 @@ class GameManager: ObservableObject {
     
     func renameCapybara(to newName: String) {
         gameState.capybaraName = newName
+        refreshHatPromotionNotification()
+    }
+    
+    /// Refreshes hat promo copy (e.g. after rename or language change). Resets the 3-day repeating timer.
+    func refreshHatPromotionNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.hatPromoNotificationId])
+        guard SettingsManager.shared.notificationsEnabled else { return }
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .authorized else { return }
+            self.addHatPromoNotificationRequest()
+        }
     }
     
     // MARK: - Subscription Management
@@ -806,6 +839,34 @@ class GameManager: ObservableObject {
     func resetGame() {
         gameState = GameState.defaultState
         showRunAwayAlert = false
+    }
+    
+    /// Resets all game progress to a fresh start (onboarding, walkthrough, stats, coins, items, achievements).
+    /// Preserves subscription tier and related entitlements so subscribers keep Pro benefits.
+    func resetProgressToBeginning() {
+        let tier = gameState.subscriptionTier
+        let subEnd = gameState.subscriptionEndDate
+        let lastSubCheck = gameState.lastSubscriptionCheckDate
+        let removedAds = gameState.hasRemovedBannerAds
+        let weekly = gameState.lastWeeklyCoinsGrantDate
+        let monthly = gameState.lastMonthlyCoinsGrantDate
+        
+        var fresh = GameState.defaultState
+        fresh.subscriptionTier = tier
+        fresh.subscriptionEndDate = subEnd
+        fresh.lastSubscriptionCheckDate = lastSubCheck
+        fresh.hasRemovedBannerAds = removedAds
+        fresh.lastWeeklyCoinsGrantDate = weekly
+        fresh.lastMonthlyCoinsGrantDate = monthly
+        
+        gameState = fresh
+        showRunAwayAlert = false
+        thrownItem = nil
+        previewingAccessoryId = nil
+        recentAchievement = nil
+        stat100ConfettiTrigger = nil
+        toastMessage = nil
+        scheduleFutureNotifications()
     }
     
     func throwItem(emoji: String, isFood: Bool) {
@@ -956,14 +1017,17 @@ class GameManager: ObservableObject {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             guard settings.authorizationStatus == .authorized else { return }
             
-            // Cancel all pending notifications first
-            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-            
-            DispatchQueue.main.async {
-                let name = self.gameState.capybaraName
-                let currentFood = self.gameState.food
-                let currentDrink = self.gameState.drink
-                let currentHappiness = self.gameState.happiness
+            // Cancel pending requests except the 3-day hat promo (keep its repeating fire schedule)
+            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                let keepIds: Set<String> = [Self.hatPromoNotificationId]
+                let toRemove = requests.map(\.identifier).filter { !keepIds.contains($0) }
+                UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: toRemove)
+                
+                DispatchQueue.main.async {
+                    let name = self.gameState.capybaraName
+                    let currentFood = self.gameState.food
+                    let currentDrink = self.gameState.drink
+                    let currentHappiness = self.gameState.happiness
                 
                 // Track which notifications we're scheduling to set badge correctly
                 var scheduledNotifications: [(hours: Int, title: String, body: String, identifier: String)] = []
@@ -1013,8 +1077,38 @@ class GameManager: ObservableObject {
                 // Daily 8am reminder: "Catch the Orange" mini-game to earn coins
                 self.scheduleCatchTheOrangeDailyReminder()
 
-                // Weekly reminder: suggest an item if the user still has something to unlock
-                self.scheduleWeeklyUnlockableItemsReminder()
+                // Every 3 days: hat / Items nudge (tap opens Items)
+                self.ensureHatPromoScheduled()
+                }
+            }
+        }
+    }
+    
+    /// Ensures the repeating 3-day hat promo exists (does not replace an existing one — keeps schedule).
+    private func ensureHatPromoScheduled() {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+            guard !requests.contains(where: { $0.identifier == Self.hatPromoNotificationId }) else { return }
+            self.addHatPromoNotificationRequest()
+        }
+    }
+    
+    private func addHatPromoNotificationRequest() {
+        let name = gameState.capybaraName
+        let content = UNMutableNotificationContent()
+        content.title = L("notification.hatPromoTitle")
+        content.body = String(format: L("notification.hatPromoBody"), name)
+        content.sound = .default
+        content.userInfo = ["action": "openItems"]
+        
+        let threeDays: TimeInterval = 3 * 24 * 60 * 60
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: threeDays, repeats: true)
+        let request = UNNotificationRequest(identifier: Self.hatPromoNotificationId, content: content, trigger: trigger)
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to schedule hat promo notification: \(error.localizedDescription)")
+            } else {
+                print("✅ Scheduled repeating hat / Items promo (every 3 days)")
             }
         }
     }
@@ -1040,67 +1134,6 @@ class GameManager: ObservableObject {
         }
     }
 
-    private func scheduleWeeklyUnlockableItemsReminder() {
-        guard hasUnlockableItemsForUser() else { return }
-        let identifier = "weekly_unlock_items_sun_8pm"
-        let body = "\(gameState.capybaraName) might want an item. Unlock it in the Items area."
-        
-        UNUserNotificationCenter.current().getDeliveredNotifications { deliveredNotifications in
-            let content = UNMutableNotificationContent()
-            content.title = "Item time!"
-            content.body = body
-            content.sound = .default
-            content.badge = NSNumber(value: deliveredNotifications.count + 1)
-            
-            // Every Sunday at 8:00 PM (local time)
-            var dateComponents = DateComponents()
-            dateComponents.weekday = 1 // Sunday
-            dateComponents.hour = 20
-            dateComponents.minute = 0
-            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-            UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
-                    print("❌ Failed to schedule weekly unlockable items reminder: \(error.localizedDescription)")
-                } else {
-                    print("✅ Scheduled weekly unlockable items reminder")
-                }
-            }
-        }
-    }
-    
-    private func hasUnlockableItemsForUser() -> Bool {
-        // Mirrors the "Items" affordance logic:
-        // - Only consider accessory items not already owned.
-        // - For non-Pro items, require sufficient coins to buy.
-        // - For Pro-only items (if any), treat them as unlockable if the user doesn't have Pro.
-        // - For CNY-limited item(s), only count if the item is currently visible or already owned.
-        
-        for item in AccessoryItem.allItems {
-            // Skip hidden CNY items unless already owned (ItemsPanel shows them this way)
-            if item.id == "redlantern" && !(Date.shouldShowCNYItems2026() || gameState.ownedAccessories.contains(item.id)) {
-                continue
-            }
-            
-            guard !gameState.ownedAccessories.contains(item.id) else { continue }
-            
-            if item.isProOnly {
-                if !hasProSubscription() {
-                    return true
-                }
-                // If the user has Pro but somehow doesn't own it, we can still count it.
-                return true
-            } else {
-                if canAfford(item.cost) {
-                    return true
-                }
-            }
-        }
-        
-        return false
-    }
-    
     private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {
         guard hours > 0 else { return }
         
