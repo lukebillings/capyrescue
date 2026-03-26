@@ -1,6 +1,6 @@
 # Capybara Rescue Universe — Privacy Policy
 
-**Last updated:** 2026-03-19  
+**Last updated:** 2026-03-26  
 This Privacy Policy explains how the developer/publisher of Capybara Rescue Universe (the “App”) (“we,” “us,” “our,” or “Developer”) collects, uses, shares, and protects information when you use the App.
 
 ---
@@ -9,6 +9,11 @@ This Privacy Policy explains how the developer/publisher of Capybara Rescue Univ
 
 - **App versions before 1.12** may display Google AdMob ads and may process related ad data (for example ad impressions/clicks and identifiers permitted by Apple/platform rules).
 - **From version 1.12 onward**, Google AdMob ads and ad tracking are removed.
+
+### Updates from version 1.14
+
+- **Local notifications** may include **care reminders** (for example when to feed or interact with your capybara), **gameplay reminders** (for example a daily mini-game), and **updates or reminders** about in-app features such as items or accessories (for example hats), **shopping for your capybara**, **achievements**, and similar. These messages are created and **scheduled only on your device** using Apple’s local notification APIs; **we do not operate our own servers** to send remote push notifications for these features.
+- **Optional first-time tutorial:** While the interactive walkthrough is active, the App may **reduce food, drink, or happiness** from **100** to **99** if needed so you can still complete feeding, drinking, or petting steps. This avoids getting stuck when a stat was already full beforehand. It applies only during the tutorial and does not change our general approach to saving your game.
 
 This policy describes current data practices for the latest version. If you continue to use an older version that has not been updated, some data practices may differ until you update.
 
@@ -59,7 +64,7 @@ If you make in-app purchases, Apple processes the transaction. We may receive co
 
 ### F) Notifications
 
-If you allow notifications, the App may schedule **local notifications** on your device (for example, reminders related to gameplay). We do not send remote “push notifications” from our own servers.
+If you allow notifications, the App may schedule **local notifications** on your device. Examples include reminders to care for your capybara (such as feeding or happiness), gameplay reminders (such as a daily mini-game), and **updates or reminders** about in-app content such as items, hats, **shopping for your capybara**, achievements, and similar. These notifications are **not sent from our own servers**; they are scheduled on-device. We do not send remote “push notifications” from our own infrastructure for these local alerts.
 
 We do **not** intentionally collect “special category” data (sensitive personal data) such as health data, biometric data, or precise location, unless you explicitly provide it and we clearly explain why.
 

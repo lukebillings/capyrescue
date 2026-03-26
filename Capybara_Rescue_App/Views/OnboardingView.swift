@@ -1,29 +1,20 @@
 import SwiftUI
 import UserNotifications
-import StoreKit
 
 // MARK: - Onboarding View
 struct OnboardingView: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     @Binding var isPresented: Bool
-    /// When true, skip to paywall only (for returning users who already completed onboarding).
-    var startAtPaywall: Bool = false
     
     @State private var currentStep: OnboardingStep = .language
     @State private var capybaraName: String = ""
-    @State private var isPurchasingTrial: Bool = false
-    @State private var paywallPurchaseError: String?
-    @State private var isRestoring: Bool = false
-    @State private var restoreError: String?
     
     enum OnboardingStep {
         case language
         case welcome
         case notifications
         case pledge
-        case paywall
     }
     
     /// Onboarding uses light color scheme (cream background) like the homepage for consistency and legibility.
@@ -53,24 +44,9 @@ struct OnboardingView: View {
                 notificationsView
             case .pledge:
                 pledgeView
-            case .paywall:
-                paywallView
             }
         }
         .preferredColorScheme(.light)
-        .onAppear {
-            if startAtPaywall {
-                currentStep = .paywall
-            }
-        }
-        .alert(L("onboarding.purchaseIssueAlert"), isPresented: Binding(
-            get: { paywallPurchaseError != nil },
-            set: { if !$0 { paywallPurchaseError = nil } }
-        )) {
-            Button(L("common.ok")) { paywallPurchaseError = nil }
-        } message: {
-            Text(paywallPurchaseError ?? "")
-        }
     }
     
     // MARK: - Language View
@@ -95,7 +71,6 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
             
-            // 2-column grid so all languages fit on one page without scrolling
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                 ForEach(LocalizationManager.supportedLanguages, id: \.code) { lang in
                     Button(action: {
@@ -246,7 +221,7 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    // MARK: - Notifications View (capybara + CTA same position as other steps)
+    // MARK: - Notifications View
     private var notificationsView: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -324,7 +299,7 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    // MARK: - Pledge View (capybara + CTA same position as other steps)
+    // MARK: - Pledge View
     private var pledgeView: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -393,9 +368,7 @@ struct OnboardingView: View {
             Spacer()
             
             Button(action: {
-                withAnimation {
-                    currentStep = .paywall
-                }
+                completeOnboardingAndDismiss()
             }) {
                 Text(L("onboarding.acceptAndGo"))
                     .font(.system(size: 19, weight: .bold, design: .rounded))
@@ -417,255 +390,7 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    // MARK: - Paywall View (after pledge — single offer: 7-day trial then £9.99/month)
-    private var paywallView: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Top: 3D capybara moving side to side
-                if #available(iOS 17.0, *) {
-                    Capybara3DView(
-                        emotion: gameManager.gameState.capybaraEmotion,
-                        equippedAccessories: gameManager.gameState.equippedAccessories,
-                        previewingAccessoryId: nil,
-                        onPet: { },
-                        initialRotation: nil
-                    )
-                    .frame(height: 180)
-                    .scaleEffect(0.38)
-                    .frame(height: 180)
-                    .clipped()
-                } else {
-                    Text("🐹")
-                        .font(.system(size: 80))
-                        .frame(height: 220)
-                }
-                
-                Spacer()
-                    .frame(height: 12)
-                
-                // Benefit-focused headline (conversion-optimised)
-                Text(L("onboarding.paywallHeadline"))
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(Self.onboardingPrimaryText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 28)
-                
-                Text(L("onboarding.paywallSubline"))
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 28)
-                    .padding(.top, 8)
-                
-                // Single offer card
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(subscriptionManager.displayName(
-                                for: SubscriptionManager.annualProductId,
-                                fallback: L("onboarding.paywallProTitle")
-                            ))
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                            Text(String(format: L("onboarding.paywallPriceFormatAnnual"), subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£29.99/year")))
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
-                                .foregroundStyle(Self.onboardingSecondaryText)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack(spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 18))
-                                .foregroundStyle(AppColors.paywallCTAGreen)
-                            Text(L("onboarding.paywallCoinsNow"))
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                        HStack(spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 18))
-                                .foregroundStyle(AppColors.paywallCTAGreen)
-                            Text(L("onboarding.paywallCoinsMonthly"))
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                        HStack(spacing: 10) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 18))
-                                .foregroundStyle(AppColors.paywallCTAGreen)
-                            Text(L("onboarding.paywallNoAds"))
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Self.onboardingCardFill)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Self.onboardingCardStroke, lineWidth: 1)
-                        )
-                )
-                    .padding(.horizontal, 24)
-                    .padding(.top, 18)
-                
-                Spacer()
-                    .frame(height: 20)
-                
-                // Primary CTA — same green as screenshot (#3A7337, border #9CC899)
-                Button(action: {
-                    startTrialTapped()
-                }) {
-                    Text(isPurchasingTrial ? L("onboarding.paywallStarting") : L("onboarding.paywallCTA"))
-                        .font(.system(size: 19, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(AppColors.paywallCTAGreen)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(AppColors.paywallCTABorder, lineWidth: 2)
-                                )
-                        )
-                }
-                .disabled(isPurchasingTrial)
-                    .padding(.horizontal, 24)
-                
-                // Offer summary (price from App Store Connect)
-                Text(String(format: L("onboarding.paywallOfferSummary"), subscriptionManager.displayPrice(for: SubscriptionManager.annualProductId, fallback: "£9.99")))
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 28)
-                    .padding(.top, 8)
-                
-                // Restore Purchases
-                Button(action: { restoreTapped() }) {
-                    Text(L("onboarding.restorePurchases"))
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(Self.onboardingPrimaryText)
-                        .underline()
-                }
-                .disabled(isRestoring || isPurchasingTrial)
-                .padding(.top, 6)
-                
-                // Extra spacing so legal text sits further down the page
-                Spacer()
-                    .frame(height: 24)
-                
-                // Payment and renewal terms
-                Text(L("onboarding.paywallPaymentTerms"))
-                    .font(.system(size: 10, weight: .regular, design: .rounded))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 4)
-                
-                // Legal links
-                HStack(spacing: 6) {
-                    Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
-                        Text(L("settings.privacy"))
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                            .underline()
-                    }
-                    Text("•")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                    Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                        Text(L("settings.terms"))
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                            .underline()
-                    }
-                    Text("•")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                    Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                        Text(L("onboarding.termsOfUseEula"))
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                            .underline()
-                    }
-                }
-                .padding(.top, 8)
-                .padding(.bottom, 80)
-            }
-        }
-        .onAppear {
-            Task { await subscriptionManager.loadProducts() }
-        }
-        .alert(L("onboarding.restoreErrorAlertTitle"), isPresented: Binding(
-            get: { restoreError != nil },
-            set: { if !$0 { restoreError = nil } }
-        )) {
-            Button(L("common.ok")) { restoreError = nil }
-        } message: {
-            Text(restoreError ?? "")
-        }
-    }
-    
-    private func restoreTapped() {
-        HapticManager.shared.buttonPress()
-        isRestoring = true
-        restoreError = nil
-        Task {
-            do {
-                try await subscriptionManager.restorePurchases()
-                await MainActor.run {
-                    if let tier = subscriptionManager.activeSubscription, tier != .free {
-                        gameManager.upgradeSubscription(to: tier)
-                        HapticManager.shared.purchaseSuccess()
-                        completePaywallAndDismiss(subscribed: true)
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    restoreError = error.localizedDescription
-                }
-            }
-            await MainActor.run {
-                isRestoring = false
-            }
-        }
-    }
-    
-    private func startTrialTapped() {
-        HapticManager.shared.buttonPress()
-        isPurchasingTrial = true
-        paywallPurchaseError = nil
-        Task {
-            do {
-                try await subscriptionManager.purchaseSubscription(productId: SubscriptionManager.annualProductId)
-                await MainActor.run {
-                    gameManager.upgradeSubscription(to: .annual)
-                    HapticManager.shared.purchaseSuccess()
-                    completePaywallAndDismiss(subscribed: true)
-                }
-            } catch is CancellationError {
-                // User cancelled — do nothing
-            } catch {
-                await MainActor.run {
-                    paywallPurchaseError = error.localizedDescription
-                }
-            }
-            await MainActor.run {
-                isPurchasingTrial = false
-            }
-        }
-    }
-    
-    private func completePaywallAndDismiss(subscribed: Bool) {
+    private func completeOnboardingAndDismiss() {
         gameManager.gameState.hasCompletedPaywall = true
         gameManager.gameState.hasCompletedOnboarding = true
         withAnimation {
@@ -673,7 +398,6 @@ struct OnboardingView: View {
         }
     }
     
-    // MARK: - Helper Functions
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             DispatchQueue.main.async {

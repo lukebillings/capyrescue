@@ -1,6 +1,6 @@
 # Capybara Rescue App — Terms & Conditions
 
-**Last updated:** 2026-03-19  
+**Last updated:** 2026-03-26  
 **App name:** Capybara Rescue Universe (also referred to as “Capybara Rescue App”) (the “App”)  
 These Terms & Conditions (“Terms”) govern your use of the App. By downloading, accessing, or using the App, you agree to these Terms.
 
@@ -40,6 +40,10 @@ The App includes capped stats (for example, hunger/thirst/health/comfort) with a
 
 - If you use/buy a food or water item and the stat increase would exceed the remaining amount needed to reach **100**, the stat will increase to **100 and not higher**.
 - Any “extra” amount beyond the cap is **not carried over** and is **not refundable**.
+
+### Optional first-time tutorial (from version 1.14)
+
+If you use the **optional interactive walkthrough** for new players, the App may temporarily **lower food, drink, or happiness from 100 to 99** when you reach certain steps, if needed so you can still perform feeding, drinking, or petting and complete the tutorial. This only applies **while the walkthrough is active** and is meant to prevent the tutorial from becoming impossible to finish (for example if a stat was already full because of an earlier action).
 
 ### Removal or changes to Virtual Items / features (no compensation)
 

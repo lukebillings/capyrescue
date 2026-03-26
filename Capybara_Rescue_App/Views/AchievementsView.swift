@@ -170,7 +170,7 @@ struct AchievementRow: View {
     }
     
     private var repeatableCompletedCount: Int {
-        guard achievement.isRepeatable, let key = achievement.countKey, let milestone = achievement.milestone else { return 0 }
+        guard achievement.isRepeatable, achievement.countKey != nil, let milestone = achievement.milestone else { return 0 }
         let last = gameState.achievementRepeatLastGranted[achievement.id] ?? 0
         return last / milestone
     }

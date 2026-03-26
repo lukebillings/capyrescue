@@ -23,13 +23,8 @@ class HapticManager {
         notificationGenerator.prepare()
     }
     
-    var isEnabled: Bool {
-        SettingsManager.shared.hapticEnabled
-    }
-    
     // MARK: - Menu Navigation
     func menuTabChanged() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -40,7 +35,6 @@ class HapticManager {
     
     // MARK: - Petting Capybara
     func petCapybara() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -51,7 +45,6 @@ class HapticManager {
     
     // MARK: - Throwing Food/Drink
     func throwItem() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -62,7 +55,6 @@ class HapticManager {
     
     // MARK: - Item Consumed
     func itemConsumed() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -73,7 +65,6 @@ class HapticManager {
     
     // MARK: - Purchase Success
     func purchaseSuccess() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -84,7 +75,6 @@ class HapticManager {
     
     // MARK: - Purchase Failed (not enough coins)
     func purchaseFailed() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -95,7 +85,6 @@ class HapticManager {
     
     // MARK: - Button Press
     func buttonPress() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()
@@ -106,7 +95,6 @@ class HapticManager {
     
     // MARK: - Selection
     func selection() {
-        guard isEnabled else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.prepareGenerators()

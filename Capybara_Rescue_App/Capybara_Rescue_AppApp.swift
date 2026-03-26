@@ -1,6 +1,16 @@
 import SwiftUI
 import UserNotifications
 
+// MARK: - Deep link / notification routing
+extension Notification.Name {
+    /// Posted when the user should land on the Items tab (e.g. hat promo notification tap).
+    static let capybaraOpenItems = Notification.Name("capybaraOpenItems")
+}
+
+private enum PendingNotificationDeepLink {
+    static let openItemsKey = "pending_open_items"
+}
+
 // MARK: - Notification Delegate
 class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     // Show notifications even when app is in foreground
@@ -9,8 +19,15 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound, .badge])
     }
     
-    // Handle notification tap
+    // Handle notification tap — hat promo opens Items / shop flow
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let userInfo = response.notification.request.content.userInfo
+        if let action = userInfo["action"] as? String, action == "openItems" {
+            UserDefaults.standard.set(true, forKey: PendingNotificationDeepLink.openItemsKey)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: .capybaraOpenItems, object: nil)
+            }
+        }
         completionHandler()
     }
 }
