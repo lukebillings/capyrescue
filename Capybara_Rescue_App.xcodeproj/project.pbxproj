@@ -31,6 +31,7 @@
 		81B460122F328CB300F10BC3 /* Pizza Hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460102F328CB300F10BC3 /* Pizza Hat.usdz */; };
 		81B460132F328CB300F10BC3 /* Cone.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81B460112F328CB300F10BC3 /* Cone.usdz */; };
 		81B4602F2F325EB500F10BC3 /* SubscriptionPlanRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B4602E2F325EB500F10BC3 /* SubscriptionPlanRow.swift */; };
+		81D722532F81D793009E29DF /* Bunny ears.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81D722522F81D793009E29DF /* Bunny ears.usdz */; };
 		81FA1C312EF1C0180060CEF1 /* Baseball cap.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */; };
 		81FA1C322EF1C0180060CEF1 /* Propeller hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C2F2EF1C0180060CEF1 /* Propeller hat.usdz */; };
 		81FA1C332EF1C0180060CEF1 /* Wizard hat.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 81FA1C302EF1C0180060CEF1 /* Wizard hat.usdz */; };
@@ -83,6 +84,7 @@
 		81B460102F328CB300F10BC3 /* Pizza Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Pizza Hat.usdz"; sourceTree = "<group>"; };
 		81B460112F328CB300F10BC3 /* Cone.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = Cone.usdz; sourceTree = "<group>"; };
 		81B4602E2F325EB500F10BC3 /* SubscriptionPlanRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionPlanRow.swift; sourceTree = "<group>"; };
+		81D722522F81D793009E29DF /* Bunny ears.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Bunny ears.usdz"; sourceTree = "<group>"; };
 		81FA1C2A2EF1C0180060CEF1 /* Baseball cap.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Baseball cap.usdz"; sourceTree = "<group>"; };
 		81FA1C2C2EF1C0180060CEF1 /* Fox Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fox Hat.usdz"; sourceTree = "<group>"; };
 		81FA1C2D2EF1C0180060CEF1 /* Frog Hat.usdz */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Frog Hat.usdz"; sourceTree = "<group>"; };
@@ -179,6 +181,7 @@
 		6A4EBD8C9E039AD0A94263EA /* Capybara_Rescue_App */ = {
 			isa = PBXGroup;
 			children = (
+				81D722522F81D793009E29DF /* Bunny ears.usdz */,
 				815001F82F0ED46A00CFB91C /* Capybara_Rescue_App.entitlements */,
 				8154EAB32F3B8ABB0054066B /* red-lantern.usdz */,
 				81B460112F328CB300F10BC3 /* Cone.usdz */,
@@ -336,6 +339,7 @@
 				81FA1C362EF1C0180060CEF1 /* Frog Hat.usdz in Resources */,
 				812229202EF1EDE100E86DDC /* Cowboy Hat 2.usdz in Resources */,
 				A0C8E6B188B95E4E79649165 /* Assets.xcassets in Resources */,
+				81D722532F81D793009E29DF /* Bunny ears.usdz in Resources */,
 				L10N00032F325EB500F10BC3 /* Localizable in Resources */,
 				3CEC1F77093623FE7A71F1C1 /* Capybara.usdz in Resources */,
 				B7BAA23666F97237BF33B7B7 /* Santahat.usdz in Resources */,

@@ -626,6 +626,8 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return 0.15
         } else if fileName.contains("Propeller") {
             return 0.15
+        } else if fileName.contains("Bunny") {
+            return 0.38
         } else if fileName.contains("Fox") {
             return 0.35
         } else if fileName.contains("Frog") {
@@ -681,7 +683,7 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return SCNVector3(0, 0.1, 1.5)
         } else if fileName.contains("Cowboy") {
             return SCNVector3(0, 0.1, 0.8)
-        } else if fileName.contains("Santa") || fileName.contains("Fox") || fileName.contains("Frog") {
+        } else if fileName.contains("Santa") || fileName.contains("Bunny") || fileName.contains("Fox") || fileName.contains("Frog") {
             return SCNVector3(0, 0.1, 0.3)
         } else {
             return SCNVector3(0, 0.1, 0.6)
