@@ -61,6 +61,16 @@ Baseball cap by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/
 - **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 - **Link**: [Poly Pizza](https://poly.pizza/m/aaC5GgcWEhM)
 
+## Bunny Ears Model
+
+Bunny ears by Poly by Google [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/8JXxwJPbL6K)
+
+- **Model**: Bunny ears
+- **Source**: Poly by Google
+- **License**: [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+- **Link**: [Poly Pizza](https://poly.pizza/m/8JXxwJPbL6K)
+- **File**: `Bunny ears.usdz`
+
 ## Propeller Hat Model
 
 Propeller hat by jeremy [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/0vAOG_PcdNb)
