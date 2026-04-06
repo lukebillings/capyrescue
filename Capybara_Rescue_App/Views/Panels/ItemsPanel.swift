@@ -52,26 +52,37 @@ struct ItemsPanel: View {
                             }
                         }
                         
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 16) {
-                                ForEach(filteredItems) { item in
-                                    AccessoryItemButton(
-                                        item: item,
-                                        isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
-                                        isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
-                                        canAfford: gameManager.canAfford(item.cost),
-                                        isPreviewing: previewingItemId == item.id,
-                                        hasPro: gameManager.hasProSubscription()
-                                    ) {
-                                        handleItemAction(item)
+                        ScrollViewReader { proxy in
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 16) {
+                                    ForEach(filteredItems) { item in
+                                        AccessoryItemButton(
+                                            item: item,
+                                            isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                            isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                            canAfford: gameManager.canAfford(item.cost),
+                                            isPreviewing: previewingItemId == item.id,
+                                            hasPro: gameManager.hasProSubscription()
+                                        ) {
+                                            handleItemAction(item)
+                                        }
+                                        .frame(width: 78)
+                                        .id(item.id)
                                     }
-                                    .frame(width: 78)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                            }
+                            .frame(height: 100)
+                            .onAppear {
+                                syncBunnyEarsPromoScroll(using: proxy)
+                            }
+                            .onChange(of: gameManager.showBunnyEarsItemsPromoBanner) { _, isShowing in
+                                if isShowing {
+                                    syncBunnyEarsPromoScroll(using: proxy)
                                 }
                             }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
                         }
-                        .frame(height: 100)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
@@ -103,26 +114,37 @@ struct ItemsPanel: View {
                                 }
                             }
                             
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 16) {
-                                    ForEach(filteredItems) { item in
-                                        AccessoryItemButton(
-                                            item: item,
-                                            isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
-                                            isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
-                                            canAfford: gameManager.canAfford(item.cost),
-                                            isPreviewing: previewingItemId == item.id,
-                                            hasPro: gameManager.hasProSubscription()
-                                        ) {
-                                            handleItemAction(item)
+                            ScrollViewReader { proxy in
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 16) {
+                                        ForEach(filteredItems) { item in
+                                            AccessoryItemButton(
+                                                item: item,
+                                                isOwned: gameManager.gameState.ownedAccessories.contains(item.id),
+                                                isEquipped: gameManager.gameState.equippedAccessories.contains(item.id),
+                                                canAfford: gameManager.canAfford(item.cost),
+                                                isPreviewing: previewingItemId == item.id,
+                                                hasPro: gameManager.hasProSubscription()
+                                            ) {
+                                                handleItemAction(item)
+                                            }
+                                            .frame(width: 78)
+                                            .id(item.id)
                                         }
-                                        .frame(width: 78)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                }
+                                .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
+                                .onAppear {
+                                    syncBunnyEarsPromoScroll(using: proxy)
+                                }
+                                .onChange(of: gameManager.showBunnyEarsItemsPromoBanner) { _, isShowing in
+                                    if isShowing {
+                                        syncBunnyEarsPromoScroll(using: proxy)
                                     }
                                 }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 6)
                             }
-                            .frame(height: max(100, min(geometry.size.height * 0.55, 120)))
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -206,6 +228,17 @@ struct ItemsPanel: View {
                     showHatEquipError = false
                 }
             )
+        }
+    }
+    
+    private func syncBunnyEarsPromoScroll(using proxy: ScrollViewProxy) {
+        guard gameManager.showBunnyEarsItemsPromoBanner else { return }
+        guard filteredItems.contains(where: { $0.id == "bunnyears" }) else { return }
+        previewingItemId = "bunnyears"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.easeInOut(duration: 0.35)) {
+                proxy.scrollTo("bunnyears", anchor: .center)
+            }
         }
     }
     
@@ -364,6 +397,9 @@ struct CategoryTab: View {
 
 // MARK: - Accessory Item Button
 struct AccessoryItemButton: View {
+    private static let previewCornerRadius: CGFloat = 10
+    private static let previewSize: CGFloat = 54
+    
     let item: AccessoryItem
     let isOwned: Bool
     let isEquipped: Bool
@@ -372,28 +408,41 @@ struct AccessoryItemButton: View {
     let hasPro: Bool
     let action: () -> Void
     
+    private var itemPreviewRoundedRect: RoundedRectangle {
+        RoundedRectangle(cornerRadius: Self.previewCornerRadius, style: .continuous)
+    }
+    
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
-                // 3D Model Preview (smaller to fit reduced card)
+                // 3D model preview (rounded rect — not circular)
                 ZStack {
-                    Circle()
-                        .fill(backgroundColor)
-                        .frame(width: 54, height: 54)
+                    if item.id != "bunnyears" {
+                        itemPreviewRoundedRect
+                            .fill(backgroundColor)
+                            .frame(width: Self.previewSize, height: Self.previewSize)
+                    }
                     
-                    if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
+                    if item.id == "bunnyears" {
+                        Image("BunnyEarsReference")
+                            .resizable()
+                            .scaledToFit()
+                            .padding(2)
+                            .frame(width: Self.previewSize, height: Self.previewSize)
+                            .clipShape(itemPreviewRoundedRect)
+                    } else if let modelFileName = item.modelFileName, !modelFileName.isEmpty {
                         HatPreview3DView(fileName: modelFileName)
-                            .frame(width: 54, height: 54)
-                            .clipShape(Circle())
+                            .frame(width: Self.previewSize, height: Self.previewSize)
+                            .clipShape(itemPreviewRoundedRect)
                     } else {
                         Text(item.emoji)
                             .font(.system(size: 32))
                     }
                     
                     if isEquipped {
-                        Circle()
+                        itemPreviewRoundedRect
                             .stroke(Color(hex: "1a5f1a"), lineWidth: 2.5)
-                            .frame(width: 54, height: 54)
+                            .frame(width: Self.previewSize, height: Self.previewSize)
                         
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
@@ -424,7 +473,7 @@ struct AccessoryItemButton: View {
                                     .offset(x: -4, y: -4)
                             }
                         }
-                        .frame(width: 54, height: 54)
+                        .frame(width: Self.previewSize, height: Self.previewSize)
                     }
                 }
                 
@@ -627,7 +676,8 @@ struct HatPreviewSceneView: UIViewRepresentable {
         } else if fileName.contains("Propeller") {
             return 0.15
         } else if fileName.contains("Bunny") {
-            return 0.38
+            // Face-on framing: both ears + pink inner visible in the item preview.
+            return 0.042
         } else if fileName.contains("Fox") {
             return 0.35
         } else if fileName.contains("Frog") {
@@ -661,17 +711,23 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return SCNVector3(0, 0.0, 0.0) // Centered
         } else if fileName.contains("Pizza") {
             return SCNVector3(0, 0.0, 0.0) // Centered
+        } else if fileName.contains("Bunny") {
+            return SCNVector3(0, 0.035, 0)
         } else {
             return SCNVector3(0, 0.0, 0.0) // Default centered
         }
     }
     
-    // Preview-specific Y rotation (in radians)
-    private func previewYRotation(for fileName: String) -> Float {
-        if fileName.contains("Frog") {
-            return .pi / 2 // 90 degrees so frog faces user
-        } else {
-            return 0
+    /// Per-hat preview orientation so thumbnails match how items read on the capybara / face the user.
+    private func applyPreviewRotation(to node: SCNNode, fileName: String) {
+        node.eulerAngles = SCNVector3(0, 0, 0)
+        if fileName.contains("Bunny") {
+            // Face-on for this asset: stand ears upright, then quarter-turn so broad surfaces face camera.
+            node.eulerAngles.x = 0
+            node.eulerAngles.y = .pi / 2
+            node.eulerAngles.z = .pi / 2
+        } else if fileName.contains("Frog") {
+            node.eulerAngles.y = .pi / 2
         }
     }
     
@@ -683,7 +739,10 @@ struct HatPreviewSceneView: UIViewRepresentable {
             return SCNVector3(0, 0.1, 1.5)
         } else if fileName.contains("Cowboy") {
             return SCNVector3(0, 0.1, 0.8)
-        } else if fileName.contains("Santa") || fileName.contains("Bunny") || fileName.contains("Fox") || fileName.contains("Frog") {
+        } else if fileName.contains("Bunny") {
+            // Unused when look(at:) is applied in makeUIView for Bunny.
+            return SCNVector3(0, 0.06, 0.5)
+        } else if fileName.contains("Santa") || fileName.contains("Fox") || fileName.contains("Frog") {
             return SCNVector3(0, 0.1, 0.3)
         } else {
             return SCNVector3(0, 0.1, 0.6)
@@ -705,7 +764,16 @@ struct HatPreviewSceneView: UIViewRepresentable {
         cameraNode.camera = SCNCamera()
         cameraNode.camera?.zNear = 0.01
         cameraNode.camera?.zFar = 10.0
-        cameraNode.position = cameraPosition(for: fileName)
+        if fileName.contains("Bunny") {
+            // Straight-on to ear fronts: camera level with hat, looking along −Z.
+            let p = previewPosition(for: fileName)
+            let eyeY = p.y + 0.025
+            let focus = SCNVector3(p.x, eyeY, p.z)
+            cameraNode.position = SCNVector3(p.x, eyeY, 0.52)
+            cameraNode.look(at: focus, up: SCNVector3(0, 1, 0), localFront: SCNVector3(0, 0, -1))
+        } else {
+            cameraNode.position = cameraPosition(for: fileName)
+        }
         scene.rootNode.addChildNode(cameraNode)
         
         // Add lighting matching original implementation
@@ -726,25 +794,43 @@ struct HatPreviewSceneView: UIViewRepresentable {
         ambientLight.look(at: SCNVector3(0, 0, 0))
         scene.rootNode.addChildNode(ambientLight)
         
+        if fileName.contains("Bunny") {
+            let fillLight = SCNNode()
+            fillLight.light = SCNLight()
+            fillLight.light?.type = .directional
+            fillLight.light?.intensity = 1400
+            fillLight.light?.castsShadow = false
+            fillLight.position = SCNVector3(0, 0.06, 0.72)
+            fillLight.look(at: SCNVector3(0, 0.045, 0))
+            scene.rootNode.addChildNode(fillLight)
+        }
+        
         // Load hat model
         guard !fileName.isEmpty else {
             return sceneView
         }
         
-        guard let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz") else {
+        let usdzURL = Bundle.main.url(forResource: fileName, withExtension: "usdz")
+            ?? Bundle.main.url(forResource: fileName.replacingOccurrences(of: " ", with: "_"), withExtension: "usdz")
+        guard let usdzURL else {
             print("⚠️ Hat file not found: \(fileName).usdz")
             return sceneView
         }
         
         do {
             let hatScene = try SCNScene(url: usdzURL, options: [.checkConsistency: true])
+            let sourceRoot = hatScene.rootNode
             
             // Create container node for transformations
             let containerNode = SCNNode()
             
-            // Add all nodes from the loaded scene
-            for child in hatScene.rootNode.childNodes {
-                containerNode.addChildNode(child.clone())
+            // Many USDZ hats attach geometry on the root with no child nodes; only cloning children leaves an empty preview.
+            if sourceRoot.childNodes.isEmpty {
+                containerNode.addChildNode(sourceRoot.clone())
+            } else {
+                for child in sourceRoot.childNodes {
+                    containerNode.addChildNode(child.clone())
+                }
             }
             
             // Apply scale (matching original values)
@@ -754,8 +840,7 @@ struct HatPreviewSceneView: UIViewRepresentable {
             // Apply position offset (matching original values)
             containerNode.position = previewPosition(for: fileName)
             
-            // Apply rotation
-            containerNode.eulerAngles.y = previewYRotation(for: fileName)
+            applyPreviewRotation(to: containerNode, fileName: fileName)
             
             scene.rootNode.addChildNode(containerNode)
             
