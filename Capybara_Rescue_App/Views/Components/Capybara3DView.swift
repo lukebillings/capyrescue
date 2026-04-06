@@ -199,6 +199,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let piratehatPosition: SIMD3<Float> = [-0.1, 4.4, 2.2]
     private static let propellerhatPosition: SIMD3<Float> = [0, 4.2, 2.5]
     private static let froghatPosition: SIMD3<Float> = [0, 4.3, 2.2]
+    private static let bunnyearsPosition: SIMD3<Float> = [0, 4.4, 2.25]
     private static let foxhatPosition: SIMD3<Float> = [0, 4.3, 1.9]
     private static let santahatPosition: SIMD3<Float> = [-0.1, 4.8, 2.5]
 
@@ -212,6 +213,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let piratehatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
     private static let propellerhatScale: SIMD3<Float> = [0.2, 0.2, 0.2]
     private static let froghatScale: SIMD3<Float> = [2, 2, 2]
+    private static let bunnyearsScale: SIMD3<Float> = [0.01, 0.01, 0.01]
     private static let foxhatScale: SIMD3<Float> = [2.8, 2.8, 2.8]
     private static let conePosition: SIMD3<Float> = [0, 4.5, 2.4]
     private static let coneScale: SIMD3<Float> = [1.2, 1.2, 1.2]
@@ -240,6 +242,8 @@ struct RealityKitView: UIViewRepresentable {
             return Self.propellerhatPosition
         case "froghat":
             return Self.froghatPosition
+        case "bunnyears":
+            return Self.bunnyearsPosition
         case "foxhat":
             return Self.foxhatPosition
         case "santahat":
@@ -277,6 +281,8 @@ struct RealityKitView: UIViewRepresentable {
             return Self.propellerhatScale
         case "froghat":
             return Self.froghatScale
+        case "bunnyears":
+            return Self.bunnyearsScale
         case "foxhat":
             return Self.foxhatScale
         case "cone":

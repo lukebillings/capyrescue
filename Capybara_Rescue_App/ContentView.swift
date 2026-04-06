@@ -19,6 +19,8 @@ struct ContentView: View {
     @State private var currentTutorialStep: TutorialStep? = nil
     @State private var shouldApplyInitialRotation = false
     @State private var showCNYPopup = false
+    @State private var pendingBunnyEarsPromoAfterCNY = false
+    @State private var bunnyEarsPromoRequestID = 0
 
     private let capybaraVisualOffsetY: CGFloat = 15
     
@@ -71,6 +73,7 @@ struct ContentView: View {
     }
     
     private func openItemsFromNotification() {
+        guard !gameManager.gameState.ownedAccessories.contains("bunnyears") else { return }
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             selectedTab = .items
             showPanel = true
@@ -82,6 +85,33 @@ struct ContentView: View {
         if UserDefaults.standard.bool(forKey: Self.pendingOpenItemsDefaultsKey) {
             UserDefaults.standard.set(false, forKey: Self.pendingOpenItemsDefaultsKey)
             openItemsFromNotification()
+        }
+    }
+    
+    private func openItemsWithBunnyEarsPromo() {
+        guard !gameManager.gameState.ownedAccessories.contains("bunnyears") else { return }
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            selectedTab = .items
+            showPanel = true
+            showShopSheet = false
+        }
+        gameManager.presentBunnyEarsItemsPromo()
+    }
+    
+    /// After delay: open Items + Bunny Ears nudge, or queue behind CNY popup.
+    private func requestBunnyEarsPromoAfterDelay() {
+        bunnyEarsPromoRequestID += 1
+        let request = bunnyEarsPromoRequestID
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+            guard request == bunnyEarsPromoRequestID else { return }
+            guard !showOnboarding else { return }
+            guard gameManager.gameState.hasCompletedTutorial else { return }
+            guard !gameManager.gameState.ownedAccessories.contains("bunnyears") else { return }
+            if showCNYPopup {
+                pendingBunnyEarsPromoAfterCNY = true
+            } else {
+                openItemsWithBunnyEarsPromo()
+            }
         }
     }
     
@@ -126,6 +156,7 @@ struct ContentView: View {
                                 showCNYPopup = true
                             }
                         }
+                        requestBunnyEarsPromoAfterDelay()
                     }
             }
         }
@@ -139,9 +170,17 @@ struct ContentView: View {
         .onChange(of: localizationManager.currentLanguage) { _, _ in
             gameManager.refreshHatPromotionNotification()
         }
-        .onChange(of: scenePhase) { _, phase in
+        .onChange(of: scenePhase) { oldPhase, phase in
             if phase == .active, !showOnboarding {
                 consumePendingOpenItemsIfNeeded()
+                if oldPhase != .active {
+                    requestBunnyEarsPromoAfterDelay()
+                }
+            }
+        }
+        .onChange(of: gameManager.gameState.hasCompletedTutorial) { _, completed in
+            if completed, !showOnboarding {
+                requestBunnyEarsPromoAfterDelay()
             }
         }
         .onChange(of: gameManager.gameState.hasCompletedOnboarding) { oldValue, newValue in
@@ -273,15 +312,28 @@ struct ContentView: View {
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     
-                    // Stats display
-                    StatsDisplayView(
-                        food: gameManager.gameState.food,
-                        drink: gameManager.gameState.drink,
-                        happiness: gameManager.gameState.happiness
-                    )
+                    // Stats display (Bunny Ears promo banner overlays this row when active)
+                    ZStack {
+                        StatsDisplayView(
+                            food: gameManager.gameState.food,
+                            drink: gameManager.gameState.drink,
+                            happiness: gameManager.gameState.happiness
+                        )
+                        
+                        if gameManager.showBunnyEarsItemsPromoBanner, selectedTab == .items, showPanel {
+                            BunnyEarsItemsPromoBanner(
+                                capybaraName: gameManager.gameState.capybaraName,
+                                onDismiss: {
+                                    gameManager.dismissBunnyEarsItemsPromoBanner()
+                                }
+                            )
+                            .padding(.horizontal, 10)
+                            .transition(.scale(scale: 0.95).combined(with: .opacity))
+                        }
+                    }
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
-                    .zIndex(0) // Stats behind capybara
+                    .zIndex(0) // Stats + banner behind capybara
                     
                     Spacer()
                     
@@ -421,6 +473,12 @@ struct ContentView: View {
                     ChineseNewYearPopup(onDismiss: {
                         showCNYPopup = false
                         gameManager.markCNYPopupSeen()
+                        if pendingBunnyEarsPromoAfterCNY {
+                            pendingBunnyEarsPromoAfterCNY = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                openItemsWithBunnyEarsPromo()
+                            }
+                        }
                     })
                     .zIndex(203) // Above everything
                 }
@@ -525,6 +583,7 @@ struct ContentView: View {
         case .items:
             ItemsPanel(
                 onBack: {
+                    gameManager.dismissBunnyEarsItemsPromoBanner()
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         showPanel = false // Go back to master panel
                     }
@@ -591,6 +650,59 @@ struct AnimatedBackground: View {
     var body: some View {
         Color(hex: colorScheme == .dark ? "1a1a2e" : "FFF8E7")
             .ignoresSafeArea()
+    }
+}
+
+// MARK: - Bunny Ears Items promo banner (golden strip under status bar)
+struct BunnyEarsItemsPromoBanner: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
+    let capybaraName: String
+    let onDismiss: () -> Void
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text(String(format: L("promo.bunnyEarsBannerFormat"), capybaraName))
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(hex: "3d2f00"))
+                .multilineTextAlignment(.leading)
+                .minimumScaleFactor(0.8)
+                .lineLimit(4)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            Button(action: {
+                HapticManager.shared.buttonPress()
+                onDismiss()
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 22))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(Color(hex: "3d2f00").opacity(0.55))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(L("common.dismiss"))
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .background(
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "FFE566"),
+                            Color(hex: "FFD700"),
+                            Color(hex: "F5A623")
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        )
+        .overlay(
+            Capsule()
+                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        )
+        .shadow(color: Color(hex: "F5A623").opacity(0.45), radius: 12, x: 0, y: 5)
     }
 }
 

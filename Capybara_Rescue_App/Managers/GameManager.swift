@@ -4,6 +4,9 @@ import Combine
 @preconcurrency import UserNotifications
 import StoreKit
 
+/// File scope so UNUserNotificationCenter Sendable callbacks can compare identifiers without MainActor isolation.
+private let hatPromoNotificationIdentifier = "bunny_hat_promo_weekly"
+
 // MARK: - Game Manager
 @MainActor
 class GameManager: ObservableObject {
@@ -22,6 +25,8 @@ class GameManager: ObservableObject {
     /// When set to "food", "drink", or "happiness", triggers confetti + sound (stat reached 100). Cleared by UI after animation.
     @Published var stat100ConfettiTrigger: String? = nil
     @Published var previewingAccessoryId: String? = nil // For previewing items before purchase
+    /// Golden banner on Items when nudging toward Bunny Ears (launch / resume promo).
+    @Published var showBunnyEarsItemsPromoBanner: Bool = false
     @Published var toastMessage: String? = nil // For showing toast messages to user
     /// When set, UI shows celebration popup + confetti: "Well done on [name], here's [X] coins."
     @Published var recentAchievement: (name: String, coins: Int)? = nil
@@ -30,9 +35,6 @@ class GameManager: ObservableObject {
     private let storageKey = "capybara_rescue_game_state"
     private var isSaving = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
-    
-    /// Repeating local notification (every 3 days) to nudge Items / hats. Preserved when rescheduling stat alerts.
-    private static let hatPromoNotificationId = "hat_promo_every_3_days"
 
     // MARK: - StoreKit (IAP)
     @Published private(set) var iapProducts: [String: Product] = [:]
@@ -564,6 +566,15 @@ class GameManager: ObservableObject {
         gameState.capycoins -= item.cost
         
         gameState.ownedAccessories.append(item.id)
+        
+        // Once Bunny ears are owned, stop all Bunny promo surfaces.
+        if item.id == "bunnyears" {
+            showBunnyEarsItemsPromoBanner = false
+            if previewingAccessoryId == "bunnyears" {
+                previewingAccessoryId = nil
+            }
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [hatPromoNotificationIdentifier])
+        }
         return true
     }
     
@@ -577,6 +588,17 @@ class GameManager: ObservableObject {
     
     func previewAccessory(_ itemId: String) {
         previewingAccessoryId = itemId
+    }
+    
+    /// Opens Items flow with Bunny Ears preview + top banner (no modal).
+    func presentBunnyEarsItemsPromo() {
+        guard !gameState.ownedAccessories.contains("bunnyears") else { return }
+        showBunnyEarsItemsPromoBanner = true
+        previewAccessory("bunnyears")
+    }
+    
+    func dismissBunnyEarsItemsPromoBanner() {
+        showBunnyEarsItemsPromoBanner = false
     }
     
     func clearPreview() {
@@ -692,13 +714,16 @@ class GameManager: ObservableObject {
         refreshHatPromotionNotification()
     }
     
-    /// Refreshes hat promo copy (e.g. after rename or language change). Resets the 3-day repeating timer.
+    /// Refreshes Bunny-hat promo copy. Resets the weekly repeating timer.
     func refreshHatPromotionNotification() {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.hatPromoNotificationId])
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [hatPromoNotificationIdentifier])
+        guard !gameState.ownedAccessories.contains("bunnyears") else { return }
         guard SettingsManager.shared.notificationsEnabled else { return }
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             guard settings.authorizationStatus == .authorized else { return }
-            self.addHatPromoNotificationRequest()
+            Task { @MainActor in
+                self.addHatPromoNotificationRequest()
+            }
         }
     }
     
@@ -863,6 +888,7 @@ class GameManager: ObservableObject {
         showRunAwayAlert = false
         thrownItem = nil
         previewingAccessoryId = nil
+        showBunnyEarsItemsPromoBanner = false
         recentAchievement = nil
         stat100ConfettiTrigger = nil
         toastMessage = nil
@@ -1019,7 +1045,7 @@ class GameManager: ObservableObject {
             
             // Cancel pending requests except the 3-day hat promo (keep its repeating fire schedule)
             UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-                let keepIds: Set<String> = [Self.hatPromoNotificationId]
+                let keepIds: Set<String> = [hatPromoNotificationIdentifier]
                 let toRemove = requests.map(\.identifier).filter { !keepIds.contains($0) }
                 UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: toRemove)
                 
@@ -1084,31 +1110,37 @@ class GameManager: ObservableObject {
         }
     }
     
-    /// Ensures the repeating 3-day hat promo exists (does not replace an existing one — keeps schedule).
+    /// Ensures the repeating Bunny-hat promo exists (keeps schedule if already present).
     private func ensureHatPromoScheduled() {
+        guard !gameState.ownedAccessories.contains("bunnyears") else {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [hatPromoNotificationIdentifier])
+            return
+        }
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            guard !requests.contains(where: { $0.identifier == Self.hatPromoNotificationId }) else { return }
-            self.addHatPromoNotificationRequest()
+            guard !requests.contains(where: { $0.identifier == hatPromoNotificationIdentifier }) else { return }
+            Task { @MainActor in
+                self.addHatPromoNotificationRequest()
+            }
         }
     }
     
     private func addHatPromoNotificationRequest() {
-        let name = gameState.capybaraName
+        guard !gameState.ownedAccessories.contains("bunnyears") else { return }
         let content = UNMutableNotificationContent()
-        content.title = L("notification.hatPromoTitle")
-        content.body = String(format: L("notification.hatPromoBody"), name)
+        content.title = "Bunny hat now available!"
+        content.body = "Bunny hat now available to purchase!"
         content.sound = .default
         content.userInfo = ["action": "openItems"]
         
-        let threeDays: TimeInterval = 3 * 24 * 60 * 60
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: threeDays, repeats: true)
-        let request = UNNotificationRequest(identifier: Self.hatPromoNotificationId, content: content, trigger: trigger)
+        let oneWeek: TimeInterval = 7 * 24 * 60 * 60
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: oneWeek, repeats: true)
+        let request = UNNotificationRequest(identifier: hatPromoNotificationIdentifier, content: content, trigger: trigger)
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("❌ Failed to schedule hat promo notification: \(error.localizedDescription)")
             } else {
-                print("✅ Scheduled repeating hat / Items promo (every 3 days)")
+                print("✅ Scheduled repeating Bunny-hat promo (every 7 days)")
             }
         }
     }
