@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UserNotifications
 
 // MARK: - Deep link / notification routing
@@ -11,15 +12,18 @@ private enum PendingNotificationDeepLink {
     static let openItemsKey = "pending_open_items"
 }
 
-// MARK: - Notification Delegate
-class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
-    // Show notifications even when app is in foreground
+// MARK: - App lifecycle + notifications
+final class CapybaraRescueAppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        AppIconABExperiment.applyAssignedVariantIfNeeded()
+        return true
+    }
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        // Show notification banner, sound, and badge even when app is in foreground
         completionHandler([.banner, .sound, .badge])
     }
-    
-    // Handle notification tap — hat promo opens Items / shop flow
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         let userInfo = response.notification.request.content.userInfo
         if let action = userInfo["action"] as? String, action == "openItems" {
@@ -34,14 +38,9 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
 @main
 struct CapybaraRescueUniverseApp: App {
+    @UIApplicationDelegateAdaptor(CapybaraRescueAppDelegate.self) private var appDelegate
     @StateObject private var gameManager = GameManager()
-    private let notificationDelegate = NotificationDelegate()
     @Environment(\.scenePhase) private var scenePhase
-    
-    init() {
-        // Set up notification delegate to show notifications in foreground
-        UNUserNotificationCenter.current().delegate = notificationDelegate
-    }
     
     var body: some Scene {
         WindowGroup {

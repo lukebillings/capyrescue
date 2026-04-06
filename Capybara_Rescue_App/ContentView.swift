@@ -73,6 +73,7 @@ struct ContentView: View {
     }
     
     private func openItemsFromNotification() {
+        guard !gameManager.gameState.ownedAccessories.contains("bunnyears") else { return }
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
             selectedTab = .items
             showPanel = true
