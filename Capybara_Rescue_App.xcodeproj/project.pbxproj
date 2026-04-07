@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -103,7 +103,7 @@
 		6A618FE15CB488475DCDD6B0 /* AchievementsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsView.swift; sourceTree = "<group>"; };
 		6DDFA56CF0B9269F8C2C510F /* Capybara.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = Capybara.usdz; sourceTree = "<group>"; };
 		6E07B8ADA9B36ACB51F88005 /* RunAwayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunAwayView.swift; sourceTree = "<group>"; };
-		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6FFBB0356803EFE033303F69 /* Capybara_Rescue_App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Capybara_Rescue_App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C180BDDBDF6ED33A0874605 /* ItemsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsPanel.swift; sourceTree = "<group>"; };
 		8C99258A5050BE2B6E7997BB /* MasterPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterPanel.swift; sourceTree = "<group>"; };
 		8FB62B7FFA6666639B5F48D2 /* CoinDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDisplayView.swift; sourceTree = "<group>"; };
@@ -314,7 +314,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					4545D64289BB1BF349F343AC = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -329,7 +328,6 @@
 			);
 			mainGroup = 449565BE8651469C1122D5B8;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -429,7 +427,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 21;
+				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
@@ -446,6 +445,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -461,7 +461,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				CURRENT_PROJECT_VERSION = 21;
+				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
@@ -478,6 +479,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.capybara.rescue;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
