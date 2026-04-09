@@ -156,7 +156,6 @@ struct ContentView: View {
                                 showCNYPopup = true
                             }
                         }
-                        requestBunnyEarsPromoAfterDelay()
                     }
             }
         }
@@ -170,12 +169,9 @@ struct ContentView: View {
         .onChange(of: localizationManager.currentLanguage) { _, _ in
             gameManager.refreshHatPromotionNotification()
         }
-        .onChange(of: scenePhase) { oldPhase, phase in
+        .onChange(of: scenePhase) { _, phase in
             if phase == .active, !showOnboarding {
                 consumePendingOpenItemsIfNeeded()
-                if oldPhase != .active {
-                    requestBunnyEarsPromoAfterDelay()
-                }
             }
         }
         .onChange(of: gameManager.gameState.hasCompletedTutorial) { _, completed in

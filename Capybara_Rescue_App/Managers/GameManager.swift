@@ -36,6 +36,12 @@ class GameManager: ObservableObject {
     private var isSaving = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
 
+    /// Local backup for onboarding/tutorial completion so progress survives iCloud hiccups or stale sync.
+    private enum ProgressDefaultsKey {
+        static let hasCompletedOnboarding = "has_completed_onboarding"
+        static let hasCompletedTutorial = "has_completed_tutorial"
+    }
+
     // MARK: - StoreKit (IAP)
     @Published private(set) var iapProducts: [String: Product] = [:]
     @Published private(set) var isIAPLoading: Bool = false
@@ -151,31 +157,35 @@ class GameManager: ObservableObject {
             self.gameState = GameState.defaultState
             print("ℹ️ Using default game state (first launch or no iCloud data)")
         }
+        applyProgressFlagsFromUserDefaults()
+    }
+
+    private func clearProgressDefaultsBackup() {
+        UserDefaults.standard.removeObject(forKey: ProgressDefaultsKey.hasCompletedOnboarding)
+        UserDefaults.standard.removeObject(forKey: ProgressDefaultsKey.hasCompletedTutorial)
+    }
+
+    /// Merges locally stored completion flags into `gameState` (never downgrades). Call after every KVS load so a stale iCloud payload cannot wipe onboarding/tutorial progress.
+    private func applyProgressFlagsFromUserDefaults() {
+        var s = gameState
+        var changed = false
+        if UserDefaults.standard.bool(forKey: ProgressDefaultsKey.hasCompletedOnboarding), !s.hasCompletedOnboarding {
+            s.hasCompletedOnboarding = true
+            changed = true
+            print("🔄 Restored onboarding completion from UserDefaults backup")
+        }
+        if UserDefaults.standard.bool(forKey: ProgressDefaultsKey.hasCompletedTutorial), !s.hasCompletedTutorial {
+            s.hasCompletedTutorial = true
+            changed = true
+            print("🔄 Restored tutorial completion from UserDefaults backup")
+        }
+        if changed {
+            gameState = s
+        }
     }
     
     private func migrateFromUserDefaults() {
-        // Migrate tutorial/onboarding completion from old UserDefaults to GameState
-        // This ensures backward compatibility for existing users
-        if !gameState.hasCompletedOnboarding {
-            let oldValue = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
-            if oldValue {
-                gameState.hasCompletedOnboarding = true
-                print("🔄 Migrated onboarding completion from UserDefaults")
-            }
-        }
-        
-        if !gameState.hasCompletedTutorial {
-            let oldValue = UserDefaults.standard.bool(forKey: "has_completed_tutorial")
-            if oldValue {
-                gameState.hasCompletedTutorial = true
-                print("🔄 Migrated tutorial completion from UserDefaults")
-            }
-        }
-        
-        // Save migrated state if we made changes
-        if gameState.hasCompletedOnboarding || gameState.hasCompletedTutorial {
-            saveGameState()
-        }
+        applyProgressFlagsFromUserDefaults()
     }
     
     // MARK: - Achievement System
@@ -332,6 +342,12 @@ class GameManager: ObservableObject {
             cloudStore.set(data, forKey: storageKey)
             cloudStore.synchronize() // Explicitly sync to iCloud
             print("💾 Saved game state to iCloud")
+        }
+        if gameState.hasCompletedOnboarding {
+            UserDefaults.standard.set(true, forKey: ProgressDefaultsKey.hasCompletedOnboarding)
+        }
+        if gameState.hasCompletedTutorial {
+            UserDefaults.standard.set(true, forKey: ProgressDefaultsKey.hasCompletedTutorial)
         }
     }
     
@@ -862,6 +878,7 @@ class GameManager: ObservableObject {
     
     /// Full reset to default state (e.g. for debugging). Use rescueNewCapybara() when user taps "Rescue Another Capybara".
     func resetGame() {
+        clearProgressDefaultsBackup()
         gameState = GameState.defaultState
         showRunAwayAlert = false
     }
@@ -884,6 +901,7 @@ class GameManager: ObservableObject {
         fresh.lastWeeklyCoinsGrantDate = weekly
         fresh.lastMonthlyCoinsGrantDate = monthly
         
+        clearProgressDefaultsBackup()
         gameState = fresh
         showRunAwayAlert = false
         thrownItem = nil
