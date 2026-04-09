@@ -49,11 +49,30 @@ class LocalizationManager: ObservableObject {
     }
     
     private func loadLanguage(_ code: String) -> [String: String]? {
-        guard let url = Bundle.main.url(forResource: code, withExtension: "json", subdirectory: "Localizable"),
-              let data = try? Data(contentsOf: url),
+        let candidateURLs: [URL?] = [
+            // Preferred: json files inside a "Localizable" folder in the bundle.
+            Bundle.main.url(forResource: code, withExtension: "json", subdirectory: "Localizable"),
+            // Common in Xcode targets: json files copied to the bundle root.
+            Bundle.main.url(forResource: code, withExtension: "json")
+        ]
+        
+        for candidateURL in candidateURLs {
+            guard let url = candidateURL,
+                  let data = try? Data(contentsOf: url),
+                  let dict = try? JSONDecoder().decode([String: String].self, from: data) else {
+                continue
+            }
+            return dict
+        }
+        
+        // Last-resort lookup if the file ended up nested unexpectedly in bundle resources.
+        guard let resourceURL = Bundle.main.resourceURL else { return nil }
+        let fallbackURL = resourceURL.appendingPathComponent("Localizable/\(code).json")
+        guard let data = try? Data(contentsOf: fallbackURL),
               let dict = try? JSONDecoder().decode([String: String].self, from: data) else {
             return nil
         }
+        
         return dict
     }
     
