@@ -76,11 +76,11 @@ struct AchievementsView: View {
                         // Current streak display
                         VStack(spacing: 12) {
                             Text(L("achievements.currentCareStreakTitle"))
-                                .font(.system(size: 18, weight: .medium, design: .rounded))
+                                .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(Color.primary.opacity(0.8))
                             
                             Text(L("achievements.currentCareStreakSubtitle"))
-                                .font(.system(size: 14, weight: .regular, design: .rounded))
+                                .font(.system(size: 14, weight: .regular))
                                 .foregroundStyle(Color.primary.opacity(0.8))
                                 .multilineTextAlignment(.center)
                             
@@ -96,11 +96,11 @@ struct AchievementsView: View {
                                     )
                                 
                                 Text("\(currentStreak)")
-                                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                                    .font(.system(size: 48, weight: .bold))
                                     .foregroundStyle(.primary)
                                 
                                 Text(L("achievements.days"))
-                                    .font(.system(size: 20, weight: .medium, design: .rounded))
+                                    .font(.system(size: 20, weight: .medium))
                                     .foregroundStyle(Color.primary.opacity(0.8))
                             }
                         }
@@ -121,7 +121,7 @@ struct AchievementsView: View {
                         ForEach(achievementsBySection, id: \.0) { sectionTitle, sectionAchievements in
                             VStack(alignment: .leading, spacing: 12) {
                                 Text(L(sectionTitle))
-                                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                                    .font(.system(size: 15, weight: .semibold))
                                     .foregroundStyle(Color.primary.opacity(0.9))
                                     .padding(.horizontal, 4)
                                 
@@ -242,17 +242,17 @@ struct AchievementRow: View {
                         .frame(width: 36, height: 36)
                         .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 4, x: 0, y: 2)
                     Text("₵")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(formattedCoinReward(achievement.coinReward))
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                     Text(L("common.coins"))
-                        .font(.system(size: 15, weight: .regular, design: .rounded))
+                        .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(Color.primary.opacity(0.8))
                 }
             }
@@ -274,7 +274,7 @@ struct AchievementRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(L(achievement.nameKey))
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(isEarned || repeatableCompletedCount > 0 ? Color.primary : Color.primary.opacity(0.8))
                     
                     if isEarned && !achievement.isRepeatable {
@@ -284,13 +284,13 @@ struct AchievementRow: View {
                     }
                     if achievement.isRepeatable && repeatableCompletedCount > 0 {
                         Text("×\(repeatableCompletedCount)")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(Color(hex: "1a5f1a"))
                     }
                 }
                 
                 Text(rewardSubtitle)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.primary.opacity(0.8))
                 
                 if !isEarned || (achievement.isRepeatable && (repeatableCurrentCount % (achievement.milestone ?? 1)) != 0) {
@@ -316,11 +316,11 @@ struct AchievementRow: View {
                         let c = repeatableCurrentCount
                         let next = ((c / m) + 1) * m
                         Text("\(c) / \(next)")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Color.primary.opacity(0.8))
                     } else {
                         Text(String(format: L("achievements.progress.percentCompleteFormat"), Int(progress * 100)))
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Color.primary.opacity(0.8))
                     }
                 }

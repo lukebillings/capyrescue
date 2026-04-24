@@ -90,11 +90,12 @@ struct TutorialOverlay: View {
                             .zIndex(0)
                     }
                     
-                    VStack {
+                    VStack(spacing: 0) {
+                        // Keep coin balance + stat rings visible under the status bar
+                        Spacer()
+                            .frame(height: tutorialInstructionTopOffset(in: geometry))
                         instructionCard(for: step, localization: localizationManager)
                             .padding(.horizontal, 24)
-                            .padding(.top, 60)
-                        
                         Spacer(minLength: 0)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -152,6 +153,12 @@ struct TutorialOverlay: View {
         }
     }
     
+    /// Places the tutorial card below the homepage header (name, coins) and stat rings.
+    private func tutorialInstructionTopOffset(in geometry: GeometryProxy) -> CGFloat {
+        let reservedBelowSafeArea = max(158, min(geometry.size.height * 0.21, 212))
+        return geometry.safeAreaInsets.top + reservedBelowSafeArea
+    }
+    
     private func captureBaselines(for step: TutorialStep) {
         switch step {
         case .feedFood:
@@ -172,7 +179,7 @@ struct TutorialOverlay: View {
     private func instructionCard(for step: TutorialStep, localization: LocalizationManager) -> some View {
         VStack(spacing: 16) {
             Text(tutorialTitle(for: step, localization: localization))
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .bold))
                 .foregroundStyle(.primary)
             
             Group {
@@ -182,7 +189,7 @@ struct TutorialOverlay: View {
                     Text(tutorialMessage(for: step, localization: localization))
                 }
             }
-            .font(.system(size: 16, weight: .medium, design: .rounded))
+            .font(.system(size: 16, weight: .medium))
             .foregroundStyle(.primary.opacity(0.85))
             .multilineTextAlignment(.center)
             .lineLimit(nil)
@@ -193,7 +200,7 @@ struct TutorialOverlay: View {
                     advance(from: step)
                 }) {
                     Text(step == .itemsIntro ? localization.string(for: "common.gotIt") : localization.string(for: "common.next"))
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -244,7 +251,7 @@ struct TutorialOverlay: View {
         let part2Leading = localization.string(for: "tutorial.walkthroughItemsMessagePart2Leading")
         let part2Trailing = localization.string(for: "tutorial.walkthroughItemsMessagePart2Trailing")
         let medal = Text(Image(systemName: "medal.fill"))
-            .font(.system(size: 17, weight: .semibold, design: .rounded))
+            .font(.system(size: 17, weight: .semibold))
         return Text(part1)
             + Text("\n\n")
             + Text(part2Leading)

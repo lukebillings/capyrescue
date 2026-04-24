@@ -42,7 +42,7 @@ struct CatchTheOrangeView: View {
                     }
                     Spacer()
                     Text("\(caughtCount) / \(targetCount)")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(Color(hex: "1a1a2e"))
                 }
                 .padding(.horizontal, 20)
@@ -100,11 +100,11 @@ struct CatchTheOrangeView: View {
                 Text("🍊")
                     .font(.system(size: 64))
                 Text(L("orange.successTitle"))
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 Text(L("orange.successBody"))
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
@@ -114,7 +114,7 @@ struct CatchTheOrangeView: View {
                     isPresented = false
                 }) {
                     Text(L("common.gotIt"))
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -148,11 +148,11 @@ struct CatchTheOrangeView: View {
                 Text("🍎")
                     .font(.system(size: 64))
                 Text("Wrong fruit!")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 Text("Only tap the oranges. Try again!")
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
@@ -162,7 +162,7 @@ struct CatchTheOrangeView: View {
                     isPresented = false
                 }) {
                     Text(L("common.gotIt"))
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)

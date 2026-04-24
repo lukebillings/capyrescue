@@ -213,7 +213,7 @@ struct ContentView: View {
                                 showRenameSheet = true
                             }) {
                                 Text(gameManager.gameState.capybaraName)
-                                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                                    .font(.system(size: 20, weight: .bold))
                                     .foregroundStyle(.primary)
                                     .lineLimit(1)
                                     .truncationMode(.tail)
@@ -265,12 +265,12 @@ struct ContentView: View {
                                         .shadow(color: Color(hex: "FFD700").opacity(0.4), radius: 6, x: 0, y: 2)
                                     
                                     Text("₵")
-                                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundStyle(.white)
                                 }
                                 
                                 Text(formattedCoinString(gameManager.gameState.capycoins))
-                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .font(.system(size: 18, weight: .bold))
                                     .foregroundStyle(.primary)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.8)
@@ -285,7 +285,7 @@ struct ContentView: View {
                             }) {
                                 HStack(spacing: 8) {
                                     Text(L("common.getMore"))
-                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                        .font(.system(size: 14, weight: .semibold))
                                     CoinIcon(size: 24)
                                 }
                                 .foregroundStyle(.white)
@@ -660,7 +660,7 @@ struct BunnyEarsItemsPromoBanner: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Text(String(format: L("promo.bunnyEarsBannerFormat"), capybaraName))
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Color(hex: "3d2f00"))
                 .multilineTextAlignment(.leading)
                 .minimumScaleFactor(0.8)
@@ -807,7 +807,7 @@ struct ChineseNewYearPopup: View {
                         .font(.system(size: 60))
                     
                     Text("Celebrate Chinese New Year!")
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -818,7 +818,7 @@ struct ChineseNewYearPopup: View {
                         .multilineTextAlignment(.center)
                     
                     Text("New Items")
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.white.opacity(0.8))
                 }
                 
@@ -836,7 +836,7 @@ struct ChineseNewYearPopup: View {
                     onDismiss()
                 }) {
                     Text("Let's Celebrate!")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -911,16 +911,16 @@ struct CNYItemRow: View {
             // Text info
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundStyle(.white)
                 
                 HStack(spacing: 6) {
                     Text("in")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white.opacity(0.6))
                     
                     Text(category)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .font(.system(size: 13, weight: .semibold))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -935,7 +935,7 @@ struct CNYItemRow: View {
             
             // NEW badge
             Text("NEW!")
-                .font(.system(size: 11, weight: .black, design: .rounded))
+                .font(.system(size: 11, weight: .black))
                 .foregroundStyle(Color(hex: "8B0000"))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
@@ -959,7 +959,7 @@ struct ToastView: View {
     
     var body: some View {
         Text(message)
-            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(.white)
             .padding(.horizontal, 24)
             .padding(.vertical, 16)
@@ -998,12 +998,12 @@ struct AchievementRewardPopup: View {
                     .font(.system(size: 50))
                 
                 Text(achievementName)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
                 Text("\(coins) \(L("common.coins"))")
-                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Self.secondaryText)
             }
             .padding(.vertical, 28)

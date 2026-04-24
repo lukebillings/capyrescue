@@ -16,12 +16,18 @@ struct OnboardingView: View {
     @State private var paywallErrorMessage: String? = nil
     /// Auto-rotating hat preview on the coin paywall (`paywallShowcaseHats`).
     @State private var paywallShowcaseHatIndex: Int = 0
+    /// Counts down from 20; at 0 the top-trailing control becomes an exit button.
+    @State private var paywallDismissSecondsRemaining: Int = 20
+    @State private var adoptionGiftShowConfetti = false
+    @State private var adoptionGiftCoinReveal = false
+    @State private var adoptionGiftSparkleRotation: Double = 0
     
     enum OnboardingStep {
         case language
         case welcome
         case notifications
         case pledge
+        case adoptionGift
         case coinPaywall
     }
     
@@ -100,17 +106,42 @@ struct OnboardingView: View {
     private static let onboardingCTAHorizontalPadding: CGFloat = 24
     private static let onboardingCTABottomPadding: CGFloat = 40
     private static let paywallHatCycleSeconds: TimeInterval = 2.4
+    private static let paywallDismissCountdownSeconds: Int = 20
+    /// Tighter layout so all three plans + footer fit on one screen without scrolling.
+    private static let paywallCompactTopInset: CGFloat = 4
+    private static let paywallTitleFontSize: CGFloat = 20
+    private static let paywallSubtitleFontSize: CGFloat = 14
+    private static let paywallHeroCapybaraHeight: CGFloat = 118
+    private static let paywallHeroCapybaraScale: CGFloat = 0.30
+    private static let paywallHatStripHeight: CGFloat = 48
+    private static let paywallPlanRowVPadding: CGFloat = 9
+    private static let paywallPlanCardCornerRadius: CGFloat = 14
+    private static let paywallPlanCoinFontSize: CGFloat = 21
+    private static let paywallBottomSectionSpacing: CGFloat = 8
+    private static let paywallLegalPrivacyURL = URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!
+    private static let paywallLegalTermsURL = URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!
+    private static let paywallLegalEULAURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
     
-    /// Hats to cycle on the coin paywall (same rules as Items for CNY lantern).
+    private static let paywallFirstHatId = "sombrerohat"
+    
+    /// Hats on the coin paywall: sombrero first, then pricier hats in ascending order, then cheaper hats (baseball cap → …) ascending.
     private var paywallShowcaseHats: [AccessoryItem] {
         let owned = gameManager.gameState.ownedAccessories
-        return AccessoryItem.allItems.filter { item in
+        let base = AccessoryItem.allItems.filter { item in
             guard item.isHat, item.modelFileName != nil else { return false }
             if item.id == "redlantern" {
                 return Date.shouldShowCNYItems2026() || owned.contains(item.id)
             }
             return true
-        }.sorted { $0.cost < $1.cost }
+        }
+        let byPrice = base.sorted { $0.cost < $1.cost }
+        guard let i = byPrice.firstIndex(where: { $0.id == Self.paywallFirstHatId }) else {
+            return byPrice
+        }
+        let sombrero = byPrice[i]
+        let pricier = byPrice[(i + 1)...]
+        let cheaper = byPrice[..<i]
+        return [sombrero] + Array(pricier) + Array(cheaper)
     }
     
     private var paywallPreviewHatId: String? {
@@ -138,6 +169,8 @@ struct OnboardingView: View {
                 notificationsView
             case .pledge:
                 pledgeView
+            case .adoptionGift:
+                adoptionGiftView
             case .coinPaywall:
                 coinPaywallView
             }
@@ -164,13 +197,13 @@ struct OnboardingView: View {
                 .foregroundStyle(AppColors.paywallCTAGreen)
             
             Text(L("onboarding.languageTitle"))
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Self.onboardingPrimaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
             
             Text(L("onboarding.languageSubtitle"))
-                .font(.system(size: 15, weight: .medium, design: .rounded))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Self.onboardingSecondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -182,7 +215,7 @@ struct OnboardingView: View {
                     }) {
                         HStack(spacing: 6) {
                             Text(lang.displayName)
-                                .font(.system(size: 15, weight: .medium, design: .rounded))
+                                .font(.system(size: 15, weight: .medium))
                                 .foregroundStyle(Self.onboardingPrimaryText)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.8)
@@ -196,10 +229,10 @@ struct OnboardingView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            Capsule()
                                 .fill(Self.onboardingCardFill)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
+                                    Capsule()
                                         .stroke(Self.onboardingCardStroke, lineWidth: 1)
                                 )
                         )
@@ -217,13 +250,13 @@ struct OnboardingView: View {
                     currentStep = .welcome
                 }
             }) {
-                Text(L("common.next"))
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                Text(L("onboarding.continue"))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        Capsule()
                             .fill(AppColors.paywallCTAGreen)
                     )
             }
@@ -238,6 +271,18 @@ struct OnboardingView: View {
         VStack(spacing: 12) {
             Spacer()
                 .frame(height: Self.onboardingTopInset)
+            
+            Text(L("onboarding.welcomeTitle"))
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(Self.onboardingPrimaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            Text(L("onboarding.welcomeSubtitle"))
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
             
             if #available(iOS 17.0, *) {
                 Capybara3DView(
@@ -258,20 +303,8 @@ struct OnboardingView: View {
                     .frame(height: Self.onboardingCapybaraHeight)
             }
             
-            Text(L("onboarding.welcomeTitle"))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(Self.onboardingPrimaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
-            Text(L("onboarding.welcomeSubtitle"))
-                .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundStyle(Self.onboardingSecondaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
             TextField(L("onboarding.namePlaceholder"), text: $capybaraName)
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Self.onboardingPrimaryText)
                 .tint(AppColors.paywallCTAGreen)
                 .textInputAutocapitalization(.words)
@@ -280,10 +313,10 @@ struct OnboardingView: View {
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    Capsule()
                         .fill(Self.onboardingCardFill)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 16)
+                            Capsule()
                                 .stroke(Self.onboardingCardStroke, lineWidth: 1)
                         )
                 )
@@ -300,12 +333,12 @@ struct OnboardingView: View {
                 }
             }) {
                 Text(L("onboarding.continue"))
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        Capsule()
                             .fill(AppColors.paywallCTAGreen)
                     )
             }
@@ -323,6 +356,18 @@ struct OnboardingView: View {
             Spacer()
                 .frame(height: Self.onboardingTopInset)
             
+            Text(L("onboarding.notificationsTitle"))
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(Self.onboardingPrimaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
+            Text(L("onboarding.notificationsSubtitle"))
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            
             if #available(iOS 17.0, *) {
                 Capybara3DView(
                     emotion: gameManager.gameState.capybaraEmotion,
@@ -340,18 +385,6 @@ struct OnboardingView: View {
                     .font(.system(size: 80))
                     .frame(height: Self.onboardingCapybaraHeight)
             }
-            
-            Text(L("onboarding.notificationsTitle"))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(Self.onboardingPrimaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
-            Text(L("onboarding.notificationsSubtitle"))
-                .font(.system(size: 18, weight: .medium, design: .rounded))
-                .foregroundStyle(Self.onboardingSecondaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
             
             Spacer()
                 .frame(minHeight: 8)
@@ -368,7 +401,7 @@ struct OnboardingView: View {
                 }
             }) {
                 Text(L("onboarding.skip"))
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Self.onboardingSecondaryText)
             }
             
@@ -376,12 +409,12 @@ struct OnboardingView: View {
                 requestNotificationPermission()
             }) {
                 Text(L("onboarding.enableNotifications"))
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        Capsule()
                             .fill(AppColors.paywallCTAGreen)
                     )
             }
@@ -396,6 +429,12 @@ struct OnboardingView: View {
         VStack(spacing: 12) {
             Spacer()
                 .frame(height: Self.onboardingTopInset)
+            
+            Text(L("onboarding.pledgeTitle"))
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(Self.onboardingPrimaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
             
             if #available(iOS 17.0, *) {
                 Capybara3DView(
@@ -415,19 +454,13 @@ struct OnboardingView: View {
                     .frame(height: Self.onboardingCapybaraHeight)
             }
             
-            Text(L("onboarding.pledgeTitle"))
-                .font(.system(size: 24, weight: .bold, design: .rounded))
-                .foregroundStyle(Self.onboardingPrimaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-            
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 20))
                         .foregroundStyle(AppColors.paywallCTAGreen)
                     Text(L("onboarding.pledgeFeed"))
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(Self.onboardingPrimaryText)
                 }
                 
@@ -436,7 +469,7 @@ struct OnboardingView: View {
                         .font(.system(size: 20))
                         .foregroundStyle(AppColors.paywallCTAGreen)
                     Text(L("onboarding.pledgeDrinks"))
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(Self.onboardingPrimaryText)
                 }
                 
@@ -445,7 +478,7 @@ struct OnboardingView: View {
                         .font(.system(size: 20))
                         .foregroundStyle(AppColors.paywallCTAGreen)
                     Text(L("onboarding.pledgeHappy"))
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(Self.onboardingPrimaryText)
                 }
             }
@@ -461,16 +494,16 @@ struct OnboardingView: View {
             
             Button(action: {
                 withAnimation {
-                    currentStep = .coinPaywall
+                    currentStep = .adoptionGift
                 }
             }) {
                 Text(L("onboarding.acceptAndGo"))
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
+                    .font(.system(size: 19, weight: .bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 18)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        Capsule()
                             .fill(AppColors.paywallCTAGreen)
                     )
             }
@@ -480,49 +513,28 @@ struct OnboardingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    // MARK: - Coin Paywall (post-pledge)
-    /// Match other onboarding steps: scroll the hero + tiers; pin CTA + links to the bottom with the same insets as `Continue` / `Accept and Go`.
-    private var coinPaywallView: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    Spacer()
-                        .frame(height: Self.onboardingTopInset)
-                    Text(L("onboarding.coinPaywallTitle"))
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
-                        .foregroundStyle(Self.onboardingPrimaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                    Text(L("onboarding.coinPaywallItemsHint"))
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-                    paywallHatShowcaseStrip
-                    if let item = paywallPreviewedAccessory {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(localizedAccessoryName(id: item.id))
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                                .multilineTextAlignment(.leading)
-                            Spacer(minLength: 8)
-                            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text(formattedCoinCount(item.cost))
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                                Text(L("common.coins"))
-                                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                            }
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 4)
-                    }
+    // MARK: - Adoption gift (starter coins)
+    private var adoptionGiftView: some View {
+        ZStack {
+            VStack(spacing: 12) {
+                Spacer()
+                    .frame(height: Self.onboardingTopInset)
+                Text(L("onboarding.adoptionGiftTitle"))
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+                Text(String(format: L("onboarding.adoptionGiftSubtitle"), formattedCoinCount(GameManager.onboardingAdoptionGiftCoins)))
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+                Group {
                     if #available(iOS 17.0, *) {
                         Capybara3DView(
                             emotion: gameManager.gameState.capybaraEmotion,
                             equippedAccessories: gameManager.gameState.equippedAccessories,
-                            previewingAccessoryId: paywallPreviewHatId,
+                            previewingAccessoryId: nil,
                             onPet: { },
                             initialRotation: nil
                         )
@@ -532,66 +544,291 @@ struct OnboardingView: View {
                         .clipped()
                         .allowsHitTesting(false)
                     } else {
-                        Text(paywallShowcaseHats.isEmpty ? "🐹" : (paywallShowcaseHats[paywallShowcaseHatIndex % paywallShowcaseHats.count].emoji))
+                        Text("🐹")
                             .font(.system(size: 80))
                             .frame(height: Self.onboardingCapybaraHeight)
                     }
-                    VStack(spacing: 8) {
+                }
+                .padding(.top, 8)
+                VStack(spacing: 6) {
+                    ZStack {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 32))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .rotationEffect(.degrees(adoptionGiftSparkleRotation))
+                            .opacity(adoptionGiftCoinReveal ? 1 : 0)
+                        CoinIcon(size: 50)
+                            .scaleEffect(adoptionGiftCoinReveal ? 1 : 0.15)
+                            .opacity(adoptionGiftCoinReveal ? 1 : 0)
+                    }
+                    Text("+\(formattedCoinCount(GameManager.onboardingAdoptionGiftCoins))")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: "B8860B"), Color(hex: "FFD700")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .scaleEffect(adoptionGiftCoinReveal ? 1 : 0.3)
+                        .opacity(adoptionGiftCoinReveal ? 1 : 0)
+                }
+                .padding(.top, 10)
+                Spacer()
+                Button(action: {
+                    withAnimation {
+                        currentStep = .coinPaywall
+                    }
+                }) {
+                    Text(L("onboarding.continue"))
+                        .font(.system(size: 19, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            Capsule()
+                                .fill(AppColors.paywallCTAGreen)
+                        )
+                }
+                .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
+                .padding(.bottom, Self.onboardingCTABottomPadding)
+            }
+            ConfettiView(isActive: adoptionGiftShowConfetti) {
+                adoptionGiftShowConfetti = false
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            gameManager.grantOnboardingAdoptionCoinsIfNeeded()
+            adoptionGiftCoinReveal = false
+            adoptionGiftShowConfetti = true
+            adoptionGiftSparkleRotation = 0
+            withAnimation(.spring(response: 0.52, dampingFraction: 0.68)) {
+                adoptionGiftCoinReveal = true
+            }
+            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                adoptionGiftSparkleRotation = 25
+            }
+            HapticManager.shared.purchaseSuccess()
+        }
+    }
+    
+    private var paywallCoinBalanceHeader: some View {
+        VStack(spacing: 6) {
+            Text(L("onboarding.coinPaywallBalanceCaption"))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Self.onboardingSecondaryText)
+            HStack(spacing: 10) {
+                CoinIcon(size: 30)
+                Text(formattedCoinCount(gameManager.gameState.capycoins))
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .monospacedDigit()
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
+    }
+    
+    // MARK: - Coin Paywall (post-pledge)
+    /// Single-screen layout: no vertical scroll for plans; CTA + legal pinned at bottom.
+    private var coinPaywallView: some View {
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: Self.paywallCompactTopInset)
+                paywallCoinBalanceHeader
+                Text(L("onboarding.coinPaywallTitle"))
+                    .font(.system(size: Self.paywallTitleFontSize, weight: .bold))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.78)
+                    .lineLimit(5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 2)
+                Text(L("onboarding.coinPaywallItemsHint"))
+                    .font(.system(size: Self.paywallSubtitleFontSize, weight: .medium))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.82)
+                    .lineLimit(6)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                VStack(spacing: 5) {
+                    paywallHatShowcaseStrip
+                    if let item = paywallPreviewedAccessory {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(localizedAccessoryName(id: item.id))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Self.onboardingPrimaryText)
+                                .multilineTextAlignment(.leading)
+                            Spacer(minLength: 8)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text(formattedCoinCount(item.cost))
+                                    .font(.system(size: 14, weight: .medium))
+                                Text(L("common.coins"))
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(Self.onboardingPrimaryText)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 24)
+                    }
+                    if #available(iOS 17.0, *) {
+                        Capybara3DView(
+                            emotion: gameManager.gameState.capybaraEmotion,
+                            equippedAccessories: gameManager.gameState.equippedAccessories,
+                            previewingAccessoryId: paywallPreviewHatId,
+                            onPet: { },
+                            initialRotation: nil
+                        )
+                        .frame(height: Self.paywallHeroCapybaraHeight)
+                        .scaleEffect(Self.paywallHeroCapybaraScale)
+                        .frame(height: Self.paywallHeroCapybaraHeight)
+                        .clipped()
+                        .allowsHitTesting(false)
+                    } else {
+                        Text(paywallShowcaseHats.isEmpty ? "🐹" : (paywallShowcaseHats[paywallShowcaseHatIndex % paywallShowcaseHats.count].emoji))
+                            .font(.system(size: 64))
+                            .frame(height: Self.paywallHeroCapybaraHeight)
+                    }
+                    VStack(spacing: 5) {
                         ForEach(CoinPaywallPlan.displayOrder) { plan in
                             coinPaywallOptionButton(plan: plan)
                         }
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 4)
                 }
+                .padding(.top, 5)
                 .onAppear {
                     paywallShowcaseHatIndex = 0
+                    paywallDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
                 }
                 .onReceive(Timer.publish(every: Self.paywallHatCycleSeconds, on: .main, in: .common).autoconnect()) { _ in
                     let n = paywallShowcaseHats.count
                     guard n > 0 else { return }
                     paywallShowcaseHatIndex = (paywallShowcaseHatIndex + 1) % n
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            VStack(spacing: 8) {
-                Button(action: { Task { await purchaseSelectedPlan() } }) {
-                    Group {
-                        if isPurchasing {
-                            Text(L("onboarding.coinPaywallPurchasing"))
-                        } else {
-                            Text(ctaLabelForSelectedPlan())
-                        }
+                .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+                    if paywallDismissSecondsRemaining > 0 {
+                        paywallDismissSecondsRemaining -= 1
                     }
-                    .font(.system(size: 19, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(AppColors.paywallCTAGreen)
-                            CoinPaywallCTADiagonalShine()
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                Spacer(minLength: 0)
+                VStack(spacing: Self.paywallBottomSectionSpacing) {
+                    coinPaywallPreCTALegalBlock
+                    Button(action: { Task { await purchaseSelectedPlan() } }) {
+                        Group {
+                            if isPurchasing {
+                                Text(L("onboarding.coinPaywallPurchasing"))
+                            } else {
+                                Text(ctaLabelForSelectedPlan())
+                            }
                         }
-                    )
+                        .font(.system(size: 19, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            ZStack {
+                                Capsule()
+                                    .fill(AppColors.paywallCTAGreen)
+                                CoinPaywallCTADiagonalShine()
+                                    .clipShape(Capsule())
+                            }
+                        )
+                    }
+                    .disabled(isPurchasing)
+                    .opacity(isPurchasing ? 0.7 : 1.0)
                 }
-                .disabled(isPurchasing)
-                .opacity(isPurchasing ? 0.7 : 1.0)
-                Button(action: { Task { await restorePurchases() } }) {
-                    Text(L("onboarding.restorePurchases"))
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundStyle(AppColors.paywallCTAGreen)
-                }
-                .disabled(isPurchasing)
+                .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
+                .padding(.bottom, Self.onboardingCTABottomPadding)
             }
-            .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
-            .padding(.bottom, Self.onboardingCTABottomPadding)
+            paywallTopTrailingDismissControl
+                .padding(.trailing, 16)
+                .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task {
             await subscriptionManager.loadProducts()
         }
+    }
+    
+    private var paywallTopTrailingDismissControl: some View {
+        Group {
+            if paywallDismissSecondsRemaining > 0 {
+                Text("\(paywallDismissSecondsRemaining)")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .monospacedDigit()
+                    .frame(width: 40, height: 40)
+                    .background(
+                        Circle()
+                            .fill(Self.onboardingCardFill)
+                            .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
+                    )
+                    .accessibilityLabel(Text(verbatim: "\(paywallDismissSecondsRemaining)"))
+            } else {
+                Button(action: { completeOnboardingAndDismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(Self.onboardingCardFill)
+                                .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(verbatim: L("common.dismiss")))
+            }
+        }
+    }
+    
+    private var coinPaywallPreCTALegalBlock: some View {
+        VStack(spacing: 6) {
+            Button(action: { Task { await restorePurchases() } }) {
+                Text(L("onboarding.restorePurchases"))
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .underline()
+            }
+            .buttonStyle(.plain)
+            .disabled(isPurchasing)
+            Text(L("onboarding.coinPaywallFinePrint"))
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            coinPaywallLegalLinkRow
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private var coinPaywallLegalLinkRow: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Link(L("settings.privacy"), destination: Self.paywallLegalPrivacyURL)
+            Text("·")
+            Link(L("settings.terms"), destination: Self.paywallLegalTermsURL)
+            Text("·")
+            Link(L("onboarding.termsOfUseEula"), destination: Self.paywallLegalEULAURL)
+        }
+        .font(.system(size: 10, weight: .regular))
+        .foregroundStyle(Self.onboardingSecondaryText)
+        .tint(Self.onboardingSecondaryText)
+        .multilineTextAlignment(.center)
+        .lineLimit(2)
+        .minimumScaleFactor(0.75)
     }
     
     @ViewBuilder
@@ -613,7 +850,7 @@ struct OnboardingView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .frame(height: 56)
+                .frame(height: Self.paywallHatStripHeight)
                 .onAppear {
                     if let id = paywallPreviewHatId {
                         DispatchQueue.main.async {
@@ -669,32 +906,33 @@ struct OnboardingView: View {
             }
         } label: {
             HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(formattedCoinCount(plan.coinsPerPeriod))
-                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .font(.system(size: Self.paywallPlanCoinFontSize, weight: .bold))
                         .foregroundStyle(Self.onboardingPrimaryText)
                     Text(L(plan.leftCoinsOnlySubtitleKey))
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Self.onboardingSecondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 8)
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    let pricePeriodFont = Font.system(size: 14, weight: .medium)
                     Text(price)
-                        .font(.system(size: 17, weight: .medium, design: .rounded))
-                        .foregroundStyle(Self.onboardingPrimaryText)
+                        .font(pricePeriodFont)
+                        .foregroundStyle(Self.onboardingSecondaryText)
                     Text(L(plan.listPeriodKey))
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
+                        .font(pricePeriodFont)
                         .foregroundStyle(Self.onboardingSecondaryText)
                 }
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
+            .padding(.horizontal, 12)
+            .padding(.vertical, Self.paywallPlanRowVPadding)
             .background(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
                     .fill(Self.onboardingCardFill)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
                             .stroke(selected ? AppColors.paywallCTAGreen : Self.onboardingCardStroke, lineWidth: selected ? 2 : 1)
                     )
             )
@@ -772,6 +1010,8 @@ struct OnboardingView: View {
 // MARK: - Coin paywall CTA: diagonal light sweep
 private struct CoinPaywallCTADiagonalShine: View {
     private let period: TimeInterval = 2.5
+    /// ~55° reads clearly as a diagonal line across the pill.
+    private let lineAngle: CGFloat = 56
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { context in
@@ -780,24 +1020,25 @@ private struct CoinPaywallCTADiagonalShine: View {
                 let h = max(geo.size.height, 1)
                 let t = context.date.timeIntervalSinceReferenceDate
                 let p = t.truncatingRemainder(dividingBy: period) / period
-                let bandW = w * 0.5
-                // p 0...1: band travels left → right, slightly past edges for a smooth loop
-                let x = -bandW * 0.35 + p * (w + bandW * 0.7)
+                // Long thin strip; gradient is sharp on the short axis so it reads as a line, not a soft blob.
+                let span = hypot(w, h) * 1.45
+                let lineThickness = max(4, min(w * 0.018, 8))
+                let x = -span * 0.4 + p * (w + span * 0.85)
                 LinearGradient(
                     stops: [
-                        .init(color: .white.opacity(0.0), location: 0.0),
-                        .init(color: .white.opacity(0.0), location: 0.38),
-                        .init(color: .white.opacity(0.7), location: 0.5),
-                        .init(color: .white.opacity(0.0), location: 0.62),
-                        .init(color: .white.opacity(0.0), location: 1.0)
+                        .init(color: .white.opacity(0), location: 0.0),
+                        .init(color: .white.opacity(0), location: 0.46),
+                        .init(color: .white.opacity(0.92), location: 0.5),
+                        .init(color: .white.opacity(0), location: 0.54),
+                        .init(color: .white.opacity(0), location: 1.0)
                     ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+                    startPoint: .leading,
+                    endPoint: .trailing
                 )
-                .frame(width: bandW, height: h * 1.5)
-                .rotationEffect(.degrees(20))
-                .offset(x: x, y: 0)
-                .blendMode(.softLight)
+                .frame(width: span, height: lineThickness)
+                .rotationEffect(.degrees(lineAngle))
+                .offset(x: x, y: h * 0.02)
+                .blendMode(.screen)
             }
         }
         .allowsHitTesting(false)

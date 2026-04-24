@@ -237,10 +237,10 @@ private struct SettingsRow<T: View>: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 Text(subtitle)
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.primary.opacity(0.8))
             }
             
@@ -270,10 +270,10 @@ private struct SettingsActionRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.primary)
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.primary.opacity(0.8))
                 }
                 
@@ -308,10 +308,10 @@ private struct SettingsShareRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.primary)
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.primary.opacity(0.8))
                 }
                 
@@ -347,7 +347,7 @@ private struct SettingsLinkRow: View {
                     .frame(width: 28, alignment: .center)
                 
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 
                 Spacer()
@@ -384,7 +384,7 @@ private struct LanguagePickerSheet: View {
                         }) {
                             HStack {
                                 Text(lang.displayName)
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(Color(hex: "1a5f1a"))
                                 Spacer()
                                 if localizationManager.currentLanguage == lang.code {

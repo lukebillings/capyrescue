@@ -23,13 +23,13 @@ struct CoinDisplayView: View {
                         .shadow(color: Color(hex: "FFD700").opacity(0.5), radius: 8, x: 0, y: 2)
                     
                     Text("₵")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(coins)")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(.primary)
                     
                     Text("Coins")
@@ -47,7 +47,7 @@ struct CoinDisplayView: View {
             }) {
                 HStack(spacing: 8) {
                     Text(L("common.getMore"))
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .font(.system(size: 14, weight: .semibold))
                     CoinIcon(size: 24)
                 }
                 .foregroundStyle(.black)

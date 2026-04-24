@@ -159,7 +159,7 @@ struct DrinkItemButton: View {
                 .frame(width: 44, height: 44)
             
             Text(localizedDrinkName(item.name))
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(nameForegroundStyle)
                 .lineLimit(1)
             
@@ -169,7 +169,7 @@ struct DrinkItemButton: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(Color(hex: "B8860B"))
                     Text("\(item.cost)")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(costForegroundStyle)
                 }
                 
@@ -195,7 +195,7 @@ struct DrinkItemButton: View {
                 HStack {
                     Spacer()
                     Text("NEW!")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .font(.system(size: 10, weight: .black))
                         .foregroundStyle(Color(hex: "8B0000"))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)

@@ -22,7 +22,7 @@ struct ShopPanel: View {
                             .foregroundStyle(Color(hex: "1a5f1a"))
                         
                         Text(L("panel.playDailyGames"))
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Color(hex: "1a1a2e"))
                         
                         Spacer()
@@ -51,7 +51,7 @@ struct ShopPanel: View {
                             .foregroundStyle(Color(hex: "1a5f1a"))
                         
                         Text(L("panel.coinPacks"))
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(Color(hex: "1a1a2e"))
                         
                         Spacer()
@@ -156,7 +156,7 @@ struct CatchTheOrangeCard: View {
                 Text("🍊")
                     .font(.system(size: 28))
                 Text(L("orange.title"))
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                 Spacer()
             }
@@ -166,13 +166,13 @@ struct CatchTheOrangeCard: View {
             HStack(spacing: 6) {
                 CoinIcon(size: 22)
                 Text("\(coinsPerDay) coins per day")
-                    .font(.system(size: 16, weight: .regular, design: .rounded))
+                    .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Self.primaryText)
             }
             .padding(.horizontal, 16)
             
             Text(L("orange.subtitle"))
-                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Self.secondaryText)
                 .multilineTextAlignment(.leading)
                 .padding(.horizontal, 16)
@@ -180,7 +180,7 @@ struct CatchTheOrangeCard: View {
             if canPlayToday {
                 Button(action: onPlay) {
                     Text(L("orange.play"))
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -193,7 +193,7 @@ struct CatchTheOrangeCard: View {
                 .padding(.bottom, 12)
             } else {
                 Text(L("orange.comeBackTomorrow"))
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Self.secondaryText)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 12)
@@ -231,13 +231,13 @@ struct BalanceHeroCard: View {
                     .foregroundStyle(Self.secondaryText)
                 
                 Text(formatCoins(coins))
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 32, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 
                 Text(L("common.coins"))
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Self.secondaryText)
             }
             
@@ -284,7 +284,7 @@ struct CoinIcon: View {
                 .frame(width: size * 0.9, height: size * 0.9)
             
             Text("₵")
-                .font(.system(size: size * 0.5, weight: .bold, design: .rounded))
+                .font(.system(size: size * 0.5, weight: .bold))
                 .foregroundStyle(.white)
         }
     }
@@ -313,7 +313,7 @@ struct CoinPackCard: View {
                     if let badge = pack.badge {
                         HStack(spacing: 8) {
                             Text(badge)
-                                .font(.system(size: 9, weight: .heavy, design: .rounded))
+                                .font(.system(size: 9, weight: .heavy))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
@@ -326,7 +326,7 @@ struct CoinPackCard: View {
                     
                     HStack(spacing: 4) {
                         Text(formatCoins(pack.coins))
-                            .font(.system(size: 22, weight: .semibold, design: .rounded))
+                            .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(Self.primaryText)
                         Text("coins")
                             .font(.system(size: 22, weight: .medium))
@@ -346,7 +346,7 @@ struct CoinPackCard: View {
                         )
                 } else {
                     Text(priceText)
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                         .frame(width: 80, height: 44)
                         .background(

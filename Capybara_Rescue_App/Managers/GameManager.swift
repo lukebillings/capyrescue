@@ -82,6 +82,19 @@ class GameManager: ObservableObject {
         let isFood: Bool
     }
     
+    /// Coins granted once on the post-pledge “thanks for adopting” screen, before the subscription paywall.
+    static let onboardingAdoptionGiftCoins = 100
+    
+    /// Awards `onboardingAdoptionGiftCoins` the first time the user reaches the adoption gift screen.
+    /// Skips the credit if they already have at least that much (legacy installs that started with 100 coins).
+    func grantOnboardingAdoptionCoinsIfNeeded() {
+        guard !gameState.hasGrantedOnboardingAdoptionCoins else { return }
+        gameState.hasGrantedOnboardingAdoptionCoins = true
+        if gameState.capycoins < Self.onboardingAdoptionGiftCoins {
+            gameState.capycoins += Self.onboardingAdoptionGiftCoins
+        }
+    }
+    
     init() {
         isRestoring = true
         self.gameState = Self.loadMergedState(

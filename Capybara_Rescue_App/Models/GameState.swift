@@ -22,6 +22,8 @@ struct GameState: Codable {
     var hasCompletedOnboarding: Bool // Track if user completed onboarding
     var hasCompletedTutorial: Bool // Track if user completed tutorial
     var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
+    /// One-time 100 coins after pledge; prevents double-grant if onboarding is interrupted.
+    var hasGrantedOnboardingAdoptionCoins: Bool
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
@@ -39,7 +41,7 @@ struct GameState: Codable {
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
-        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
+        case hasCompletedPaywall, hasGrantedOnboardingAdoptionCoins, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
         case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastAnnualCoinsGrantDate, lastCatchTheOrangeCompletedDate
         case achievementCounts, achievementRepeatLastGranted
     }
@@ -66,6 +68,7 @@ struct GameState: Codable {
         hasCompletedOnboarding = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? false
         hasCompletedTutorial = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedTutorial) ?? false
         hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
+        hasGrantedOnboardingAdoptionCoins = try container.decodeIfPresent(Bool.self, forKey: .hasGrantedOnboardingAdoptionCoins) ?? false
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
@@ -112,6 +115,7 @@ struct GameState: Codable {
         try container.encode(hasCompletedOnboarding, forKey: .hasCompletedOnboarding)
         try container.encode(hasCompletedTutorial, forKey: .hasCompletedTutorial)
         try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
+        try container.encode(hasGrantedOnboardingAdoptionCoins, forKey: .hasGrantedOnboardingAdoptionCoins)
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
@@ -145,6 +149,7 @@ struct GameState: Codable {
         hasCompletedOnboarding: Bool,
         hasCompletedTutorial: Bool,
         hasCompletedPaywall: Bool,
+        hasGrantedOnboardingAdoptionCoins: Bool,
         subscriptionTier: String?,
         lastSubscriptionCheckDate: Date?,
         hasSeenCNY2026Popup: Bool,
@@ -175,6 +180,7 @@ struct GameState: Codable {
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.hasCompletedTutorial = hasCompletedTutorial
         self.hasCompletedPaywall = hasCompletedPaywall
+        self.hasGrantedOnboardingAdoptionCoins = hasGrantedOnboardingAdoptionCoins
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
@@ -191,7 +197,7 @@ struct GameState: Codable {
         food: 99,
         drink: 99,
         happiness: 79,
-        capycoins: 100,
+        capycoins: 0,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -207,6 +213,7 @@ struct GameState: Codable {
         hasCompletedOnboarding: false,
         hasCompletedTutorial: false,
         hasCompletedPaywall: false,
+        hasGrantedOnboardingAdoptionCoins: false,
         subscriptionTier: nil,
         lastSubscriptionCheckDate: nil,
         hasSeenCNY2026Popup: false,

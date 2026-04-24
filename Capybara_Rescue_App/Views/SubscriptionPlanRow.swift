@@ -32,16 +32,16 @@ struct SubscriptionPlanRow: View {
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text(title)
-                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.white)
                             if !subtext.isEmpty {
                                 Text(subtext)
-                                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                                    .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.white.opacity(0.7))
                             }
                             if let highlight = subtextHighlight {
                                 Text(highlight)
-                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .font(.system(size: 13, weight: .bold))
                                     .foregroundStyle(
                                         LinearGradient(
                                             colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -58,7 +58,7 @@ struct SubscriptionPlanRow: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         if let badge = badge, tier == .annual {
                             Text(badge)
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
@@ -66,20 +66,20 @@ struct SubscriptionPlanRow: View {
                         }
                         HStack(alignment: .firstTextBaseline, spacing: 2) {
                             Text(price)
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.white)
                             Text(priceSubtext)
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.white.opacity(0.6))
                         }
                         if let line2 = priceSubtext2 {
                             Text(line2)
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .font(.system(size: 11, weight: .medium))
                                 .foregroundColor(.white.opacity(0.7))
                         }
                         if let savings = savingsBadge, tier == .annual {
                             Text(savings)
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .font(.system(size: 10, weight: .bold))
                                 .foregroundStyle(Color(hex: "FFD700"))
                         }
                     }
@@ -93,7 +93,7 @@ struct SubscriptionPlanRow: View {
                                 .font(.system(size: 12))
                                 .foregroundStyle(accentColor)
                             Text(feature)
-                                .font(.system(size: 12, weight: .medium, design: .rounded))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.85))
                         }
                     }
