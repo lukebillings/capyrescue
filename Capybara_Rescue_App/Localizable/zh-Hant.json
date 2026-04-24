@@ -127,6 +127,14 @@
   "panel.premiumPlans": "高級方案",
   "panel.whatPlan": "您想要什麼方案？",
   "panel.coinPacks": "金幣包",
+  "panel.coinSubscriptionPlans": "金幣訂閱方案",
+  "panel.coinSubscriptionBlurb": "定期獲得 capy 金幣、解鎖 Pro 物品，訂閱期間無橫幅廣告。",
+  "panel.subscribe": "訂閱",
+  "panel.subscriptionBillingNote": "訂閱會自動續訂。可隨時在 App Store 取消。",
+  "panel.currentPlan": "目前方案",
+  "panel.subscriptionNextCoinsTitle": "下一筆 Capy 金幣",
+  "panel.subscriptionNextCoinsScheduled": "+%1$@ 金幣 · %2$@",
+  "panel.subscriptionNextCoinsPending": "+%1$@ 金幣 — 下次開啟 App 時入帳",
   "panel.restorePurchases": "恢復購買",
   "panel.playDailyGames": "玩每日遊戲",
   "rename.title": "重新命名你的水豚",
@@ -209,5 +217,12 @@
   "achievements.streak_7.name": "連續 7 天",
   "achievements.streak_30.name": "連續 30 天",
   "achievements.streak_100.name": "連續 100 天",
-  "achievements.streak_365.name": "連續 365 天"
+  "achievements.streak_365.name": "連續 365 天",
+  "settings.resetProgress": "重設進度",
+  "settings.resetProgressSubtitle": "從新的水豚、數值與金幣重新開始",
+  "settings.resetProgressConfirmTitle": "要重設所有進度嗎？",
+  "settings.resetProgressConfirmMessage": "這會將 app 還原為新玩家狀態（新手引導與教學會再次顯示）。訂閱（若有）仍會維持。",
+  "settings.resetProgressConfirmButton": "重設",
+  "notification.hatPromoTitle": "帽子與物品",
+  "notification.hatPromoBody": "%@ 戴新帽子一定很好看！點此開啟「物品」購買。"
 }

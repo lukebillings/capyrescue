@@ -317,6 +317,7 @@ struct ContentView: View {
                             drink: gameManager.gameState.drink,
                             happiness: gameManager.gameState.happiness
                         )
+                        .id(localizationManager.currentLanguage)
                         
                         if gameManager.showBunnyEarsItemsPromoBanner, selectedTab == .items, showPanel {
                             BunnyEarsItemsPromoBanner(
@@ -391,6 +392,7 @@ struct ContentView: View {
                                 }
                             }
                         })
+                        .id(localizationManager.currentLanguage)
                         .padding(.leading, max(geometry.safeAreaInsets.leading, 0) + 20)
                         .padding(.trailing, max(geometry.safeAreaInsets.trailing, 0) + 20)
                         .padding(.bottom, geometry.safeAreaInsets.bottom > 0 ? max(8, geometry.safeAreaInsets.bottom - 12) : 4)

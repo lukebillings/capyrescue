@@ -911,6 +911,56 @@ class GameManager: ObservableObject {
         }
     }
     
+    // MARK: - Subscription schedule (Get More / shop UI)
+    
+    /// Next recurring capycoin grant for the **active** subscription tier, for display in Get More.
+    /// - If `scheduledDate` is `nil`, the grant is due (or overdue) and will apply on the next grant pass.
+    func nextSubscriptionCoinGrantInfo() -> (capycoinAmount: Int, scheduledDate: Date?)? {
+        guard hasProSubscription() else { return nil }
+        let tier = currentSubscriptionTier()
+        let amount: Int
+        switch tier {
+        case .free: return nil
+        case .weekly: amount = tier.weeklyCoins
+        case .monthly: amount = tier.monthlyCoins
+        case .annual: amount = tier.annualCoins
+        }
+        let calendar = Calendar.current
+        let now = Date()
+#if DEBUG
+        let weekInterval: TimeInterval = 7
+#else
+        let weekInterval: TimeInterval = 7 * 24 * 60 * 60
+#endif
+        let lastEvent: Date?
+        switch tier {
+        case .weekly:
+            lastEvent = gameState.lastWeeklyCoinsGrantDate
+        case .monthly:
+            lastEvent = gameState.lastMonthlyCoinsGrantDate
+        case .annual:
+            lastEvent = gameState.lastAnnualCoinsGrantDate
+        case .free:
+            return nil
+        }
+        let anchor = lastEvent ?? gameState.lastSubscriptionCheckDate ?? now
+        let rawNext: Date
+        switch tier {
+        case .weekly:
+            rawNext = anchor.addingTimeInterval(weekInterval)
+        case .monthly:
+            rawNext = calendar.date(byAdding: .month, value: 1, to: anchor) ?? anchor.addingTimeInterval(30 * 24 * 60 * 60)
+        case .annual:
+            rawNext = calendar.date(byAdding: .year, value: 1, to: anchor) ?? anchor.addingTimeInterval(365 * 24 * 60 * 60)
+        case .free:
+            return nil
+        }
+        if rawNext > now {
+            return (amount, rawNext)
+        }
+        return (amount, nil)
+    }
+    
     // MARK: - Reset
     
     /// Resets only capybara-specific state (stats + run-away). Keeps coins, name, unlocked/equipped items, achievements, and all other progress.

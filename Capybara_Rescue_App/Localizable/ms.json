@@ -127,6 +127,14 @@
   "panel.premiumPlans": "Pelan Premium",
   "panel.whatPlan": "Pelan mana yang anda mahu?",
   "panel.coinPacks": "Pek Syiling",
+  "panel.coinSubscriptionPlans": "Pelan langganan syiling",
+  "panel.coinSubscriptionBlurb": "Capy syiling berulang, akses item Pro, dan tanpa iklan banner semasa langganan aktif.",
+  "panel.subscribe": "Langgan",
+  "panel.subscriptionBillingNote": "Langganan diperbaharui sendiri. Batal bila-bila masa di App Store.",
+  "panel.currentPlan": "Semasa",
+  "panel.subscriptionNextCoinsTitle": "Capy syiling seterusnya",
+  "panel.subscriptionNextCoinsScheduled": "+%1$@ capy syiling pada %2$@",
+  "panel.subscriptionNextCoinsPending": "+%1$@ capy syiling — ditambah apabila anda buka app lagi",
   "panel.restorePurchases": "Pulihkan Pembelian",
   "panel.playDailyGames": "Main permainan harian",
   "rename.title": "Namakan Semula Kapibara",
@@ -209,5 +217,12 @@
   "achievements.streak_7.name": "Siri 7 hari",
   "achievements.streak_30.name": "Siri 30 hari",
   "achievements.streak_100.name": "Siri 100 hari",
-  "achievements.streak_365.name": "Siri 365 hari"
+  "achievements.streak_365.name": "Siri 365 hari",
+  "settings.resetProgress": "Tetapkan semula progres",
+  "settings.resetProgressSubtitle": "Mula semula dengan capybara, stat dan syiling baharu",
+  "settings.resetProgressConfirmTitle": "Tetapkan semua progres?",
+  "settings.resetProgressConfirmMessage": "Aplikasi kembali ke keadaan pemain baharu (pengenalan dan tutorial dipaparkan semula). Langganan kekal aktif jika ada.",
+  "settings.resetProgressConfirmButton": "Tetapkan semula",
+  "notification.hatPromoTitle": "Topi dan item",
+  "notification.hatPromoBody": "%@ nampak hebat dengan topi baharu! Ketik untuk buka Aksesori dan beli."
 }

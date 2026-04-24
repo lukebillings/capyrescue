@@ -4,7 +4,10 @@ import SwiftUI
 struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     @State private var isPurchasing: Bool = false
+    @State private var subscriptionProductLoadingId: String? = nil
+    @State private var isSubscriptionRestoreLoading: Bool = false
     @State private var showIAPError: Bool = false
     @State private var showCatchTheOrangeGame: Bool = false
     
@@ -13,6 +16,10 @@ struct ShopPanel: View {
             VStack(spacing: 16) {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
+                
+                // Coin subscription plans (Pro)
+                shopCoinSubscriptionsSection
+                    .padding(.top, 8)
                 
                 // Play Daily Games section
                 VStack(alignment: .leading, spacing: 12) {
@@ -122,6 +129,149 @@ struct ShopPanel: View {
         .fullScreenCover(isPresented: $showCatchTheOrangeGame) {
             CatchTheOrangeView(isPresented: $showCatchTheOrangeGame)
                 .environmentObject(gameManager)
+        }
+        .task {
+            await subscriptionManager.loadProducts()
+        }
+    }
+    
+    // MARK: - Coin subscription plans (Get More)
+    
+    private static let subscriptionGrantDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .long
+        f.timeStyle = .none
+        f.locale = .current
+        return f
+    }()
+    
+    @ViewBuilder
+    private func subscriptionNextCapycoinsCallout(capycoinAmount: Int, scheduledDate: Date?) -> some View {
+        let amountStr = formatShopCapycoinNumber(capycoinAmount)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(L("panel.subscriptionNextCoinsTitle"))
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color(hex: "1a5f1a").opacity(0.9))
+            if let when = scheduledDate {
+                Text(String(format: L("panel.subscriptionNextCoinsScheduled"), amountStr, Self.subscriptionGrantDateFormatter.string(from: when)))
+            } else {
+                Text(String(format: L("panel.subscriptionNextCoinsPending"), amountStr))
+            }
+        }
+        .font(.system(size: 14, weight: .medium))
+        .foregroundStyle(Color(hex: "1a1a2e"))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: "1a5f1a").opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(hex: "1a5f1a").opacity(0.22), lineWidth: 1)
+        )
+        .padding(.horizontal, 16)
+    }
+    
+    private func formatShopCapycoinNumber(_ value: Int) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = .current
+        return f.string(from: NSNumber(value: value)) ?? "\(value)"
+    }
+    
+    private var shopCoinSubscriptionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "crown.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Color(hex: "1a5f1a"))
+                Text(L("panel.coinSubscriptionPlans"))
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(Color(hex: "1a1a2e"))
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            
+            Text(L("panel.coinSubscriptionBlurb"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color(hex: "5A5A5A"))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 20)
+            
+            if let nextGrant = gameManager.nextSubscriptionCoinGrantInfo() {
+                subscriptionNextCapycoinsCallout(
+                    capycoinAmount: nextGrant.capycoinAmount,
+                    scheduledDate: nextGrant.scheduledDate
+                )
+            }
+            
+            VStack(spacing: 8) {
+                ForEach(ShopSubscriptionPlan.displayOrder) { plan in
+                    ShopSubscriptionPlanRow(
+                        plan: plan,
+                        priceText: subscriptionManager.displayPrice(forProductId: plan.productId, fallback: plan.fallbackPrice),
+                        isCurrent: gameManager.currentSubscriptionTier() == plan.tier,
+                        isThisRowLoading: subscriptionProductLoadingId == plan.productId,
+                        isAnySubscriptionBusy: subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading
+                    ) {
+                        Task { await purchaseShopSubscription(plan: plan) }
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            
+            VStack(spacing: 6) {
+                Button(action: { Task { await restoreShopSubscriptions() } }) {
+                    Text(L("panel.restorePurchases"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(hex: "1a5f1a"))
+                }
+                .buttonStyle(.plain)
+                .disabled(subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading)
+                
+                Text(L("panel.subscriptionBillingNote"))
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundStyle(Color(hex: "5A5A5A").opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 20)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+    
+    @MainActor
+    private func purchaseShopSubscription(plan: ShopSubscriptionPlan) async {
+        guard subscriptionProductLoadingId == nil, !isSubscriptionRestoreLoading else { return }
+        if gameManager.currentSubscriptionTier() == plan.tier { return }
+        subscriptionProductLoadingId = plan.productId
+        gameManager.iapLastErrorMessage = nil
+        defer { subscriptionProductLoadingId = nil }
+        do {
+            try await subscriptionManager.purchaseSubscription(productId: plan.productId)
+            gameManager.upgradeSubscription(to: plan.tier)
+            HapticManager.shared.purchaseSuccess()
+        } catch is CancellationError {
+            return
+        } catch {
+            gameManager.iapLastErrorMessage = error.localizedDescription
+        }
+    }
+    
+    @MainActor
+    private func restoreShopSubscriptions() async {
+        guard subscriptionProductLoadingId == nil, !isSubscriptionRestoreLoading else { return }
+        isSubscriptionRestoreLoading = true
+        gameManager.iapLastErrorMessage = nil
+        defer { isSubscriptionRestoreLoading = false }
+        do {
+            try await subscriptionManager.restorePurchases()
+            if let sub = subscriptionManager.activeSubscription, sub != .free {
+                gameManager.upgradeSubscription(to: sub)
+                HapticManager.shared.purchaseSuccess()
+            }
+        } catch {
+            gameManager.iapLastErrorMessage = error.localizedDescription
         }
     }
     
@@ -375,6 +525,152 @@ struct CoinPackCard: View {
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = ","
         return formatter.string(from: NSNumber(value: coins)) ?? "\(coins)"
+    }
+}
+
+// MARK: - Shop subscription (StoreKit) — product IDs and copy aligned with onboarding coin paywall
+private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
+    case annual, monthly, weekly
+    
+    var id: String { rawValue }
+    
+    static let displayOrder: [ShopSubscriptionPlan] = [.annual, .monthly, .weekly]
+    
+    var tier: SubscriptionManager.SubscriptionTier {
+        switch self {
+        case .annual: return .annual
+        case .monthly: return .monthly
+        case .weekly: return .weekly
+        }
+    }
+    
+    var productId: String {
+        switch self {
+        case .annual: return SubscriptionManager.annualProductId
+        case .monthly: return SubscriptionManager.monthlyProductId
+        case .weekly: return SubscriptionManager.weeklyProductId
+        }
+    }
+    
+    var coinsPerPeriod: Int {
+        switch self {
+        case .weekly: return SubscriptionManager.SubscriptionTier.weekly.weeklyCoins
+        case .monthly: return SubscriptionManager.SubscriptionTier.monthly.monthlyCoins
+        case .annual: return SubscriptionManager.SubscriptionTier.annual.annualCoins
+        }
+    }
+    
+    var fallbackPrice: String {
+        switch self {
+        case .weekly: return "$0.99"
+        case .monthly: return "$9.99"
+        case .annual: return "$99.99"
+        }
+    }
+    
+    var leftCoinsSubtitleKey: String {
+        switch self {
+        case .weekly: return "onboarding.coinPaywallLeftCoinsWeek"
+        case .monthly: return "onboarding.coinPaywallLeftCoinsMonth"
+        case .annual: return "onboarding.coinPaywallLeftCoinsYear"
+        }
+    }
+    
+    var listPeriodKey: String {
+        switch self {
+        case .weekly: return "onboarding.coinPaywallListPeriodWeek"
+        case .monthly: return "onboarding.coinPaywallListPeriodMonth"
+        case .annual: return "onboarding.coinPaywallListPeriodYear"
+        }
+    }
+}
+
+// MARK: - Shop subscription plan row
+private struct ShopSubscriptionPlanRow: View {
+    let plan: ShopSubscriptionPlan
+    let priceText: String
+    let isCurrent: Bool
+    let isThisRowLoading: Bool
+    let isAnySubscriptionBusy: Bool
+    let action: () -> Void
+    
+    private static let settingsGreen = Color(hex: "1a5f1a")
+    private static let primaryText = Color(hex: "1a1a2e")
+    private static let secondaryText = Color(hex: "5A5A5A")
+    private static let cream = Color(hex: "FFF8E7")
+    
+    var body: some View {
+        Button(action: {
+            HapticManager.shared.buttonPress()
+            action()
+        }) {
+            HStack(spacing: 12) {
+                CoinIcon(size: 44)
+                    .shadow(color: Self.settingsGreen.opacity(0.25), radius: 6, y: 2)
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(formattedCoins(plan.coinsPerPeriod))
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundStyle(Self.primaryText)
+                        if isCurrent {
+                            Text(L("panel.currentPlan"))
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Capsule().fill(Self.settingsGreen))
+                        }
+                    }
+                    Text(L(plan.leftCoinsSubtitleKey))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Self.secondaryText)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer(minLength: 6)
+                
+                if isThisRowLoading {
+                    ProgressView()
+                        .tint(Self.settingsGreen)
+                        .frame(width: 88, height: 40)
+                } else if isCurrent {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Self.settingsGreen)
+                        .frame(width: 88, height: 40)
+                } else {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(priceText)
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(Self.primaryText)
+                        Text(L(plan.listPeriodKey))
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Self.secondaryText)
+                    }
+                    .frame(minWidth: 80, alignment: .trailing)
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Self.cream)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isCurrent ? Self.settingsGreen.opacity(0.45) : Self.settingsGreen.opacity(0.25), lineWidth: isCurrent ? 2 : 1)
+                    )
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+        .disabled(isCurrent || isAnySubscriptionBusy)
+        .opacity(isAnySubscriptionBusy && !isThisRowLoading ? 0.55 : 1.0)
+    }
+    
+    private func formattedCoins(_ value: Int) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = Locale.current
+        return f.string(from: NSNumber(value: value)) ?? "\(value)"
     }
 }
 

@@ -127,6 +127,14 @@
   "panel.premiumPlans": "خطط Premium",
   "panel.whatPlan": "أي خطة تريد؟",
   "panel.coinPacks": "عبوات العملات",
+  "panel.coinSubscriptionPlans": "خطط اشتراك العملات",
+  "panel.coinSubscriptionBlurb": "عملات capy متكررة، وصول لعناصر Pro، ولا إعلانات بانر أثناء الاشتراك.",
+  "panel.subscribe": "اشترك",
+  "panel.subscriptionBillingNote": "تتجدد الاشتراكات تلقائياً. ألغِ في أي وقت من App Store.",
+  "panel.currentPlan": "الحالي",
+  "panel.subscriptionNextCoinsTitle": "دفعة capy-coins التالية",
+  "panel.subscriptionNextCoinsScheduled": "+%1$@ عملة capy-coins في %2$@",
+  "panel.subscriptionNextCoinsPending": "+%1$@ عملة capy-coins — تُضاف عند فتح التطبيق لاحقًا",
   "panel.restorePurchases": "استعادة المشتريات",
   "panel.playDailyGames": "العب الألعاب اليومية",
   "rename.title": "أعد تسمية كابيبارا",
@@ -209,5 +217,12 @@
   "achievements.streak_7.name": "سلسلة 7 أيام",
   "achievements.streak_30.name": "سلسلة 30 يومًا",
   "achievements.streak_100.name": "سلسلة 100 يوم",
-  "achievements.streak_365.name": "سلسلة 365 يوم"
+  "achievements.streak_365.name": "سلسلة 365 يوم",
+  "settings.resetProgress": "إعادة تعيين التقدم",
+  "settings.resetProgressSubtitle": "البدء من جديد بكابيبارا وإحصائيات وعملات جديدة",
+  "settings.resetProgressConfirmTitle": "إعادة تعيين كل التقدم؟",
+  "settings.resetProgressConfirmMessage": "يُعاد التطبيق إلى حالة لاعب جديد (ستظهر الإعدادات الأولية والجولة التعليمية مرة أخرى). الاشتراك يبقى فعالاً إن وُجد.",
+  "settings.resetProgressConfirmButton": "إعادة تعيين",
+  "notification.hatPromoTitle": "القبعات والعناصر",
+  "notification.hatPromoBody": "ستبدو %@ رائعاً بقبعة جديدة! اضغط لفتح العناصر وشراء واحدة."
 }

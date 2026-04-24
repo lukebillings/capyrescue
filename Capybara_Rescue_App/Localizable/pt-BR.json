@@ -127,6 +127,14 @@
   "panel.premiumPlans": "Planos premium",
   "panel.whatPlan": "Qual plano você quer?",
   "panel.coinPacks": "Pacotes de moedas",
+  "panel.coinSubscriptionPlans": "Planos de assinatura de moedas",
+  "panel.coinSubscriptionBlurb": "Capymoedas recorrentes, acesso a itens Pro e sem banners de anúncios com a assinatura ativa.",
+  "panel.subscribe": "Assinar",
+  "panel.subscriptionBillingNote": "As assinaturas renovam automaticamente. Cancele quando quiser na App Store.",
+  "panel.currentPlan": "Atual",
+  "panel.subscriptionNextCoinsTitle": "Próxima carga de capymoedas",
+  "panel.subscriptionNextCoinsScheduled": "+%1$@ capymoedas em %2$@.",
+  "panel.subscriptionNextCoinsPending": "+%1$@ capymoedas — adicionadas na próxima vez que abrir o app",
   "panel.restorePurchases": "Restaurar compras",
   "panel.playDailyGames": "Jogue jogos diários",
   "rename.title": "Renomeie sua capivara",
@@ -209,5 +217,12 @@
   "achievements.streak_7.name": "Sequência de 7 dias",
   "achievements.streak_30.name": "Sequência de 30 dias",
   "achievements.streak_100.name": "Sequência de 100 dias",
-  "achievements.streak_365.name": "Sequência de 365 dias"
+  "achievements.streak_365.name": "Sequência de 365 dias",
+  "settings.resetProgress": "Redefinir progresso",
+  "settings.resetProgressSubtitle": "Recomece com capivara, estatísticas e moedas novas",
+  "settings.resetProgressConfirmTitle": "Redefinir todo o progresso?",
+  "settings.resetProgressConfirmMessage": "O app volta ao estado de jogador novo (o tutorial inicial aparece de novo). A assinatura continua ativa, se houver.",
+  "settings.resetProgressConfirmButton": "Redefinir",
+  "notification.hatPromoTitle": "Chapéus e itens",
+  "notification.hatPromoBody": "%@ ficaria ótima com um chapéu novo! Toque para abrir Itens e comprar um."
 }
