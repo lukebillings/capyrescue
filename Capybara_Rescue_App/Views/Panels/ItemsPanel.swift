@@ -481,7 +481,10 @@ struct AccessoryItemButton: View {
                 Text(localizedAccessoryName(id: item.id))
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(minWidth: 0, maxWidth: 78, alignment: .top)
+                    .fixedSize(horizontal: false, vertical: true)
                     .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 
                 // Status / Price
@@ -881,6 +884,14 @@ struct LooksGoodModal: View {
                 Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.primaryText)
+                    .multilineTextAlignment(.center)
+                
+                Text(itemName)
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Self.primaryText)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 6) {
@@ -969,11 +980,20 @@ struct InsufficientCoinsOverlay: View {
                 Text(L("common.looksGood"))
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(Self.primaryText)
+                    .multilineTextAlignment(.center)
+                
+                Text(itemName)
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Self.primaryText)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
                 
                 VStack(spacing: 8) {
                     Text(L("common.youNeedMoreCoins"))
                         .font(.system(size: 16, weight: .medium, design: .rounded))
                         .foregroundStyle(Self.primaryText)
+                        .multilineTextAlignment(.center)
                     
                     HStack(spacing: 6) {
                         Text(L("common.cost"))

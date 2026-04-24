@@ -7,14 +7,16 @@ import StoreKit
 /// File scope so UNUserNotificationCenter Sendable callbacks can compare identifiers without MainActor isolation.
 private let hatPromoNotificationIdentifier = "bunny_hat_promo_weekly"
 
+/// Wall-clock seconds before each of food, drink, and happiness drops by 1 (file scope for Sendable notification closures).
+private let statDecayIntervalSeconds: TimeInterval = 600
+
 // MARK: - Game Manager
 @MainActor
 class GameManager: ObservableObject {
     @Published var gameState: GameState {
         didSet {
-            if !isSaving {
-                saveGameState()
-            }
+            if isRestoring || isSaving { return }
+            saveGameState()
             // Note: Notifications are now handled by scheduleFutureNotifications()
             // which schedules them in advance based on stat decay rates
         }
@@ -33,13 +35,40 @@ class GameManager: ObservableObject {
     
     private var decayTimer: Timer?
     private let storageKey = "capybara_rescue_game_state"
+    /// Reliable on-device copy so progress survives iCloud KVS unavailability, simulator, and first-sync delays.
+    private let userDefaultsStateKey = "capybara_rescue_game_state_local"
     private var isSaving = false
+    private var isRestoring = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
 
     /// Local backup for onboarding/tutorial completion so progress survives iCloud hiccups or stale sync.
     private enum ProgressDefaultsKey {
         static let hasCompletedOnboarding = "has_completed_onboarding"
         static let hasCompletedTutorial = "has_completed_tutorial"
+    }
+
+    private static func decodeGameState(_ data: Data) -> GameState? {
+        try? JSONDecoder().decode(GameState.self, from: data)
+    }
+
+    /// Picks the newest saved state by `lastUpdateTime`; prefers local when equal (avoids flaky iCloud wiping progress).
+    private static func loadMergedState(
+        userDefaultsKey: String,
+        iCloudKey: String,
+        cloudStore: NSUbiquitousKeyValueStore
+    ) -> GameState {
+        let local = UserDefaults.standard.data(forKey: userDefaultsKey).flatMap { decodeGameState($0) }
+        let cloud = cloudStore.data(forKey: iCloudKey).flatMap { decodeGameState($0) }
+        switch (local, cloud) {
+        case let (l?, c?):
+            return l.lastUpdateTime >= c.lastUpdateTime ? l : c
+        case let (l?, nil):
+            return l
+        case let (nil, c?):
+            return c
+        default:
+            return GameState.defaultState
+        }
     }
 
     // MARK: - StoreKit (IAP)
@@ -54,16 +83,16 @@ class GameManager: ObservableObject {
     }
     
     init() {
-        // Initialize gameState first (required before calling any methods)
-        if let data = cloudStore.data(forKey: storageKey),
-           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
-            self.gameState = savedState
-            print("✅ Loaded game state from iCloud")
-        } else {
-            self.gameState = GameState.defaultState
-            print("ℹ️ Using default game state (first launch or no iCloud data)")
-        }
-        
+        isRestoring = true
+        self.gameState = Self.loadMergedState(
+            userDefaultsKey: userDefaultsStateKey,
+            iCloudKey: storageKey,
+            cloudStore: cloudStore
+        )
+        isRestoring = false
+        saveGameState()
+        print("✅ Game state ready (UserDefaults + iCloud, newest by last update time)")
+
         // Set up iCloud sync notification observer
         NotificationCenter.default.addObserver(
             self,
@@ -149,13 +178,13 @@ class GameManager: ObservableObject {
     }
     
     private func loadGameState() {
-        if let data = cloudStore.data(forKey: storageKey),
-           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
-            self.gameState = savedState
-            print("✅ Loaded game state from iCloud")
-        } else {
-            self.gameState = GameState.defaultState
-            print("ℹ️ Using default game state (first launch or no iCloud data)")
+        guard let data = cloudStore.data(forKey: storageKey),
+              let remote = Self.decodeGameState(data) else {
+            return
+        }
+        if remote.lastUpdateTime > gameState.lastUpdateTime {
+            gameState = remote
+            print("☁️ Applied newer game state from iCloud")
         }
         applyProgressFlagsFromUserDefaults()
     }
@@ -335,13 +364,14 @@ class GameManager: ObservableObject {
         defer { isSaving = false }
         // IMPORTANT:
         // `lastUpdateTime` is used as the anchor for stat decay timing.
-        // Do NOT update it on every save, otherwise the "1 per hour" decay
+        // Do NOT update it on every save, otherwise time-based decay
         // never properly accumulates (especially when backgrounded).
-        
+
         if let data = try? JSONEncoder().encode(gameState) {
+            UserDefaults.standard.set(data, forKey: userDefaultsStateKey)
             cloudStore.set(data, forKey: storageKey)
-            cloudStore.synchronize() // Explicitly sync to iCloud
-            print("💾 Saved game state to iCloud")
+            cloudStore.synchronize()
+            print("💾 Saved game state (UserDefaults + iCloud)")
         }
         if gameState.hasCompletedOnboarding {
             UserDefaults.standard.set(true, forKey: ProgressDefaultsKey.hasCompletedOnboarding)
@@ -353,8 +383,8 @@ class GameManager: ObservableObject {
     
     // MARK: - Decay System
     private func applyOfflineDecay(now: Date = Date()) {
-        // Apply decay for each full hour elapsed since `lastUpdateTime`,
-        // and advance `lastUpdateTime` by whole hours (preserves partial-hour remainder).
+        // Apply decay for each full `statDecayIntervalSeconds` elapsed since `lastUpdateTime`,
+        // and advance the anchor in whole steps (preserves remainder in the current interval).
         let elapsed = now.timeIntervalSince(gameState.lastUpdateTime)
         
         // If device clock changed and we end up in the "future", just reset the anchor.
@@ -363,16 +393,16 @@ class GameManager: ObservableObject {
             return
         }
         
-        let hourIntervals = Int(elapsed / 3600) // full hours only
-        guard hourIntervals > 0 else { return }
+        let step = statDecayIntervalSeconds
+        let stepCount = Int(elapsed / step)
+        guard stepCount > 0 else { return }
         
-        let decayAmount = hourIntervals // 1 point per hour
+        let decayAmount = stepCount
         gameState.food = max(0, gameState.food - decayAmount)
         gameState.drink = max(0, gameState.drink - decayAmount)
         gameState.happiness = max(0, gameState.happiness - decayAmount)
         
-        // Advance anchor by the exact number of hours applied.
-        gameState.lastUpdateTime = gameState.lastUpdateTime.addingTimeInterval(TimeInterval(hourIntervals * 3600))
+        gameState.lastUpdateTime = gameState.lastUpdateTime.addingTimeInterval(TimeInterval(stepCount) * step)
         
         checkRunAway()
         
@@ -381,26 +411,12 @@ class GameManager: ObservableObject {
     }
     
     private func startDecayTimer() {
-        // Decay stats every 1 hour (3600 seconds)
-        decayTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+        // Poll so wall-clock decay applies on schedule while the app stays open (interval can be < stat decay length).
+        decayTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.applyDecay()
+                self?.applyOfflineDecay(now: Date())
             }
         }
-    }
-    
-    private func applyDecay() {
-        gameState.food = max(0, gameState.food - 1)
-        gameState.drink = max(0, gameState.drink - 1)
-        gameState.happiness = max(0, gameState.happiness - 1)
-        
-        // Anchor for next time-based decay calculation
-        gameState.lastUpdateTime = Date()
-        
-        checkRunAway()
-        
-        // Reschedule future notifications based on new stat values
-        scheduleFutureNotifications()
     }
 
     // Call this when the app becomes active to account for time spent backgrounded.
@@ -1077,7 +1093,7 @@ class GameManager: ObservableObject {
                 var scheduledNotifications: [(hours: Int, title: String, body: String, identifier: String)] = []
                 
                 // Calculate when each stat will hit 80 and 50 thresholds
-                // Stats decay by 1 per hour
+                // One decay step per `statDecayIntervalSeconds` of wall time
                 // Only schedule notifications for future threshold crossings
                 
                 // Schedule food notifications
@@ -1185,6 +1201,7 @@ class GameManager: ObservableObject {
     }
 
     private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {
+        // `hours` = number of decay steps until the threshold (one step per `statDecayIntervalSeconds`).
         guard hours > 0 else { return }
         
         // Query current delivered notifications to calculate proper badge
@@ -1196,8 +1213,7 @@ class GameManager: ObservableObject {
             // Set badge to current delivered count + this notification
             content.badge = NSNumber(value: deliveredNotifications.count + 1)
             
-            // Schedule notification for the calculated hours from now
-            let timeInterval = TimeInterval(hours * 3600) // Convert hours to seconds
+            let timeInterval = TimeInterval(hours) * statDecayIntervalSeconds
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
             
@@ -1205,7 +1221,7 @@ class GameManager: ObservableObject {
                 if let error = error {
                     print("❌ Failed to schedule notification: \(error.localizedDescription)")
                 } else {
-                    print("✅ Scheduled notification '\(identifier)' for \(hours) hours from now")
+                    print("✅ Scheduled notification '\(identifier)' for \(hours) decay step(s) from now")
                 }
             }
         }
