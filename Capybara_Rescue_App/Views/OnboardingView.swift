@@ -16,6 +16,8 @@ struct OnboardingView: View {
     @State private var paywallErrorMessage: String? = nil
     /// Auto-rotating hat preview on the coin paywall (`paywallShowcaseHats`).
     @State private var paywallShowcaseHatIndex: Int = 0
+    /// Anchor for hat rotation so it stays in sync with wall clock while the dismiss countdown runs (avoids a second Combine timer that resets on every 1s state update).
+    @State private var paywallShowcaseStartedAt: Date = Date()
     /// Counts down from 20; at 0 the top-trailing control becomes an exit button.
     @State private var paywallDismissSecondsRemaining: Int = 20
     @State private var coinPackDismissSecondsRemaining: Int = 20
@@ -157,6 +159,17 @@ struct OnboardingView: View {
         let hats = paywallShowcaseHats
         guard !hats.isEmpty else { return nil }
         return hats[paywallShowcaseHatIndex % hats.count]
+    }
+    
+    /// Drives the hat strip / 3D preview from elapsed time so rotation keeps going during the 20s dismiss countdown.
+    private func updatePaywallShowcaseHatIndexFromElapsedTime() {
+        let n = paywallShowcaseHats.count
+        guard n > 0 else { return }
+        let elapsed = max(0, Date().timeIntervalSince(paywallShowcaseStartedAt))
+        let newIndex = Int(floor(elapsed / Self.paywallHatCycleSeconds)) % n
+        if newIndex != paywallShowcaseHatIndex {
+            paywallShowcaseHatIndex = newIndex
+        }
     }
     
     var body: some View {
@@ -715,20 +728,6 @@ struct OnboardingView: View {
                     .padding(.horizontal, 24)
                 }
                 .padding(.top, 5)
-                .onAppear {
-                    paywallShowcaseHatIndex = 0
-                    paywallDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
-                }
-                .onReceive(Timer.publish(every: Self.paywallHatCycleSeconds, on: .main, in: .common).autoconnect()) { _ in
-                    let n = paywallShowcaseHats.count
-                    guard n > 0 else { return }
-                    paywallShowcaseHatIndex = (paywallShowcaseHatIndex + 1) % n
-                }
-                .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                    if paywallDismissSecondsRemaining > 0 {
-                        paywallDismissSecondsRemaining -= 1
-                    }
-                }
                 Spacer(minLength: 0)
                 VStack(spacing: Self.paywallBottomSectionSpacing) {
                     coinPaywallPreCTALegalBlock
@@ -764,6 +763,18 @@ struct OnboardingView: View {
                 .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            paywallShowcaseStartedAt = Date()
+            paywallShowcaseHatIndex = 0
+            paywallDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
+            updatePaywallShowcaseHatIndexFromElapsedTime()
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            if paywallDismissSecondsRemaining > 0 {
+                paywallDismissSecondsRemaining -= 1
+            }
+            updatePaywallShowcaseHatIndexFromElapsedTime()
+        }
         .task {
             await subscriptionManager.loadProducts()
         }
@@ -840,23 +851,6 @@ struct OnboardingView: View {
                     .padding(.horizontal, 24)
                 }
                 .padding(.top, 5)
-                .onAppear {
-                    if selectedCoinPackProductId.isEmpty
-                        || CoinPack.topThreeCoinPacksForOnboarding.allSatisfy({ $0.productId != selectedCoinPackProductId }) {
-                        selectedCoinPackProductId = CoinPack.topThreeCoinPacksForOnboarding.first?.productId ?? ""
-                    }
-                    coinPackDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
-                }
-                .onReceive(Timer.publish(every: Self.paywallHatCycleSeconds, on: .main, in: .common).autoconnect()) { _ in
-                    let n = paywallShowcaseHats.count
-                    guard n > 0 else { return }
-                    paywallShowcaseHatIndex = (paywallShowcaseHatIndex + 1) % n
-                }
-                .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                    if coinPackDismissSecondsRemaining > 0 {
-                        coinPackDismissSecondsRemaining -= 1
-                    }
-                }
                 Spacer(minLength: 0)
                 VStack(spacing: Self.paywallBottomSectionSpacing) {
                     coinPackOfferPreCTALegalBlock
@@ -892,6 +886,22 @@ struct OnboardingView: View {
                 .padding(.top, 6)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            if selectedCoinPackProductId.isEmpty
+                || CoinPack.topThreeCoinPacksForOnboarding.allSatisfy({ $0.productId != selectedCoinPackProductId }) {
+                selectedCoinPackProductId = CoinPack.topThreeCoinPacksForOnboarding.first?.productId ?? ""
+            }
+            paywallShowcaseStartedAt = Date()
+            paywallShowcaseHatIndex = 0
+            coinPackDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
+            updatePaywallShowcaseHatIndexFromElapsedTime()
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            if coinPackDismissSecondsRemaining > 0 {
+                coinPackDismissSecondsRemaining -= 1
+            }
+            updatePaywallShowcaseHatIndexFromElapsedTime()
+        }
     }
     
     private var selectedOnboardingCoinPack: CoinPack {

@@ -431,7 +431,7 @@
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
+				INFOPLIST_KEY_CFBundleDisplayName = "Capyrescue";
 				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
 				INFOPLIST_KEY_CFBundleVersion = 1;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -465,7 +465,7 @@
 				DEVELOPMENT_TEAM = 66VA8628J7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Capybara_Rescue_App/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Capybara Rescue Universe";
+				INFOPLIST_KEY_CFBundleDisplayName = "Capyrescue";
 				INFOPLIST_KEY_CFBundleShortVersionString = 1.0;
 				INFOPLIST_KEY_CFBundleVersion = 1;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
