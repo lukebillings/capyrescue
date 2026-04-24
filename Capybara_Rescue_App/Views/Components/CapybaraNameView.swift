@@ -152,10 +152,6 @@ struct RenameSheet: View {
                 .background(
                     Capsule()
                         .fill(AppColors.paywallCTAGreen)
-                        .overlay(
-                            Capsule()
-                                .stroke(AppColors.paywallCTABorder, lineWidth: 2)
-                        )
                 )
             }
             .buttonStyle(ScaleButtonStyle())

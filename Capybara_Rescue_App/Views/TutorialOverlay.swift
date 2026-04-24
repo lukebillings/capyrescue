@@ -200,10 +200,6 @@ struct TutorialOverlay: View {
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(AppColors.paywallCTAGreen)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(AppColors.paywallCTABorder, lineWidth: 2)
-                                )
                         )
                 }
             }

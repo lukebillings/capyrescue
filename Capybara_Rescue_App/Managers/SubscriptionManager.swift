@@ -35,25 +35,32 @@ class SubscriptionManager: ObservableObject {
         var startingCoins: Int {
             switch self {
             case .free: return 500
-            case .weekly: return 1000
-            case .monthly: return 15000
-            case .annual: return 15000
+            case .weekly: return 1_000
+            case .monthly: return 10_000
+            case .annual: return 100_000
             }
         }
         
+        /// Recurring coins each month (monthly plan only).
         var monthlyCoins: Int {
             switch self {
-            case .free: return 0
-            case .weekly: return 0
-            case .monthly: return 10000
-            case .annual: return 10000
+            case .monthly: return 10_000
+            default: return 0
             }
         }
         
-        /// Recurring coins per week (for weekly plan only).
+        /// Recurring coins per week (weekly plan only).
         var weeklyCoins: Int {
             switch self {
-            case .weekly: return 500
+            case .weekly: return 1_000
+            default: return 0
+            }
+        }
+        
+        /// Recurring coins per year (annual plan only; granted on each anniversary).
+        var annualCoins: Int {
+            switch self {
+            case .annual: return 100_000
             default: return 0
             }
         }

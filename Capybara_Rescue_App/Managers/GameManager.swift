@@ -780,13 +780,14 @@ class GameManager: ObservableObject {
             unlockProItemsIfNeeded()
         }
         
-        // Pro Weekly: mark grant date so first 500/week is in 7 days
         if tier == .weekly {
             gameState.lastWeeklyCoinsGrantDate = Date()
         }
-        // Pro Monthly / Annual: mark grant date so first 10k/month is in 1 month (15k already given as startingCoins)
-        if tier == .monthly || tier == .annual {
+        if tier == .monthly {
             gameState.lastMonthlyCoinsGrantDate = Date()
+        }
+        if tier == .annual {
+            gameState.lastAnnualCoinsGrantDate = Date()
         }
         
         print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
@@ -810,7 +811,7 @@ class GameManager: ObservableObject {
         return tier
     }
     
-    /// Grants 500 coins to Pro Weekly subscribers every 7 days. Call from main content onAppear.
+    /// Grants recurring weekly coins to Pro Weekly subscribers. Call from main content onAppear.
     func grantWeeklySubscriptionCoinsIfNeeded() {
         guard currentSubscriptionTier() == .weekly else { return }
         let amount = SubscriptionManager.SubscriptionTier.weekly.weeklyCoins
@@ -858,10 +859,10 @@ class GameManager: ObservableObject {
         }
     }
     
-    /// Grants 10,000 coins to Pro Monthly/Annual subscribers every calendar month. Call from main content onAppear.
+    /// Grants 10,000 coins to Pro Monthly subscribers every calendar month. Call from main content onAppear.
     func grantMonthlySubscriptionCoinsIfNeeded() {
         let tier = currentSubscriptionTier()
-        guard tier == .monthly || tier == .annual else { return }
+        guard tier == .monthly else { return }
         let amount = tier.monthlyCoins
         let now = Date()
         let calendar = Calendar.current
@@ -875,6 +876,25 @@ class GameManager: ObservableObject {
             print("✅ Granted \(amount) monthly coins (Pro). New balance: \(gameState.capycoins)")
         } else {
             gameState.lastMonthlyCoinsGrantDate = now
+        }
+    }
+    
+    /// Grants yearly coin allotment to Pro Annual subscribers. Call from main content onAppear.
+    func grantAnnualSubscriptionCoinsIfNeeded() {
+        guard currentSubscriptionTier() == .annual else { return }
+        let amount = SubscriptionManager.SubscriptionTier.annual.annualCoins
+        let now = Date()
+        let calendar = Calendar.current
+        if let last = gameState.lastAnnualCoinsGrantDate {
+            guard let nextGrant = calendar.date(byAdding: .year, value: 1, to: last), now >= nextGrant else {
+                return
+            }
+            gameState.capycoins += amount
+            gameState.lastAnnualCoinsGrantDate = now
+            showToast("Annual Pro reward: \(amount) coins! 🎉")
+            print("✅ Granted \(amount) annual coins. New balance: \(gameState.capycoins)")
+        } else {
+            gameState.lastAnnualCoinsGrantDate = now
         }
     }
     
@@ -908,6 +928,7 @@ class GameManager: ObservableObject {
         let removedAds = gameState.hasRemovedBannerAds
         let weekly = gameState.lastWeeklyCoinsGrantDate
         let monthly = gameState.lastMonthlyCoinsGrantDate
+        let annual = gameState.lastAnnualCoinsGrantDate
         
         var fresh = GameState.defaultState
         fresh.subscriptionTier = tier
@@ -916,6 +937,7 @@ class GameManager: ObservableObject {
         fresh.hasRemovedBannerAds = removedAds
         fresh.lastWeeklyCoinsGrantDate = weekly
         fresh.lastMonthlyCoinsGrantDate = monthly
+        fresh.lastAnnualCoinsGrantDate = annual
         
         clearProgressDefaultsBackup()
         gameState = fresh
