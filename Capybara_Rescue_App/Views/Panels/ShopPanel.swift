@@ -180,6 +180,22 @@ struct ShopPanel: View {
         return f.string(from: NSNumber(value: value)) ?? "\(value)"
     }
     
+    private func subscriptionPlanRow(for plan: ShopSubscriptionPlan) -> some View {
+        let priceText = subscriptionManager.displayPrice(for: plan.productId, fallback: plan.fallbackPrice)
+        let isCurrent = gameManager.currentSubscriptionTier() == plan.tier
+        let isThisRowLoading = subscriptionProductLoadingId == plan.productId
+        let isAnySubscriptionBusy = subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading
+        return ShopSubscriptionPlanRow(
+            plan: plan,
+            priceText: priceText,
+            isCurrent: isCurrent,
+            isThisRowLoading: isThisRowLoading,
+            isAnySubscriptionBusy: isAnySubscriptionBusy
+        ) {
+            Task { await purchaseShopSubscription(plan: plan) }
+        }
+    }
+    
     private var shopCoinSubscriptionsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -208,15 +224,7 @@ struct ShopPanel: View {
             
             VStack(spacing: 8) {
                 ForEach(ShopSubscriptionPlan.displayOrder) { plan in
-                    ShopSubscriptionPlanRow(
-                        plan: plan,
-                        priceText: subscriptionManager.displayPrice(forProductId: plan.productId, fallback: plan.fallbackPrice),
-                        isCurrent: gameManager.currentSubscriptionTier() == plan.tier,
-                        isThisRowLoading: subscriptionProductLoadingId == plan.productId,
-                        isAnySubscriptionBusy: subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading
-                    ) {
-                        Task { await purchaseShopSubscription(plan: plan) }
-                    }
+                    subscriptionPlanRow(for: plan)
                 }
             }
             .padding(.horizontal, 16)
