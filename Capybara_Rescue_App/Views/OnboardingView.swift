@@ -18,6 +18,9 @@ struct OnboardingView: View {
     @State private var paywallShowcaseHatIndex: Int = 0
     /// Counts down from 20; at 0 the top-trailing control becomes an exit button.
     @State private var paywallDismissSecondsRemaining: Int = 20
+    @State private var coinPackDismissSecondsRemaining: Int = 20
+    @State private var selectedCoinPackProductId: String = ""
+    @State private var isPurchasingCoinPack: Bool = false
     @State private var adoptionGiftShowConfetti = false
     @State private var adoptionGiftCoinReveal = false
     @State private var adoptionGiftSparkleRotation: Double = 0
@@ -29,6 +32,7 @@ struct OnboardingView: View {
         case pledge
         case adoptionGift
         case coinPaywall
+        case coinPackOnboarding
     }
     
     /// Pro coin subscription options (maps to `SubscriptionManager` product IDs and recurring grant amounts).
@@ -173,6 +177,8 @@ struct OnboardingView: View {
                 adoptionGiftView
             case .coinPaywall:
                 coinPaywallView
+            case .coinPackOnboarding:
+                coinPackOnboardingView
             }
         }
         .preferredColorScheme(.light)
@@ -763,6 +769,229 @@ struct OnboardingView: View {
         }
     }
     
+    // MARK: - Coin pack onboarding (after subscription paywall)
+    private var coinPackOnboardingView: some View {
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: Self.paywallCompactTopInset)
+                paywallCoinBalanceHeader
+                Text(L("onboarding.coinPackOfferTitle"))
+                    .font(.system(size: Self.paywallTitleFontSize, weight: .bold))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.78)
+                    .lineLimit(5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 2)
+                Text(L("onboarding.coinPackOfferSubtitle"))
+                    .font(.system(size: Self.paywallSubtitleFontSize, weight: .medium))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.82)
+                    .lineLimit(6)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                VStack(spacing: 5) {
+                    paywallHatShowcaseStrip
+                    if let item = paywallPreviewedAccessory {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(localizedAccessoryName(id: item.id))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(Self.onboardingPrimaryText)
+                                .multilineTextAlignment(.leading)
+                            Spacer(minLength: 8)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text(formattedCoinCount(item.cost))
+                                    .font(.system(size: 14, weight: .medium))
+                                Text(L("common.coins"))
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(Self.onboardingPrimaryText)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 24)
+                    }
+                    if #available(iOS 17.0, *) {
+                        Capybara3DView(
+                            emotion: gameManager.gameState.capybaraEmotion,
+                            equippedAccessories: gameManager.gameState.equippedAccessories,
+                            previewingAccessoryId: paywallPreviewHatId,
+                            onPet: { },
+                            initialRotation: nil
+                        )
+                        .frame(height: Self.paywallHeroCapybaraHeight)
+                        .scaleEffect(Self.paywallHeroCapybaraScale)
+                        .frame(height: Self.paywallHeroCapybaraHeight)
+                        .clipped()
+                        .allowsHitTesting(false)
+                    } else {
+                        Text(paywallShowcaseHats.isEmpty ? "🐹" : (paywallShowcaseHats[paywallShowcaseHatIndex % paywallShowcaseHats.count].emoji))
+                            .font(.system(size: 64))
+                            .frame(height: Self.paywallHeroCapybaraHeight)
+                    }
+                    VStack(spacing: 5) {
+                        ForEach(CoinPack.topThreeCoinPacksForOnboarding, id: \.productId) { pack in
+                            coinPackOnboardingOptionButton(pack: pack)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .padding(.top, 5)
+                .onAppear {
+                    if selectedCoinPackProductId.isEmpty
+                        || CoinPack.topThreeCoinPacksForOnboarding.allSatisfy({ $0.productId != selectedCoinPackProductId }) {
+                        selectedCoinPackProductId = CoinPack.topThreeCoinPacksForOnboarding.first?.productId ?? ""
+                    }
+                    coinPackDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
+                }
+                .onReceive(Timer.publish(every: Self.paywallHatCycleSeconds, on: .main, in: .common).autoconnect()) { _ in
+                    let n = paywallShowcaseHats.count
+                    guard n > 0 else { return }
+                    paywallShowcaseHatIndex = (paywallShowcaseHatIndex + 1) % n
+                }
+                .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+                    if coinPackDismissSecondsRemaining > 0 {
+                        coinPackDismissSecondsRemaining -= 1
+                    }
+                }
+                Spacer(minLength: 0)
+                VStack(spacing: Self.paywallBottomSectionSpacing) {
+                    coinPackOfferPreCTALegalBlock
+                    Button(action: { Task { await purchaseSelectedCoinPack() } }) {
+                        Group {
+                            if isPurchasingCoinPack {
+                                Text(L("onboarding.coinPackOfferPurchasing"))
+                            } else {
+                                Text(String(format: L("onboarding.coinPackOfferCTAFormat"), formattedCoinCount(selectedOnboardingCoinPack.coins)))
+                            }
+                        }
+                        .font(.system(size: 19, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            ZStack {
+                                Capsule()
+                                    .fill(AppColors.paywallCTAGreen)
+                                CoinPaywallCTADiagonalShine()
+                                    .clipShape(Capsule())
+                            }
+                        )
+                    }
+                    .disabled(isPurchasingCoinPack)
+                    .opacity(isPurchasingCoinPack ? 0.7 : 1.0)
+                }
+                .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
+                .padding(.bottom, Self.onboardingCTABottomPadding)
+            }
+            coinPackTopTrailingDismissControl
+                .padding(.trailing, 16)
+                .padding(.top, 6)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private var selectedOnboardingCoinPack: CoinPack {
+        if let match = CoinPack.topThreeCoinPacksForOnboarding.first(where: { $0.productId == selectedCoinPackProductId }) {
+            return match
+        }
+        return CoinPack.topThreeCoinPacksForOnboarding.first
+            ?? CoinPack.packsSortedMostExpensiveFirst.first
+            ?? CoinPack.packs[0]
+    }
+    
+    private var coinPackTopTrailingDismissControl: some View {
+        Group {
+            if coinPackDismissSecondsRemaining > 0 {
+                Text("\(coinPackDismissSecondsRemaining)")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .monospacedDigit()
+                    .frame(width: 40, height: 40)
+                    .background(
+                        Circle()
+                            .fill(Self.onboardingCardFill)
+                            .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
+                    )
+                    .accessibilityLabel(Text(verbatim: "\(coinPackDismissSecondsRemaining)"))
+            } else {
+                Button(action: { completeOnboardingAndDismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(Self.onboardingCardFill)
+                                .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(verbatim: L("common.dismiss")))
+            }
+        }
+    }
+    
+    private var coinPackOfferPreCTALegalBlock: some View {
+        VStack(spacing: 6) {
+            Button(action: { Task { await restorePurchases() } }) {
+                Text(L("onboarding.restorePurchases"))
+                    .font(.system(size: 10, weight: .regular))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+                    .underline()
+            }
+            .buttonStyle(.plain)
+            .disabled(isPurchasingCoinPack)
+            Text(L("onboarding.coinPackOfferFinePrint"))
+                .font(.system(size: 10, weight: .regular))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            coinPaywallLegalLinkRow
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func coinPackOnboardingOptionButton(pack: CoinPack) -> some View {
+        let selected = selectedCoinPackProductId == pack.productId
+        let price = gameManager.displayPrice(forProductId: pack.productId, fallback: pack.price)
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedCoinPackProductId = pack.productId
+            }
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(formattedCoinCount(pack.coins))
+                        .font(.system(size: Self.paywallPlanCoinFontSize, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                    Text(L("onboarding.coinPackOfferRowSubtitle"))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Self.onboardingSecondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                Text(price)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Self.onboardingSecondaryText)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, Self.paywallPlanRowVPadding)
+            .background(
+                RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
+                    .fill(Self.onboardingCardFill)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
+                            .stroke(selected ? AppColors.paywallCTAGreen : Self.onboardingCardStroke, lineWidth: selected ? 2 : 1)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
     private var paywallTopTrailingDismissControl: some View {
         Group {
             if paywallDismissSecondsRemaining > 0 {
@@ -778,7 +1007,7 @@ struct OnboardingView: View {
                     )
                     .accessibilityLabel(Text(verbatim: "\(paywallDismissSecondsRemaining)"))
             } else {
-                Button(action: { completeOnboardingAndDismiss() }) {
+                Button(action: { advanceFromSubscriptionPaywall() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Self.onboardingPrimaryText)
@@ -961,7 +1190,7 @@ struct OnboardingView: View {
         do {
             try await subscriptionManager.purchaseSubscription(productId: selectedCoinPlan.productId)
             gameManager.upgradeSubscription(to: selectedCoinPlan.tier)
-            completeOnboardingAndDismiss()
+            advanceFromSubscriptionPaywall()
         } catch is CancellationError {
             return
         } catch {
@@ -978,15 +1207,38 @@ struct OnboardingView: View {
             try await subscriptionManager.restorePurchases()
             if let s = subscriptionManager.activeSubscription, s != .free {
                 gameManager.upgradeSubscription(to: s)
-                completeOnboardingAndDismiss()
+                if currentStep == .coinPaywall {
+                    advanceFromSubscriptionPaywall()
+                }
             }
         } catch {
             paywallErrorMessage = error.localizedDescription
         }
     }
     
-    private func completeOnboardingAndDismiss() {
+    private func advanceFromSubscriptionPaywall() {
         gameManager.gameState.hasCompletedPaywall = true
+        coinPackDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
+        withAnimation(.easeInOut(duration: 0.2)) {
+            currentStep = .coinPackOnboarding
+        }
+    }
+    
+    @MainActor
+    private func purchaseSelectedCoinPack() async {
+        isPurchasingCoinPack = true
+        paywallErrorMessage = nil
+        gameManager.iapLastErrorMessage = nil
+        defer { isPurchasingCoinPack = false }
+        let ok = await gameManager.purchaseCoinPack(selectedOnboardingCoinPack)
+        if ok {
+            completeOnboardingAndDismiss()
+        } else if let err = gameManager.iapLastErrorMessage {
+            paywallErrorMessage = err
+        }
+    }
+    
+    private func completeOnboardingAndDismiss() {
         gameManager.gameState.hasCompletedOnboarding = true
         withAnimation {
             isPresented = false

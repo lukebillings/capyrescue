@@ -59,7 +59,7 @@ struct ShopPanel: View {
                     .padding(.horizontal, 20)
                     
                     VStack(spacing: 8) {
-                        ForEach(Array(CoinPack.packs.sorted(by: { $0.coins < $1.coins }).enumerated()), id: \.element.id) { index, pack in
+                        ForEach(Array(CoinPack.packsSortedMostExpensiveFirst.enumerated()), id: \.element.productId) { index, pack in
                             let priceText = gameManager.displayPrice(forProductId: pack.productId, fallback: pack.price)
                             CoinPackCard(pack: pack, tier: index, priceText: priceText, isPurchasing: isPurchasing) {
                                 handleCoinPackPurchase(pack)

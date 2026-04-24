@@ -403,6 +403,16 @@ struct CoinPack: Identifiable {
         )
     ]
     
+    /// Coin packs ordered most expensive first (by tier; aligns with typical IAP price ordering).
+    static var packsSortedMostExpensiveFirst: [CoinPack] {
+        packs.sorted { $0.coins > $1.coins }
+    }
+    
+    /// Top three packs shown on the post-subscription onboarding upsell.
+    static var topThreeCoinPacksForOnboarding: [CoinPack] {
+        Array(packsSortedMostExpensiveFirst.prefix(3))
+    }
+    
     // Calculate coins per pound for value comparison
     var coinsPerPound: Double {
         let priceValue = Double(price.replacingOccurrences(of: "£", with: "")) ?? 1.0
