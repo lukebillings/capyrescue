@@ -24,6 +24,8 @@ struct GameState: Codable {
     var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
     /// One-time 100 coins after pledge; prevents double-grant if onboarding is interrupted.
     var hasGrantedOnboardingAdoptionCoins: Bool
+    /// Prevents repeating one-time retro credit for achievement rewards (`GameManager.applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded`).
+    var hasAppliedEarnedAchievementRetroactiveCoinsRecovery: Bool
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
@@ -41,7 +43,7 @@ struct GameState: Codable {
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
-        case hasCompletedPaywall, hasGrantedOnboardingAdoptionCoins, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
+        case hasCompletedPaywall, hasGrantedOnboardingAdoptionCoins, hasAppliedEarnedAchievementRetroactiveCoinsRecovery, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
         case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastAnnualCoinsGrantDate, lastCatchTheOrangeCompletedDate
         case achievementCounts, achievementRepeatLastGranted
     }
@@ -69,6 +71,7 @@ struct GameState: Codable {
         hasCompletedTutorial = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedTutorial) ?? false
         hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
         hasGrantedOnboardingAdoptionCoins = try container.decodeIfPresent(Bool.self, forKey: .hasGrantedOnboardingAdoptionCoins) ?? false
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery = try container.decodeIfPresent(Bool.self, forKey: .hasAppliedEarnedAchievementRetroactiveCoinsRecovery) ?? false
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
@@ -116,6 +119,7 @@ struct GameState: Codable {
         try container.encode(hasCompletedTutorial, forKey: .hasCompletedTutorial)
         try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
         try container.encode(hasGrantedOnboardingAdoptionCoins, forKey: .hasGrantedOnboardingAdoptionCoins)
+        try container.encode(hasAppliedEarnedAchievementRetroactiveCoinsRecovery, forKey: .hasAppliedEarnedAchievementRetroactiveCoinsRecovery)
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
@@ -150,6 +154,7 @@ struct GameState: Codable {
         hasCompletedTutorial: Bool,
         hasCompletedPaywall: Bool,
         hasGrantedOnboardingAdoptionCoins: Bool,
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery: Bool = false,
         subscriptionTier: String?,
         lastSubscriptionCheckDate: Date?,
         hasSeenCNY2026Popup: Bool,
@@ -181,6 +186,7 @@ struct GameState: Codable {
         self.hasCompletedTutorial = hasCompletedTutorial
         self.hasCompletedPaywall = hasCompletedPaywall
         self.hasGrantedOnboardingAdoptionCoins = hasGrantedOnboardingAdoptionCoins
+        self.hasAppliedEarnedAchievementRetroactiveCoinsRecovery = hasAppliedEarnedAchievementRetroactiveCoinsRecovery
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
@@ -214,6 +220,7 @@ struct GameState: Codable {
         hasCompletedTutorial: false,
         hasCompletedPaywall: false,
         hasGrantedOnboardingAdoptionCoins: false,
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery: false,
         subscriptionTier: nil,
         lastSubscriptionCheckDate: nil,
         hasSeenCNY2026Popup: false,

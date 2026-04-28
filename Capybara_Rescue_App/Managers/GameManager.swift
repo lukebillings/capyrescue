@@ -117,6 +117,8 @@ class GameManager: ObservableObject {
         // Migrate old UserDefaults values if needed (for backward compatibility)
         migrateFromUserDefaults()
         
+        applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded()
+        
         // Apply time-based decay from last session
         applyOfflineDecay()
         
@@ -201,6 +203,7 @@ class GameManager: ObservableObject {
             print("☁️ Applied newer game state from iCloud")
         }
         applyProgressFlagsFromUserDefaults()
+        applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded()
     }
 
     private func clearProgressDefaultsBackup() {
@@ -229,6 +232,25 @@ class GameManager: ObservableObject {
     
     private func migrateFromUserDefaults() {
         applyProgressFlagsFromUserDefaults()
+    }
+    
+    /// One-time recovery for saves where achievement badges persisted but coin rewards did not (e.g. balance stuck near onboarding adoption coins).
+    /// Credits the sum of `achievementCoins` for every ID still in `earnedAchievements`, then marks completion so we don't repeat.
+    private func applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded() {
+        guard !gameState.hasAppliedEarnedAchievementRetroactiveCoinsRecovery else { return }
+        
+        let rewardSum = gameState.earnedAchievements.reduce(0) { partial, id in
+            partial + (Self.achievementCoins[id] ?? 0)
+        }
+        
+        let adoptionCeiling = Self.onboardingAdoptionGiftCoins
+        if rewardSum > 0, gameState.capycoins <= adoptionCeiling {
+            gameState.capycoins += rewardSum
+            print("💰 Retroactively credited \(rewardSum) capycoins for earned achievements (balance recovery)")
+        }
+        
+        gameState.hasAppliedEarnedAchievementRetroactiveCoinsRecovery = true
+        saveGameState()
     }
     
     // MARK: - Achievement System
