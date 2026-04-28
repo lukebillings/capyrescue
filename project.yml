@@ -47,6 +47,6 @@ targets:
         INFOPLIST_KEY_UISupportsAlternateIcons: YES
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
-        INFOPLIST_KEY_CFBundleDisplayName: "Capybara Rescue Universe"
+        INFOPLIST_KEY_CFBundleDisplayName: "Capyrescue"
         INFOPLIST_KEY_CFBundleShortVersionString: "1.0"
         INFOPLIST_KEY_CFBundleVersion: "1"

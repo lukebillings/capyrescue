@@ -77,7 +77,7 @@ struct CategoryCard: View {
                     .frame(height: 44)
                 
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(.primary)
             }
             .frame(maxWidth: .infinity)

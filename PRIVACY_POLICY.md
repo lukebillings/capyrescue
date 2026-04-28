@@ -1,6 +1,6 @@
 # Capybara Rescue Universe — Privacy Policy
 
-**Last updated:** 2026-03-26  
+**Last updated:** 2026-04-28  
 This Privacy Policy explains how the developer/publisher of Capybara Rescue Universe (the “App”) (“we,” “us,” “our,” or “Developer”) collects, uses, shares, and protects information when you use the App.
 
 ---
@@ -60,7 +60,7 @@ In app versions before 1.12 (if ads are shown):
 
 ### E) Purchases
 
-If you make in-app purchases, Apple processes the transaction. We may receive confirmation that a purchase occurred (for example, to unlock “Remove Banner Ads”), but we do not receive your payment card details.
+If you make in-app purchases or subscribe, Apple processes payment. We may receive confirmation that a transaction occurred or that you have an active entitlement (for example, to credit Capycoins, unlock subscriber-only virtual items, or apply features such as banner ad removal for subscribers), but we do **not** receive your full payment card details.
 
 ### F) Notifications
 
@@ -116,7 +116,7 @@ This App uses the following third-party SDKs/frameworks:
 - **Google AdMob (Google Mobile Ads SDK)**: used in app versions before 1.12 to display banner ads and rewarded ads. Provider: Google LLC. See Google’s documentation/policies for how AdMob processes data.
 - **Google User Messaging Platform (UMP)**: used in app versions before 1.12 to request and manage consent in regions where required (for example, UK/EEA) for ads-related data processing.
 - **Apple App Tracking Transparency (ATT)**: used in app versions before 1.12 to request permission before accessing IDFA for “tracking” as defined by Apple.
-- **Apple StoreKit**: used to process in-app purchases and restore purchases.
+- **Apple StoreKit**: used to process in-app purchases (including coin packs and subscriptions) and restore purchases.
 - **Apple iCloud Key-Value Store (NSUbiquitousKeyValueStore)**: used to sync certain game state across your devices when iCloud is enabled for the App.
 - **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used by ad partners (including via AdMob in versions before 1.12) for measuring ad campaign performance.
 

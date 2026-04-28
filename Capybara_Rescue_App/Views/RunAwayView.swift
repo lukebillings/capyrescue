@@ -47,7 +47,7 @@ struct RunAwayView: View {
                 if showMessage {
                     VStack(spacing: 16) {
                         Text("Your Capybara Ran Away...")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(.white)
                         
                         Text("All stats reached zero and your capybara\ndecided to find a new home.")
@@ -65,7 +65,7 @@ struct RunAwayView: View {
                                     .font(.system(size: 18, weight: .semibold))
                                 
                                 Text("Rescue Another Capybara")
-                                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                    .font(.system(size: 18, weight: .semibold))
                             }
                             .foregroundStyle(.white)
                             .padding(.horizontal, 32)

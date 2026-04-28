@@ -22,7 +22,7 @@ struct CapybaraNameView: View {
             // Name with decorative underline
             VStack(alignment: .leading, spacing: 4) {
                 Text(name)
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(
                         LinearGradient(
                             colors: [.white, .white.opacity(0.8)],
@@ -95,12 +95,12 @@ struct RenameSheet: View {
                 .padding(.top, 12)
             
             Text(L("rename.title"))
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(Color(hex: "1a1a2e"))
             
             // Text field
             TextField("", text: $editedName)
-                .font(.system(size: 20, weight: .medium, design: .rounded))
+                .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(Color(hex: "1a1a2e"))
                 .multilineTextAlignment(.center)
                 .focused($isFocused)
@@ -125,7 +125,7 @@ struct RenameSheet: View {
                     HapticManager.shared.buttonPress()
                     isPresented = false
                 }
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color(hex: "1a1a2e").opacity(0.8))
                 .padding(.horizontal, 32)
                 .padding(.vertical, 14)
@@ -145,17 +145,13 @@ struct RenameSheet: View {
                     }
                     isPresented = false
                 }
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 32)
                 .padding(.vertical, 14)
                 .background(
                     Capsule()
                         .fill(AppColors.paywallCTAGreen)
-                        .overlay(
-                            Capsule()
-                                .stroke(AppColors.paywallCTABorder, lineWidth: 2)
-                        )
                 )
             }
             .buttonStyle(ScaleButtonStyle())

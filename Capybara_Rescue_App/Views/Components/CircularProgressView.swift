@@ -61,14 +61,14 @@ struct CircularProgressView: View {
                         .foregroundStyle(color)
                     
                     Text("\(value)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.primary)
                 }
             }
             .frame(width: 80, height: 80)
             
             Text(title)
-                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.primary.opacity(0.8))
         }
         .tutorialHighlight(key: tutorialKey.isEmpty ? titleBasedTutorialKey : tutorialKey)

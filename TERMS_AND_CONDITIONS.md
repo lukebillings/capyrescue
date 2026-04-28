@@ -1,6 +1,6 @@
 # Capybara Rescue App — Terms & Conditions
 
-**Last updated:** 2026-03-26  
+**Last updated:** 2026-04-28  
 **App name:** Capybara Rescue Universe (also referred to as “Capybara Rescue App”) (the “App”)  
 These Terms & Conditions (“Terms”) govern your use of the App. By downloading, accessing, or using the App, you agree to these Terms.
 
@@ -52,15 +52,34 @@ We may, at any time, change, rebalance, limit, discontinue, or remove Virtual It
 
 ---
 
-## 5) In-App Purchases, subscriptions, and refunds
+## 5) In-app purchases, coin subscriptions, and refunds
 
-The App may offer in-app purchases (“IAP”) and/or subscriptions. All purchases are processed by Apple through the App Store and are subject to Apple’s terms and billing rules.
+The App may offer in-app purchases (“IAP”), including **consumable coin packs** (one-time purchases of virtual currency) and **auto-renewable coin subscriptions** that grant recurring **Capycoins** (in-app virtual currency) and other benefits while active. All purchases are processed by Apple through the App Store and are subject to Apple’s terms and billing rules.
 
-- **Pricing and availability**: Prices, offers, and availability may change at any time.
+### Coin subscriptions (auto-renewable)
+
+Optional coin subscriptions may include benefits such as recurring Capycoins, access to subscriber-only (“Pro”) virtual items or features, and removal of banner advertisements, as described in the App when you purchase.
+
+Depending on the plan you choose and what Apple offers in your region at purchase time, recurring Capycoin grants may work as follows (amounts and timing are also shown in the App):
+
+- **Weekly**: **2,000** Capycoins about every seven days while the weekly subscription remains active.
+- **Annual**: **2,000** Capycoins when you subscribe, then **2,000** Capycoins about every seven days while the annual subscription remains active (billing still renews yearly through Apple). The annual plan **may** include a **free trial** (for example, seven days); trial availability, duration, and pricing after the trial are shown by Apple when you subscribe.
+- **Monthly (legacy)**: A legacy monthly tier may still apply to some accounts; while active it may grant **10,000** Capycoins per calendar month. New purchase flows may emphasize weekly and annual plans.
+
+**Apple’s checkout screens are the source of truth** for exact prices, currency, taxes, coin amounts, grant schedules, free trials, and renewal dates; those may change over time or vary by region. This section is a general description only.
+
+### Subscription mechanics
+
+- **Auto-renewal**: Subscriptions renew automatically unless you cancel at least 24 hours before the end of the current period, as described by Apple.
+- **Manage or cancel**: You can manage or cancel in your Apple ID subscription settings.
+- **Subscriber benefits**: Recurring coin grants and access to subscriber-only items or features are available **only while your subscription is active**. If your subscription ends, you may lose access to subscriber-only content and to further recurring grants; Capycoins already credited to your balance remain subject to Section 4.
+- **No partial refunds**: Cancelling does not entitle you to a refund for unused time in the current billing period, except where required by law.
+
+### Other purchase terms
+
+- **Pricing and availability**: Prices, offers, features, and availability may change at any time.
 - **No chargebacks/abuse**: You agree not to initiate fraudulent or abusive refund requests or chargebacks.
 - **Refunds**: We cannot directly issue App Store refunds. Refund eligibility and processing are handled by Apple, except where required by law. You can request a refund through Apple’s support channels.
-
-If you purchase a subscription, it may automatically renew unless cancelled in your Apple ID subscription settings. Any free trials, renewal dates, and pricing are shown by Apple at purchase time.
 
 ---
 
@@ -78,7 +97,7 @@ Google AdMob ads and ad tracking were removed from the App starting with version
 - **Google AdMob (Google Mobile Ads SDK)**: used in app versions before 1.12 to serve banner ads and rewarded ads.
 - **Google User Messaging Platform (UMP)**: used in app versions before 1.12 to request/manage consent for ads-related data processing in regions where required.
 - **Apple App Tracking Transparency (ATT)**: used in app versions before 1.12 to request permission before accessing IDFA for “tracking” as defined by Apple.
-- **Apple StoreKit**: used to process in-app purchases and restore purchases (e.g., “Remove Banner Ads”).
+- **Apple StoreKit**: used to process in-app purchases (including coin packs and subscriptions) and restore purchases.
 - **Apple iCloud Key-Value Store**: used to sync certain game state across your devices if iCloud is enabled.
 - **SKAdNetwork**: Apple’s privacy-preserving ad attribution framework may be used for ad campaign measurement in ad-enabled versions before 1.12.
 

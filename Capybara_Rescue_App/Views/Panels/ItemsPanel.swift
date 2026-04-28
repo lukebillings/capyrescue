@@ -378,7 +378,7 @@ struct CategoryTab: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
+                .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                 .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.8))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
@@ -479,22 +479,25 @@ struct AccessoryItemButton: View {
                 
                 // Name
                 Text(localizedAccessoryName(id: item.id))
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .frame(minWidth: 0, maxWidth: 78, alignment: .top)
+                    .fixedSize(horizontal: false, vertical: true)
                     .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 
                 // Status / Price
                 if isOwned {
                     Text(isEquipped ? L("common.equipped") : L("common.tapToEquip"))
-                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(isEquipped ? .green : Color.primary.opacity(0.8))
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                 } else if item.isProOnly && !hasPro {
                     // Pro-only item without subscription
                     if isPreviewing {
                         Text(L("common.unlockOnPro"))
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [Color(hex: "FFD700"), Color(hex: "FFA500")],
@@ -509,7 +512,7 @@ struct AccessoryItemButton: View {
                                 Image(systemName: "crown.fill")
                                     .font(.system(size: 10))
                                 Text("PRO")
-                                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                                    .font(.system(size: 12, weight: .bold))
                             }
                             .foregroundStyle(
                                 LinearGradient(
@@ -521,7 +524,7 @@ struct AccessoryItemButton: View {
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                             
                             Text(L("common.tapToPreview"))
-                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .font(.system(size: 10, weight: .semibold))
                                 .foregroundStyle(.green)
                                 .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         }
@@ -529,7 +532,7 @@ struct AccessoryItemButton: View {
                 } else {
                     if isPreviewing {
                         Text(L("common.tapToBuy"))
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Color(hex: "1a5f1a"))
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                     } else {
@@ -539,13 +542,13 @@ struct AccessoryItemButton: View {
                                 .font(.system(size: 12, weight: .bold))
                                 .foregroundStyle(Color(hex: "B8860B"))
                             Text("\(item.cost)")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .font(.system(size: 14, weight: .bold))
                                 .foregroundStyle(canAfford ? Color(hex: "1a5f1a") : Color.primary.opacity(0.7))
                         }
                         .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         
                         Text(L("common.tapToPreview"))
-                            .font(.system(size: 10, weight: .semibold, design: .rounded))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundStyle(.green)
                             .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                     }
@@ -573,7 +576,7 @@ struct AccessoryItemButton: View {
                         HStack {
                             Spacer()
                             Text(L("common.new"))
-                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .font(.system(size: 10, weight: .black))
                                 .foregroundStyle(Color(hex: "8B0000"))
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 3)
@@ -879,8 +882,16 @@ struct LooksGoodModal: View {
             
             VStack(spacing: 20) {
                 Text(L("common.looksGood"))
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Self.primaryText)
+                    .multilineTextAlignment(.center)
+                
+                Text(itemName)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Self.primaryText)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
                 
                 VStack(spacing: 8) {
                     HStack(spacing: 6) {
@@ -909,7 +920,7 @@ struct LooksGoodModal: View {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
                         Text(L("common.buyNow"))
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .font(.system(size: 16, weight: .bold))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
@@ -926,7 +937,7 @@ struct LooksGoodModal: View {
                     onDismiss()
                 }) {
                     Text(L("common.maybeLater"))
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Self.settingsGreen)
                 }
             }
@@ -967,13 +978,22 @@ struct InsufficientCoinsOverlay: View {
             
             VStack(spacing: 20) {
                 Text(L("common.looksGood"))
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Self.primaryText)
+                    .multilineTextAlignment(.center)
+                
+                Text(itemName)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(Self.primaryText)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 4)
                 
                 VStack(spacing: 8) {
                     Text(L("common.youNeedMoreCoins"))
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Self.primaryText)
+                        .multilineTextAlignment(.center)
                     
                     HStack(spacing: 6) {
                         Text(L("common.cost"))
@@ -1001,7 +1021,7 @@ struct InsufficientCoinsOverlay: View {
                         Image(systemName: "cart.fill")
                             .font(.system(size: 16, weight: .semibold))
                         Text(L("common.buyMoreCoins"))
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .font(.system(size: 16, weight: .bold))
                     }
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
@@ -1018,7 +1038,7 @@ struct InsufficientCoinsOverlay: View {
                     onDismiss()
                 }) {
                     Text(L("common.maybeLater"))
-                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Self.settingsGreen)
                 }
             }
@@ -1055,12 +1075,12 @@ struct HatEquipErrorOverlay: View {
             
             VStack(spacing: 20) {
                 Text(L("hat.oneAtATime"))
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(Self.primaryText)
                     .multilineTextAlignment(.center)
                 
                 Text(L("hat.deselectCurrent"))
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Self.secondaryText)
                     .multilineTextAlignment(.center)
                 
@@ -1069,7 +1089,7 @@ struct HatEquipErrorOverlay: View {
                     onDismiss()
                 }) {
                     Text("OK")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 12)

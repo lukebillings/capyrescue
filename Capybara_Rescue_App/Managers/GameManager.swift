@@ -7,14 +7,16 @@ import StoreKit
 /// File scope so UNUserNotificationCenter Sendable callbacks can compare identifiers without MainActor isolation.
 private let hatPromoNotificationIdentifier = "bunny_hat_promo_weekly"
 
+/// Wall-clock seconds before each of food, drink, and happiness drops by 1 (file scope for Sendable notification closures).
+private let statDecayIntervalSeconds: TimeInterval = 600
+
 // MARK: - Game Manager
 @MainActor
 class GameManager: ObservableObject {
     @Published var gameState: GameState {
         didSet {
-            if !isSaving {
-                saveGameState()
-            }
+            if isRestoring || isSaving { return }
+            saveGameState()
             // Note: Notifications are now handled by scheduleFutureNotifications()
             // which schedules them in advance based on stat decay rates
         }
@@ -33,13 +35,40 @@ class GameManager: ObservableObject {
     
     private var decayTimer: Timer?
     private let storageKey = "capybara_rescue_game_state"
+    /// Reliable on-device copy so progress survives iCloud KVS unavailability, simulator, and first-sync delays.
+    private let userDefaultsStateKey = "capybara_rescue_game_state_local"
     private var isSaving = false
+    private var isRestoring = false
     private let cloudStore = NSUbiquitousKeyValueStore.default
 
     /// Local backup for onboarding/tutorial completion so progress survives iCloud hiccups or stale sync.
     private enum ProgressDefaultsKey {
         static let hasCompletedOnboarding = "has_completed_onboarding"
         static let hasCompletedTutorial = "has_completed_tutorial"
+    }
+
+    private static func decodeGameState(_ data: Data) -> GameState? {
+        try? JSONDecoder().decode(GameState.self, from: data)
+    }
+
+    /// Picks the newest saved state by `lastUpdateTime`; prefers local when equal (avoids flaky iCloud wiping progress).
+    private static func loadMergedState(
+        userDefaultsKey: String,
+        iCloudKey: String,
+        cloudStore: NSUbiquitousKeyValueStore
+    ) -> GameState {
+        let local = UserDefaults.standard.data(forKey: userDefaultsKey).flatMap { decodeGameState($0) }
+        let cloud = cloudStore.data(forKey: iCloudKey).flatMap { decodeGameState($0) }
+        switch (local, cloud) {
+        case let (l?, c?):
+            return l.lastUpdateTime >= c.lastUpdateTime ? l : c
+        case let (l?, nil):
+            return l
+        case let (nil, c?):
+            return c
+        default:
+            return GameState.defaultState
+        }
     }
 
     // MARK: - StoreKit (IAP)
@@ -53,17 +82,30 @@ class GameManager: ObservableObject {
         let isFood: Bool
     }
     
-    init() {
-        // Initialize gameState first (required before calling any methods)
-        if let data = cloudStore.data(forKey: storageKey),
-           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
-            self.gameState = savedState
-            print("✅ Loaded game state from iCloud")
-        } else {
-            self.gameState = GameState.defaultState
-            print("ℹ️ Using default game state (first launch or no iCloud data)")
+    /// Coins granted once on the post-pledge “thanks for adopting” screen, before the subscription paywall.
+    static let onboardingAdoptionGiftCoins = 100
+    
+    /// Awards `onboardingAdoptionGiftCoins` the first time the user reaches the adoption gift screen.
+    /// Skips the credit if they already have at least that much (legacy installs that started with 100 coins).
+    func grantOnboardingAdoptionCoinsIfNeeded() {
+        guard !gameState.hasGrantedOnboardingAdoptionCoins else { return }
+        gameState.hasGrantedOnboardingAdoptionCoins = true
+        if gameState.capycoins < Self.onboardingAdoptionGiftCoins {
+            gameState.capycoins += Self.onboardingAdoptionGiftCoins
         }
-        
+    }
+    
+    init() {
+        isRestoring = true
+        self.gameState = Self.loadMergedState(
+            userDefaultsKey: userDefaultsStateKey,
+            iCloudKey: storageKey,
+            cloudStore: cloudStore
+        )
+        isRestoring = false
+        saveGameState()
+        print("✅ Game state ready (UserDefaults + iCloud, newest by last update time)")
+
         // Set up iCloud sync notification observer
         NotificationCenter.default.addObserver(
             self,
@@ -74,6 +116,8 @@ class GameManager: ObservableObject {
         
         // Migrate old UserDefaults values if needed (for backward compatibility)
         migrateFromUserDefaults()
+        
+        applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded()
         
         // Apply time-based decay from last session
         applyOfflineDecay()
@@ -115,8 +159,9 @@ class GameManager: ObservableObject {
                 
                 // Coin pack purchase
                 if let pack = CoinPack.packs.first(where: { $0.productId == productId }) {
-                    gameState.capycoins += pack.coins
-                    showToast("\(pack.coins) coins added! 🎉")
+                    let grant = pack.grantCoins
+                    gameState.capycoins += grant
+                    showToast("\(grant) coins added! 🎉")
                 }
                 // Subscription purchases are handled by SubscriptionManager's listener
                 
@@ -149,15 +194,16 @@ class GameManager: ObservableObject {
     }
     
     private func loadGameState() {
-        if let data = cloudStore.data(forKey: storageKey),
-           let savedState = try? JSONDecoder().decode(GameState.self, from: data) {
-            self.gameState = savedState
-            print("✅ Loaded game state from iCloud")
-        } else {
-            self.gameState = GameState.defaultState
-            print("ℹ️ Using default game state (first launch or no iCloud data)")
+        guard let data = cloudStore.data(forKey: storageKey),
+              let remote = Self.decodeGameState(data) else {
+            return
+        }
+        if remote.lastUpdateTime > gameState.lastUpdateTime {
+            gameState = remote
+            print("☁️ Applied newer game state from iCloud")
         }
         applyProgressFlagsFromUserDefaults()
+        applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded()
     }
 
     private func clearProgressDefaultsBackup() {
@@ -186,6 +232,25 @@ class GameManager: ObservableObject {
     
     private func migrateFromUserDefaults() {
         applyProgressFlagsFromUserDefaults()
+    }
+    
+    /// One-time recovery for saves where achievement badges persisted but coin rewards did not (e.g. balance stuck near onboarding adoption coins).
+    /// Credits the sum of `achievementCoins` for every ID still in `earnedAchievements`, then marks completion so we don't repeat.
+    private func applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded() {
+        guard !gameState.hasAppliedEarnedAchievementRetroactiveCoinsRecovery else { return }
+        
+        let rewardSum = gameState.earnedAchievements.reduce(0) { partial, id in
+            partial + (Self.achievementCoins[id] ?? 0)
+        }
+        
+        let adoptionCeiling = Self.onboardingAdoptionGiftCoins
+        if rewardSum > 0, gameState.capycoins <= adoptionCeiling {
+            gameState.capycoins += rewardSum
+            print("💰 Retroactively credited \(rewardSum) capycoins for earned achievements (balance recovery)")
+        }
+        
+        gameState.hasAppliedEarnedAchievementRetroactiveCoinsRecovery = true
+        saveGameState()
     }
     
     // MARK: - Achievement System
@@ -335,13 +400,14 @@ class GameManager: ObservableObject {
         defer { isSaving = false }
         // IMPORTANT:
         // `lastUpdateTime` is used as the anchor for stat decay timing.
-        // Do NOT update it on every save, otherwise the "1 per hour" decay
+        // Do NOT update it on every save, otherwise time-based decay
         // never properly accumulates (especially when backgrounded).
-        
+
         if let data = try? JSONEncoder().encode(gameState) {
+            UserDefaults.standard.set(data, forKey: userDefaultsStateKey)
             cloudStore.set(data, forKey: storageKey)
-            cloudStore.synchronize() // Explicitly sync to iCloud
-            print("💾 Saved game state to iCloud")
+            cloudStore.synchronize()
+            print("💾 Saved game state (UserDefaults + iCloud)")
         }
         if gameState.hasCompletedOnboarding {
             UserDefaults.standard.set(true, forKey: ProgressDefaultsKey.hasCompletedOnboarding)
@@ -353,8 +419,8 @@ class GameManager: ObservableObject {
     
     // MARK: - Decay System
     private func applyOfflineDecay(now: Date = Date()) {
-        // Apply decay for each full hour elapsed since `lastUpdateTime`,
-        // and advance `lastUpdateTime` by whole hours (preserves partial-hour remainder).
+        // Apply decay for each full `statDecayIntervalSeconds` elapsed since `lastUpdateTime`,
+        // and advance the anchor in whole steps (preserves remainder in the current interval).
         let elapsed = now.timeIntervalSince(gameState.lastUpdateTime)
         
         // If device clock changed and we end up in the "future", just reset the anchor.
@@ -363,16 +429,16 @@ class GameManager: ObservableObject {
             return
         }
         
-        let hourIntervals = Int(elapsed / 3600) // full hours only
-        guard hourIntervals > 0 else { return }
+        let step = statDecayIntervalSeconds
+        let stepCount = Int(elapsed / step)
+        guard stepCount > 0 else { return }
         
-        let decayAmount = hourIntervals // 1 point per hour
+        let decayAmount = stepCount
         gameState.food = max(0, gameState.food - decayAmount)
         gameState.drink = max(0, gameState.drink - decayAmount)
         gameState.happiness = max(0, gameState.happiness - decayAmount)
         
-        // Advance anchor by the exact number of hours applied.
-        gameState.lastUpdateTime = gameState.lastUpdateTime.addingTimeInterval(TimeInterval(hourIntervals * 3600))
+        gameState.lastUpdateTime = gameState.lastUpdateTime.addingTimeInterval(TimeInterval(stepCount) * step)
         
         checkRunAway()
         
@@ -381,26 +447,12 @@ class GameManager: ObservableObject {
     }
     
     private func startDecayTimer() {
-        // Decay stats every 1 hour (3600 seconds)
-        decayTimer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+        // Poll so wall-clock decay applies on schedule while the app stays open (interval can be < stat decay length).
+        decayTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                self?.applyDecay()
+                self?.applyOfflineDecay(now: Date())
             }
         }
-    }
-    
-    private func applyDecay() {
-        gameState.food = max(0, gameState.food - 1)
-        gameState.drink = max(0, gameState.drink - 1)
-        gameState.happiness = max(0, gameState.happiness - 1)
-        
-        // Anchor for next time-based decay calculation
-        gameState.lastUpdateTime = Date()
-        
-        checkRunAway()
-        
-        // Reschedule future notifications based on new stat values
-        scheduleFutureNotifications()
     }
 
     // Call this when the app becomes active to account for time spent backgrounded.
@@ -640,8 +692,9 @@ class GameManager: ObservableObject {
 
             // Deliver goods for consumable
             if transaction.productID == pack.productId {
-                gameState.capycoins += pack.coins
-                showToast("\(pack.coins) coins added! 🎉")
+                let grant = pack.grantCoins
+                gameState.capycoins += grant
+                showToast("\(grant) coins added! 🎉")
                 return true
             }
             iapLastErrorMessage = "Purchase completed but product ID didn’t match. Expected \(pack.productId)."
@@ -675,6 +728,11 @@ class GameManager: ObservableObject {
         } catch {
             // Keep fallbacks if StoreKit is unavailable
         }
+    }
+    
+    /// Reloads consumable coin pack `Product`s from App Store Connect (prices, availability).
+    func refreshIAPProducts() async {
+        await loadIAPProducts()
     }
 
     private func product(for productId: String) async throws -> Product {
@@ -751,26 +809,33 @@ class GameManager: ObservableObject {
     func upgradeSubscription(to tier: SubscriptionManager.SubscriptionTier) {
         let previousTier = currentSubscriptionTier()
         
-        // Update subscription tier
         gameState.subscriptionTier = tier.rawValue
         gameState.lastSubscriptionCheckDate = Date()
         
-        // Award initial coins (ADD to existing balance, don't override)
+        // Restore / duplicate callbacks can fire when tier is unchanged — avoid granting starter coins twice.
+        guard tier != previousTier else {
+            if tier != .free {
+                unlockProItemsIfNeeded()
+            }
+            print("ℹ️ Subscription tier unchanged (\(tier.displayName)) — skipping starter coins")
+            return
+        }
+        
         gameState.capycoins += tier.startingCoins
         
-        // If Pro tier, remove banner ads and unlock Pro items
         if tier != .free {
             gameState.hasRemovedBannerAds = true
             unlockProItemsIfNeeded()
         }
         
-        // Pro Weekly: mark grant date so first 500/week is in 7 days
         if tier == .weekly {
             gameState.lastWeeklyCoinsGrantDate = Date()
         }
-        // Pro Monthly / Annual: mark grant date so first 10k/month is in 1 month (15k already given as startingCoins)
-        if tier == .monthly || tier == .annual {
+        if tier == .monthly {
             gameState.lastMonthlyCoinsGrantDate = Date()
+        }
+        if tier == .annual {
+            gameState.lastAnnualCoinsGrantDate = Date()
         }
         
         print("✅ Subscription upgraded from \(previousTier.displayName) to \(tier.displayName)")
@@ -794,7 +859,7 @@ class GameManager: ObservableObject {
         return tier
     }
     
-    /// Grants 500 coins to Pro Weekly subscribers every 7 days. Call from main content onAppear.
+    /// Grants recurring weekly coins to Pro Weekly subscribers. Call from main content onAppear.
     func grantWeeklySubscriptionCoinsIfNeeded() {
         guard currentSubscriptionTier() == .weekly else { return }
         let amount = SubscriptionManager.SubscriptionTier.weekly.weeklyCoins
@@ -842,10 +907,10 @@ class GameManager: ObservableObject {
         }
     }
     
-    /// Grants 10,000 coins to Pro Monthly/Annual subscribers every calendar month. Call from main content onAppear.
+    /// Grants 10,000 coins to Pro Monthly subscribers every calendar month. Call from main content onAppear.
     func grantMonthlySubscriptionCoinsIfNeeded() {
         let tier = currentSubscriptionTier()
-        guard tier == .monthly || tier == .annual else { return }
+        guard tier == .monthly else { return }
         let amount = tier.monthlyCoins
         let now = Date()
         let calendar = Calendar.current
@@ -860,6 +925,78 @@ class GameManager: ObservableObject {
         } else {
             gameState.lastMonthlyCoinsGrantDate = now
         }
+    }
+    
+    /// Grants recurring coins to Pro Annual subscribers every 7 days (same rhythm as weekly; billing is yearly). Call from main content onAppear.
+    func grantAnnualSubscriptionCoinsIfNeeded() {
+        guard currentSubscriptionTier() == .annual else { return }
+        let amount = SubscriptionManager.SubscriptionTier.annual.annualCoins
+        let now = Date()
+#if DEBUG
+        let interval: TimeInterval = 7
+#else
+        let interval: TimeInterval = 7 * 24 * 60 * 60
+#endif
+        if let last = gameState.lastAnnualCoinsGrantDate {
+            let nextGrant = last.addingTimeInterval(interval)
+            guard now >= nextGrant else { return }
+            gameState.capycoins += amount
+            gameState.lastAnnualCoinsGrantDate = now
+            showToast("Annual Pro reward: \(amount) coins! 🎉")
+            print("✅ Granted \(amount) annual tier coins (7-day cycle). New balance: \(gameState.capycoins)")
+        } else {
+            gameState.lastAnnualCoinsGrantDate = now
+        }
+    }
+    
+    // MARK: - Subscription schedule (Get More / shop UI)
+    
+    /// Next recurring capycoin grant for the **active** subscription tier, for display in Get More.
+    /// - If `scheduledDate` is `nil`, the grant is due (or overdue) and will apply on the next grant pass.
+    func nextSubscriptionCoinGrantInfo() -> (capycoinAmount: Int, scheduledDate: Date?)? {
+        guard hasProSubscription() else { return nil }
+        let tier = currentSubscriptionTier()
+        let amount: Int
+        switch tier {
+        case .free: return nil
+        case .weekly: amount = tier.weeklyCoins
+        case .monthly: amount = tier.monthlyCoins
+        case .annual: amount = tier.annualCoins
+        }
+        let calendar = Calendar.current
+        let now = Date()
+#if DEBUG
+        let weekInterval: TimeInterval = 7
+#else
+        let weekInterval: TimeInterval = 7 * 24 * 60 * 60
+#endif
+        let lastEvent: Date?
+        switch tier {
+        case .weekly:
+            lastEvent = gameState.lastWeeklyCoinsGrantDate
+        case .monthly:
+            lastEvent = gameState.lastMonthlyCoinsGrantDate
+        case .annual:
+            lastEvent = gameState.lastAnnualCoinsGrantDate
+        case .free:
+            return nil
+        }
+        let anchor = lastEvent ?? gameState.lastSubscriptionCheckDate ?? now
+        let rawNext: Date
+        switch tier {
+        case .weekly:
+            rawNext = anchor.addingTimeInterval(weekInterval)
+        case .monthly:
+            rawNext = calendar.date(byAdding: .month, value: 1, to: anchor) ?? anchor.addingTimeInterval(30 * 24 * 60 * 60)
+        case .annual:
+            rawNext = anchor.addingTimeInterval(weekInterval)
+        case .free:
+            return nil
+        }
+        if rawNext > now {
+            return (amount, rawNext)
+        }
+        return (amount, nil)
     }
     
     // MARK: - Reset
@@ -892,6 +1029,7 @@ class GameManager: ObservableObject {
         let removedAds = gameState.hasRemovedBannerAds
         let weekly = gameState.lastWeeklyCoinsGrantDate
         let monthly = gameState.lastMonthlyCoinsGrantDate
+        let annual = gameState.lastAnnualCoinsGrantDate
         
         var fresh = GameState.defaultState
         fresh.subscriptionTier = tier
@@ -900,6 +1038,7 @@ class GameManager: ObservableObject {
         fresh.hasRemovedBannerAds = removedAds
         fresh.lastWeeklyCoinsGrantDate = weekly
         fresh.lastMonthlyCoinsGrantDate = monthly
+        fresh.lastAnnualCoinsGrantDate = annual
         
         clearProgressDefaultsBackup()
         gameState = fresh
@@ -1077,7 +1216,7 @@ class GameManager: ObservableObject {
                 var scheduledNotifications: [(hours: Int, title: String, body: String, identifier: String)] = []
                 
                 // Calculate when each stat will hit 80 and 50 thresholds
-                // Stats decay by 1 per hour
+                // One decay step per `statDecayIntervalSeconds` of wall time
                 // Only schedule notifications for future threshold crossings
                 
                 // Schedule food notifications
@@ -1185,6 +1324,7 @@ class GameManager: ObservableObject {
     }
 
     private func scheduleNotificationAt(hours: Int, title: String, body: String, identifier: String, badgeNumber: Int) {
+        // `hours` = number of decay steps until the threshold (one step per `statDecayIntervalSeconds`).
         guard hours > 0 else { return }
         
         // Query current delivered notifications to calculate proper badge
@@ -1196,8 +1336,7 @@ class GameManager: ObservableObject {
             // Set badge to current delivered count + this notification
             content.badge = NSNumber(value: deliveredNotifications.count + 1)
             
-            // Schedule notification for the calculated hours from now
-            let timeInterval = TimeInterval(hours * 3600) // Convert hours to seconds
+            let timeInterval = TimeInterval(hours) * statDecayIntervalSeconds
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
             
@@ -1205,7 +1344,7 @@ class GameManager: ObservableObject {
                 if let error = error {
                     print("❌ Failed to schedule notification: \(error.localizedDescription)")
                 } else {
-                    print("✅ Scheduled notification '\(identifier)' for \(hours) hours from now")
+                    print("✅ Scheduled notification '\(identifier)' for \(hours) decay step(s) from now")
                 }
             }
         }

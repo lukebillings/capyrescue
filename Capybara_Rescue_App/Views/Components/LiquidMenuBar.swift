@@ -72,7 +72,7 @@ struct MenuTabButton: View {
                 }
                 
                 Text(tab.localizedTitle)
-                    .font(.system(size: 11, weight: isSelected ? .semibold : .medium, design: .rounded))
+                    .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
                     .foregroundStyle(isSelected ? Color.primary : Color.primary.opacity(0.8))
             }
             .frame(maxWidth: .infinity)

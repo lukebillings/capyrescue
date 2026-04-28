@@ -219,7 +219,7 @@ struct RealityKitView: UIViewRepresentable {
     private static let coneScale: SIMD3<Float> = [1.2, 1.2, 1.2]
     private static let pizzahatPosition: SIMD3<Float> = [0, 4.25, 2.4]
     private static let pizzahatScale: SIMD3<Float> = [3.0, 3.0, 3.0]
-    private static let redlanternPosition: SIMD3<Float> = [0, 5.5, 2.4]
+    private static let redlanternPosition: SIMD3<Float> = [0, 4.9, 2.4] // Sphere pivot at center; Y above pizza hat so base clears the head
     private static let redlanternScale: SIMD3<Float> = [2.5, 2.5, 2.5]
     
     private func hatPosition(for hatId: String?) -> SIMD3<Float> {

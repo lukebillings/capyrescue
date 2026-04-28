@@ -12,7 +12,9 @@ struct SettingsView: View {
     
     @State private var showRenameSheet = false
     @State private var showLanguagePicker = false
+#if DEBUG
     @State private var showResetProgressConfirm = false
+#endif
     
     private let termsURL = "https://lukebillings.github.io/capyrescue/termsandconditions/"
     private let termsOfUseURL = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
@@ -114,6 +116,7 @@ struct SettingsView: View {
                                 message: L("settings.shareMessage")
                             )
                             
+#if DEBUG
                             Divider()
                                 .background(Color.white.opacity(0.2))
                                 .padding(.leading, 56)
@@ -126,6 +129,7 @@ struct SettingsView: View {
                                 HapticManager.shared.buttonPress()
                                 showResetProgressConfirm = true
                             }
+#endif
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
@@ -205,6 +209,7 @@ struct SettingsView: View {
             .presentationDetents([.height(280)])
             .presentationDragIndicator(.visible)
         }
+#if DEBUG
         .confirmationDialog(
             L("settings.resetProgressConfirmTitle"),
             isPresented: $showResetProgressConfirm,
@@ -218,6 +223,7 @@ struct SettingsView: View {
         } message: {
             Text(L("settings.resetProgressConfirmMessage"))
         }
+#endif
     }
 }
 
@@ -237,10 +243,10 @@ private struct SettingsRow<T: View>: View {
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 Text(subtitle)
-                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.primary.opacity(0.8))
             }
             
@@ -270,10 +276,10 @@ private struct SettingsActionRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.primary)
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.primary.opacity(0.8))
                 }
                 
@@ -308,10 +314,10 @@ private struct SettingsShareRow: View {
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(.primary)
                     Text(subtitle)
-                        .font(.system(size: 12, weight: .regular, design: .rounded))
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(.primary.opacity(0.8))
                 }
                 
@@ -347,7 +353,7 @@ private struct SettingsLinkRow: View {
                     .frame(width: 28, alignment: .center)
                 
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(.primary)
                 
                 Spacer()
@@ -384,7 +390,7 @@ private struct LanguagePickerSheet: View {
                         }) {
                             HStack {
                                 Text(lang.displayName)
-                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                    .font(.system(size: 16, weight: .medium))
                                     .foregroundStyle(Color(hex: "1a5f1a"))
                                 Spacer()
                                 if localizationManager.currentLanguage == lang.code {

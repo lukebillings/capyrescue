@@ -22,11 +22,16 @@ struct GameState: Codable {
     var hasCompletedOnboarding: Bool // Track if user completed onboarding
     var hasCompletedTutorial: Bool // Track if user completed tutorial
     var hasCompletedPaywall: Bool // Track if user has seen/completed the initial paywall
+    /// One-time 100 coins after pledge; prevents double-grant if onboarding is interrupted.
+    var hasGrantedOnboardingAdoptionCoins: Bool
+    /// Prevents repeating one-time retro credit for achievement rewards (`GameManager.applyRetroactiveEarnedAchievementCoinsRecoveryIfNeeded`).
+    var hasAppliedEarnedAchievementRetroactiveCoinsRecovery: Bool
     var subscriptionTier: String? // Track subscription tier (free, monthly, annual)
     var lastSubscriptionCheckDate: Date? // Track when we last checked subscription status
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
-    var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the 500 coins/week
+    var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the recurring weekly coins
     var lastMonthlyCoinsGrantDate: Date? // For Pro Monthly: last time we granted the 10,000 coins/month
+    var lastAnnualCoinsGrantDate: Date? // Pro Annual: last recurring coin grant (7-day cycle; yearly billing)
     var lastCatchTheOrangeCompletedDate: Date? // Last calendar day user completed Catch the Orange (once per day reward)
     /// Counters for repeatable achievements (e.g. "feed" -> total feeds, "pet" -> total pets).
     var achievementCounts: [String: Int]
@@ -38,8 +43,8 @@ struct GameState: Codable {
         case ownedAccessories, equippedAccessories, subscriptionEndDate
         case lastLoginDate, loginStreak, earnedAchievements, statsStreak, lastStatsCheckDate
         case appOpenCount, hasRemovedBannerAds, hasCompletedOnboarding, hasCompletedTutorial
-        case hasCompletedPaywall, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
-        case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastCatchTheOrangeCompletedDate
+        case hasCompletedPaywall, hasGrantedOnboardingAdoptionCoins, hasAppliedEarnedAchievementRetroactiveCoinsRecovery, subscriptionTier, lastSubscriptionCheckDate, hasSeenCNY2026Popup
+        case lastWeeklyCoinsGrantDate, lastMonthlyCoinsGrantDate, lastAnnualCoinsGrantDate, lastCatchTheOrangeCompletedDate
         case achievementCounts, achievementRepeatLastGranted
     }
     
@@ -65,11 +70,14 @@ struct GameState: Codable {
         hasCompletedOnboarding = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedOnboarding) ?? false
         hasCompletedTutorial = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedTutorial) ?? false
         hasCompletedPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasCompletedPaywall) ?? false
+        hasGrantedOnboardingAdoptionCoins = try container.decodeIfPresent(Bool.self, forKey: .hasGrantedOnboardingAdoptionCoins) ?? false
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery = try container.decodeIfPresent(Bool.self, forKey: .hasAppliedEarnedAchievementRetroactiveCoinsRecovery) ?? false
         subscriptionTier = try container.decodeIfPresent(String.self, forKey: .subscriptionTier)
         lastSubscriptionCheckDate = try container.decodeIfPresent(Date.self, forKey: .lastSubscriptionCheckDate)
         hasSeenCNY2026Popup = try container.decodeIfPresent(Bool.self, forKey: .hasSeenCNY2026Popup) ?? false
         lastWeeklyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastWeeklyCoinsGrantDate)
         lastMonthlyCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastMonthlyCoinsGrantDate)
+        lastAnnualCoinsGrantDate = try container.decodeIfPresent(Date.self, forKey: .lastAnnualCoinsGrantDate)
         lastCatchTheOrangeCompletedDate = try container.decodeIfPresent(Date.self, forKey: .lastCatchTheOrangeCompletedDate)
         achievementCounts = try container.decodeIfPresent([String: Int].self, forKey: .achievementCounts) ?? [:]
         achievementRepeatLastGranted = try container.decodeIfPresent([String: Int].self, forKey: .achievementRepeatLastGranted) ?? [:]
@@ -110,11 +118,14 @@ struct GameState: Codable {
         try container.encode(hasCompletedOnboarding, forKey: .hasCompletedOnboarding)
         try container.encode(hasCompletedTutorial, forKey: .hasCompletedTutorial)
         try container.encode(hasCompletedPaywall, forKey: .hasCompletedPaywall)
+        try container.encode(hasGrantedOnboardingAdoptionCoins, forKey: .hasGrantedOnboardingAdoptionCoins)
+        try container.encode(hasAppliedEarnedAchievementRetroactiveCoinsRecovery, forKey: .hasAppliedEarnedAchievementRetroactiveCoinsRecovery)
         try container.encodeIfPresent(subscriptionTier, forKey: .subscriptionTier)
         try container.encodeIfPresent(lastSubscriptionCheckDate, forKey: .lastSubscriptionCheckDate)
         try container.encode(hasSeenCNY2026Popup, forKey: .hasSeenCNY2026Popup)
         try container.encodeIfPresent(lastWeeklyCoinsGrantDate, forKey: .lastWeeklyCoinsGrantDate)
         try container.encodeIfPresent(lastMonthlyCoinsGrantDate, forKey: .lastMonthlyCoinsGrantDate)
+        try container.encodeIfPresent(lastAnnualCoinsGrantDate, forKey: .lastAnnualCoinsGrantDate)
         try container.encodeIfPresent(lastCatchTheOrangeCompletedDate, forKey: .lastCatchTheOrangeCompletedDate)
         try container.encode(achievementCounts, forKey: .achievementCounts)
         try container.encode(achievementRepeatLastGranted, forKey: .achievementRepeatLastGranted)
@@ -142,11 +153,14 @@ struct GameState: Codable {
         hasCompletedOnboarding: Bool,
         hasCompletedTutorial: Bool,
         hasCompletedPaywall: Bool,
+        hasGrantedOnboardingAdoptionCoins: Bool,
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery: Bool = false,
         subscriptionTier: String?,
         lastSubscriptionCheckDate: Date?,
         hasSeenCNY2026Popup: Bool,
         lastWeeklyCoinsGrantDate: Date?,
         lastMonthlyCoinsGrantDate: Date?,
+        lastAnnualCoinsGrantDate: Date? = nil,
         lastCatchTheOrangeCompletedDate: Date?,
         achievementCounts: [String: Int] = [:],
         achievementRepeatLastGranted: [String: Int] = [:]
@@ -171,11 +185,14 @@ struct GameState: Codable {
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.hasCompletedTutorial = hasCompletedTutorial
         self.hasCompletedPaywall = hasCompletedPaywall
+        self.hasGrantedOnboardingAdoptionCoins = hasGrantedOnboardingAdoptionCoins
+        self.hasAppliedEarnedAchievementRetroactiveCoinsRecovery = hasAppliedEarnedAchievementRetroactiveCoinsRecovery
         self.subscriptionTier = subscriptionTier
         self.lastSubscriptionCheckDate = lastSubscriptionCheckDate
         self.hasSeenCNY2026Popup = hasSeenCNY2026Popup
         self.lastWeeklyCoinsGrantDate = lastWeeklyCoinsGrantDate
         self.lastMonthlyCoinsGrantDate = lastMonthlyCoinsGrantDate
+        self.lastAnnualCoinsGrantDate = lastAnnualCoinsGrantDate
         self.lastCatchTheOrangeCompletedDate = lastCatchTheOrangeCompletedDate
         self.achievementCounts = achievementCounts
         self.achievementRepeatLastGranted = achievementRepeatLastGranted
@@ -186,7 +203,7 @@ struct GameState: Codable {
         food: 99,
         drink: 99,
         happiness: 79,
-        capycoins: 100,
+        capycoins: 0,
         lastUpdateTime: Date(),
         hasRunAway: false,
         ownedAccessories: [],
@@ -202,11 +219,14 @@ struct GameState: Codable {
         hasCompletedOnboarding: false,
         hasCompletedTutorial: false,
         hasCompletedPaywall: false,
+        hasGrantedOnboardingAdoptionCoins: false,
+        hasAppliedEarnedAchievementRetroactiveCoinsRecovery: false,
         subscriptionTier: nil,
         lastSubscriptionCheckDate: nil,
         hasSeenCNY2026Popup: false,
         lastWeeklyCoinsGrantDate: nil,
         lastMonthlyCoinsGrantDate: nil,
+        lastAnnualCoinsGrantDate: nil,
         lastCatchTheOrangeCompletedDate: nil
     )
     
@@ -371,41 +391,55 @@ struct CoinPack: Identifiable {
             price: "£9.99",
             description: "Great value for regular players",
             badge: nil
-        ),
-        CoinPack(
-            name: "Starter Pack",
-            coins: 500,
-            productId: "coins_500",
-            price: "£4.99",
-            description: "Perfect for trying out new items",
-            badge: nil
-        ),
-        CoinPack(
-            name: "Mini Pack",
-            coins: 50,
-            productId: "coins_50",
-            price: "£0.99",
-            description: "Small pack to get started",
-            badge: nil
         )
     ]
+    
+    /// Post-subscription onboarding upsell: product IDs and order must match App Store Connect.
+    static let onboardingCoinPackProductIds: [String] = [
+        "coins_25000",
+        "coins_10000",
+        "coins_1500",
+    ]
+    
+    /// Coins to grant / display: parsed from ASC product id `coins_<amount>` when present, else `coins` fallback.
+    var grantCoins: Int {
+        Self.coinsFromAppStoreProductId(productId) ?? coins
+    }
+    
+    static func coinsFromAppStoreProductId(_ productId: String) -> Int? {
+        let prefix = "coins_"
+        guard productId.hasPrefix(prefix) else { return nil }
+        return Int(productId.dropFirst(prefix.count))
+    }
+    
+    /// Coin packs ordered most expensive first (by tier; aligns with typical IAP price ordering).
+    static var packsSortedMostExpensiveFirst: [CoinPack] {
+        packs.sorted { $0.grantCoins > $1.grantCoins }
+    }
+    
+    /// Top three packs shown on the post-subscription onboarding upsell (ASC ids in `onboardingCoinPackProductIds`).
+    static var topThreeCoinPacksForOnboarding: [CoinPack] {
+        onboardingCoinPackProductIds.compactMap { id in
+            packs.first { $0.productId == id }
+        }
+    }
     
     // Calculate coins per pound for value comparison
     var coinsPerPound: Double {
         let priceValue = Double(price.replacingOccurrences(of: "£", with: "")) ?? 1.0
-        return Double(coins) / priceValue
+        return Double(grantCoins) / priceValue
     }
     
     // Calculate savings percentage compared to starter pack
     var savingsComparedToStarter: String? {
-        guard let starterPack = CoinPack.packs.last else { return nil } // Starter pack is now last
-        guard coins > starterPack.coins else { return nil }
+        guard let starterPack = CoinPack.packs.last else { return nil } // Cheapest tier (last in `packs`)
+        guard grantCoins > starterPack.grantCoins else { return nil }
         
         let starterPrice = Double(starterPack.price.replacingOccurrences(of: "£", with: "")) ?? 0
         let currentPrice = Double(price.replacingOccurrences(of: "£", with: "")) ?? 0
         
         // Calculate equivalent cost if buying multiple starter packs
-        let packsEquivalent = Double(coins) / Double(starterPack.coins)
+        let packsEquivalent = Double(grantCoins) / Double(starterPack.grantCoins)
         let equivalentCost = starterPrice * packsEquivalent
         let savings = equivalentCost - currentPrice
         
