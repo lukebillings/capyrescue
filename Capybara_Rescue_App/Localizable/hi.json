@@ -191,6 +191,7 @@
   "drink.fruitsmoothie": "फल स्मूदी",
   "drink.jasminetea": "चमेली चाय",
   "orange.title": "संतरा पकड़ो",
+  "orange.coinsPerDayFormat": "प्रतिदिन %lld सिक्के",
   "orange.subtitle": "गिरते संतरों पर टैप करें! 20 इकट्ठा करके 100 सिक्के कमाएं। दिन में एक बार।",
   "orange.play": "खेलें",
   "orange.comeBackTomorrow": "कल फिर आएं! आपने आज के सिक्के पहले ही कमा लिए।",

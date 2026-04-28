@@ -191,6 +191,7 @@
   "drink.fruitsmoothie": "Smoothie buah",
   "drink.jasminetea": "Teh melati",
   "orange.title": "Tangkap Jeruk",
+  "orange.coinsPerDayFormat": "%lld koin per hari",
   "orange.subtitle": "Ketuk jeruk yang jatuh! Kumpulkan 20 dapat 100 koin. Sekali per hari.",
   "orange.play": "Main",
   "orange.comeBackTomorrow": "Kembali besok! Anda sudah dapat koin hari ini.",

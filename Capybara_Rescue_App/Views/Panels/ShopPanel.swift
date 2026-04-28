@@ -8,6 +8,10 @@ private enum LegalFinePrintTypography {
     static let weight: Font.Weight = .regular
 }
 
+private let shopSubscriptionLegalPrivacyURL = URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!
+private let shopSubscriptionLegalTermsURL = URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!
+private let shopSubscriptionLegalEULAURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+
 struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
@@ -192,15 +196,23 @@ struct ShopPanel: View {
         let isCurrent = gameManager.currentSubscriptionTier() == plan.tier
         let isThisRowLoading = subscriptionProductLoadingId == plan.productId
         let isAnySubscriptionBusy = subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading
+        let annualRenew: String? = plan == .annual ? shopAnnualRenewSubtitle(for: plan) : nil
         return ShopSubscriptionPlanRow(
             plan: plan,
             priceText: priceText,
+            annualRenewSubtitle: annualRenew,
             isCurrent: isCurrent,
             isThisRowLoading: isThisRowLoading,
             isAnySubscriptionBusy: isAnySubscriptionBusy
         ) {
             Task { await purchaseShopSubscription(plan: plan) }
         }
+    }
+    
+    /// Same trailing line as onboarding subscription paywall (`onboarding.coinPaywallAnnualRenewFormat`).
+    private func shopAnnualRenewSubtitle(for plan: ShopSubscriptionPlan) -> String {
+        let price = subscriptionManager.displayPrice(for: plan.productId, fallback: "…")
+        return String(format: L("onboarding.coinPaywallAnnualRenewFormat"), price)
     }
     
     private var shopCoinSubscriptionsSection: some View {
@@ -216,11 +228,18 @@ struct ShopPanel: View {
             }
             .padding(.horizontal, 20)
             
-            Text(L("panel.coinSubscriptionBlurb"))
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Color(hex: "5A5A5A"))
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 20)
+            // Same headline copy as onboarding subscription paywall (step 1).
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L("onboarding.coinPaywallTitleLine1"))
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color(hex: "1a1a2e"))
+                Text(L("onboarding.coinPaywallTitleLine2"))
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color(hex: "1a1a2e"))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 20)
             
             if let nextGrant = gameManager.nextSubscriptionCoinGrantInfo() {
                 subscriptionNextCapycoinsCallout(
@@ -238,7 +257,7 @@ struct ShopPanel: View {
             
             VStack(spacing: 6) {
                 Button(action: { Task { await restoreShopSubscriptions() } }) {
-                    Text(L("panel.restorePurchases"))
+                    Text(L("onboarding.restorePurchases"))
                         .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                         .foregroundStyle(Color(hex: "5A5A5A"))
                         .underline()
@@ -246,14 +265,34 @@ struct ShopPanel: View {
                 .buttonStyle(.plain)
                 .disabled(subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading)
                 
-                Text(L("panel.subscriptionBillingNote"))
+                Text(L("onboarding.coinPaywallFinePrint"))
                     .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                     .foregroundStyle(Color(hex: "5A5A5A"))
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
+                
+                shopSubscriptionLegalLinkRow
             }
             .frame(maxWidth: .infinity)
         }
+    }
+    
+    /// Same Privacy / Terms / EULA row as onboarding subscription paywall.
+    private var shopSubscriptionLegalLinkRow: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Link(L("settings.privacy"), destination: shopSubscriptionLegalPrivacyURL)
+            Text("·")
+            Link(L("settings.terms"), destination: shopSubscriptionLegalTermsURL)
+            Text("·")
+            Link(L("onboarding.termsOfUseEula"), destination: shopSubscriptionLegalEULAURL)
+        }
+        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+        .foregroundStyle(Color(hex: "5A5A5A"))
+        .tint(Color(hex: "5A5A5A"))
+        .multilineTextAlignment(.center)
+        .lineLimit(2)
+        .minimumScaleFactor(0.75)
     }
     
     @MainActor
@@ -331,7 +370,7 @@ struct CatchTheOrangeCard: View {
             // Coins per day (standard font, weight, size throughout)
             HStack(spacing: 6) {
                 CoinIcon(size: 22)
-                Text("\(coinsPerDay) coins per day")
+                Text(String(format: L("orange.coinsPerDayFormat"), Int64(coinsPerDay)))
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Self.primaryText)
             }
@@ -607,6 +646,8 @@ private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
 private struct ShopSubscriptionPlanRow: View {
     let plan: ShopSubscriptionPlan
     let priceText: String
+    /// Set for `.annual` only; onboarding paywall style (7-day trial / renew line), not coin totals.
+    let annualRenewSubtitle: String?
     let isCurrent: Bool
     let isThisRowLoading: Bool
     let isAnySubscriptionBusy: Bool
@@ -622,51 +663,16 @@ private struct ShopSubscriptionPlanRow: View {
             HapticManager.shared.buttonPress()
             action()
         }) {
-            HStack(spacing: 12) {
-                CoinIcon(size: 44)
-                    .shadow(color: Self.settingsGreen.opacity(0.25), radius: 6, y: 2)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(formattedCoins(plan.coinsPerPeriod))
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(Self.primaryText)
-                        if isCurrent {
-                            Text(L("panel.currentPlan"))
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(Capsule().fill(Self.settingsGreen))
-                        }
-                    }
-                    Text(L(plan.leftCoinsSubtitleKey))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Self.secondaryText)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer(minLength: 6)
-                
-                if isThisRowLoading {
-                    ProgressView()
-                        .tint(Self.settingsGreen)
-                        .frame(width: 88, height: 40)
-                } else if isCurrent {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(Self.settingsGreen)
-                        .frame(width: 88, height: 40)
+            Group {
+                if plan == .annual {
+                    annualPlanRow(
+                        renewSubtitle: annualRenewSubtitle
+                            ?? String(format: L("onboarding.coinPaywallAnnualRenewFormat"), "…")
+                    )
+                } else if plan == .weekly {
+                    weeklyMirroredPaywallPlanRow
                 } else {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(priceText)
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(Self.primaryText)
-                        Text(L(plan.listPeriodKey))
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Self.secondaryText)
-                    }
-                    .frame(minWidth: 80, alignment: .trailing)
+                    monthlyCoinStylePlanRow
                 }
             }
             .padding(12)
@@ -682,6 +688,115 @@ private struct ShopSubscriptionPlanRow: View {
         .buttonStyle(ScaleButtonStyle())
         .disabled(isCurrent || isAnySubscriptionBusy)
         .opacity(isAnySubscriptionBusy && !isThisRowLoading ? 0.55 : 1.0)
+    }
+    
+    /// Matches `coinPaywallPlanCard(.annual)` in `OnboardingView` — no yearly coin headline.
+    @ViewBuilder
+    private func annualPlanRow(renewSubtitle: String) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(L("onboarding.coinPaywallAnnualTitle"))
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Self.primaryText)
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+            Spacer(minLength: 8)
+            if isThisRowLoading {
+                ProgressView()
+                    .tint(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else if isCurrent {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else {
+                Text(renewSubtitle)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Self.secondaryText)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    /// Matches `coinPaywallPlanCard(.weekly)` in `OnboardingView` — "Monthly" + price line (no coin stack).
+    private var weeklyMirroredPaywallPlanRow: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(L("onboarding.coinPaywallWeeklyLabelLeft"))
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Self.primaryText)
+            Spacer(minLength: 8)
+            if isThisRowLoading {
+                ProgressView()
+                    .tint(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else if isCurrent {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else {
+                Text(String(format: L("onboarding.coinPaywallWeeklyRightFormat"), priceText))
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(Self.secondaryText)
+                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    /// Fallback if `.monthly` is ever shown in the shop (coin + period layout).
+    private var monthlyCoinStylePlanRow: some View {
+        HStack(spacing: 12) {
+            CoinIcon(size: 44)
+                .shadow(color: Self.settingsGreen.opacity(0.25), radius: 6, y: 2)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(formattedCoins(plan.coinsPerPeriod))
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(Self.primaryText)
+                    if isCurrent {
+                        Text(L("panel.currentPlan"))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Capsule().fill(Self.settingsGreen))
+                    }
+                }
+                Text(L(plan.leftCoinsSubtitleKey))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Self.secondaryText)
+                    .multilineTextAlignment(.leading)
+            }
+            
+            Spacer(minLength: 6)
+            
+            if isThisRowLoading {
+                ProgressView()
+                    .tint(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else if isCurrent {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundStyle(Self.settingsGreen)
+                    .frame(width: 88, height: 40)
+            } else {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(priceText)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Self.primaryText)
+                    Text(L(plan.listPeriodKey))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Self.secondaryText)
+                }
+                .frame(minWidth: 80, alignment: .trailing)
+            }
+        }
     }
     
     private func formattedCoins(_ value: Int) -> String {

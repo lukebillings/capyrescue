@@ -205,6 +205,7 @@
   "drink.fruitsmoothie": "Smoothie buah",
   "drink.jasminetea": "Teh melati",
   "orange.title": "Tangkap Oren",
+  "orange.coinsPerDayFormat": "%lld syiling sehari",
   "orange.subtitle": "Ketik oren yang jatuh! Kumpul 20 untuk dapat 100 syiling. Sekali sehari.",
   "orange.play": "Main",
   "orange.comeBackTomorrow": "Kembali esok! Anda sudah dapat syiling hari ini.",

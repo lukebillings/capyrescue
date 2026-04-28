@@ -205,6 +205,7 @@
   "drink.fruitsmoothie": "Smoothie de frutas",
   "drink.jasminetea": "Chá de jasmim",
   "orange.title": "Pegue a Laranja",
+  "orange.coinsPerDayFormat": "%lld moedas por dia",
   "orange.subtitle": "Toque nas laranjas que caem! Junte 20 para ganhar 100 moedas. Uma vez por dia.",
   "orange.play": "Jogar",
   "orange.comeBackTomorrow": "Volte amanhã! Você já ganhou suas moedas hoje.",

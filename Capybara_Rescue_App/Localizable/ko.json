@@ -191,6 +191,7 @@
   "drink.fruitsmoothie": "과일 스무디",
   "drink.jasminetea": "자스민 차",
   "orange.title": "오렌지 잡기",
+  "orange.coinsPerDayFormat": "하루 %lld코인",
   "orange.subtitle": "떨어지는 오렌지를 탭하세요! 20개 모으면 100 코인. 하루에 한 번.",
   "orange.play": "플레이",
   "orange.comeBackTomorrow": "내일 다시 오세요! 오늘 코인은 이미 받았어요.",

@@ -191,6 +191,7 @@
   "drink.fruitsmoothie": "Meyve smoothie",
   "drink.jasminetea": "Yasemin çayı",
   "orange.title": "Portakalı Yakala",
+  "orange.coinsPerDayFormat": "Günde %lld jeton",
   "orange.subtitle": "Düşen portakallara dokun! 20 topla, 100 jeton kazan. Günde bir kez.",
   "orange.play": "Oyna",
   "orange.comeBackTomorrow": "Yarın tekrar gel! Bugünkü jetonları zaten kazandın.",

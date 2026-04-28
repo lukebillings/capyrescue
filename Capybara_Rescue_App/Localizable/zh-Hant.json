@@ -205,6 +205,7 @@
   "drink.fruitsmoothie": "水果冰沙",
   "drink.jasminetea": "茉莉花茶",
   "orange.title": "接住橘子",
+  "orange.coinsPerDayFormat": "每日 %lld 枚金幣",
   "orange.subtitle": "點擊掉落的橘子！收集 20 個可獲得 100 金幣。每天限一次。",
   "orange.play": "開始遊戲",
   "orange.comeBackTomorrow": "明天再來！您今天已經領過金幣了。",
