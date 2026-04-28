@@ -391,22 +391,6 @@ struct CoinPack: Identifiable {
             price: "£9.99",
             description: "Great value for regular players",
             badge: nil
-        ),
-        CoinPack(
-            name: "Starter Pack",
-            coins: 500,
-            productId: "coins_500",
-            price: "£4.99",
-            description: "Perfect for trying out new items",
-            badge: nil
-        ),
-        CoinPack(
-            name: "Mini Pack",
-            coins: 50,
-            productId: "coins_50",
-            price: "£0.99",
-            description: "Small pack to get started",
-            badge: nil
         )
     ]
     
@@ -448,7 +432,7 @@ struct CoinPack: Identifiable {
     
     // Calculate savings percentage compared to starter pack
     var savingsComparedToStarter: String? {
-        guard let starterPack = CoinPack.packs.last else { return nil } // Starter pack is now last
+        guard let starterPack = CoinPack.packs.last else { return nil } // Cheapest tier (last in `packs`)
         guard grantCoins > starterPack.grantCoins else { return nil }
         
         let starterPrice = Double(starterPack.price.replacingOccurrences(of: "£", with: "")) ?? 0
