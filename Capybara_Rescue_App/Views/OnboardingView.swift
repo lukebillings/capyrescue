@@ -693,6 +693,8 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 Spacer()
                     .frame(height: Self.onboardingTopInset)
+                // Balance before the weekly-coin headline so "2,000" from the offer isn’t mistaken for wallet balance.
+                paywallCoinBalanceHeader
                 VStack(spacing: 6) {
                     Text(L("onboarding.coinPaywallTitleLine1"))
                         .font(.system(size: Self.onboardingScreenTitleSize, weight: .bold))
@@ -706,7 +708,7 @@ struct OnboardingView: View {
                 }
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 20)
-                paywallCoinBalanceHeader
+                .padding(.top, 10)
                 VStack(spacing: 6) {
                     paywallHatShowcaseStrip
                     paywallShowcaseCyclingItemCaption

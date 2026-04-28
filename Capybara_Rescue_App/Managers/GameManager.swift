@@ -809,14 +809,20 @@ class GameManager: ObservableObject {
     func upgradeSubscription(to tier: SubscriptionManager.SubscriptionTier) {
         let previousTier = currentSubscriptionTier()
         
-        // Update subscription tier
         gameState.subscriptionTier = tier.rawValue
         gameState.lastSubscriptionCheckDate = Date()
         
-        // Award initial coins (ADD to existing balance, don't override)
+        // Restore / duplicate callbacks can fire when tier is unchanged — avoid granting starter coins twice.
+        guard tier != previousTier else {
+            if tier != .free {
+                unlockProItemsIfNeeded()
+            }
+            print("ℹ️ Subscription tier unchanged (\(tier.displayName)) — skipping starter coins")
+            return
+        }
+        
         gameState.capycoins += tier.startingCoins
         
-        // If Pro tier, remove banner ads and unlock Pro items
         if tier != .free {
             gameState.hasRemovedBannerAds = true
             unlockProItemsIfNeeded()
