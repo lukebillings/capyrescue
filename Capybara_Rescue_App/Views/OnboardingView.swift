@@ -816,6 +816,7 @@ struct OnboardingView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+                .contentShape(Rectangle())
             } else {
                 HStack(alignment: .firstTextBaseline) {
                     Text(L("onboarding.coinPaywallWeeklyLabelLeft"))
@@ -826,6 +827,8 @@ struct OnboardingView: View {
                         .font(.system(size: 15, weight: .regular))
                         .foregroundStyle(Self.onboardingSecondaryText)
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .contentShape(Rectangle())
             }
         }
         .buttonStyle(.plain)
@@ -842,6 +845,7 @@ struct OnboardingView: View {
                         )
                 )
         )
+        .contentShape(RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous))
     }
     
     private var annualPaywallRenewSubtitle: String {

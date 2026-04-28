@@ -694,6 +694,7 @@ private struct ShopSubscriptionPlanRow: View {
                             .stroke(isCurrent ? Self.settingsGreen.opacity(0.45) : Self.settingsGreen.opacity(0.25), lineWidth: isCurrent ? 2 : 1)
                     )
             )
+            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(ScaleButtonStyle())
         .disabled(isCurrent || isAnySubscriptionBusy)
@@ -729,9 +730,10 @@ private struct ShopSubscriptionPlanRow: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
+        .contentShape(Rectangle())
     }
     
-    /// Matches `coinPaywallPlanCard(.weekly)` in `OnboardingView` — "Monthly" + price line (no coin stack).
+    /// Matches `coinPaywallPlanCard(.weekly)` in `OnboardingView` — weekly label + price line (no coin stack).
     private var weeklyMirroredPaywallPlanRow: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(L("onboarding.coinPaywallWeeklyLabelLeft"))
@@ -756,6 +758,7 @@ private struct ShopSubscriptionPlanRow: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
+        .contentShape(Rectangle())
     }
     
     /// Fallback if `.monthly` is ever shown in the shop (coin + period layout).
@@ -807,6 +810,8 @@ private struct ShopSubscriptionPlanRow: View {
                 .frame(minWidth: 80, alignment: .trailing)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .contentShape(Rectangle())
     }
     
     private func formattedCoins(_ value: Int) -> String {
