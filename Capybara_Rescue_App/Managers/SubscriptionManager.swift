@@ -39,7 +39,7 @@ class SubscriptionManager: ObservableObject {
             case .free: return 500
             case .weekly: return 2_000
             case .monthly: return 10_000
-            case .annual: return 100_000
+            case .annual: return 2_000
             }
         }
         
@@ -59,10 +59,10 @@ class SubscriptionManager: ObservableObject {
             }
         }
         
-        /// Recurring coins per year (annual plan only; granted on each anniversary).
+        /// Recurring coins for annual billing (same cadence as weekly: every 7 days while subscribed).
         var annualCoins: Int {
             switch self {
-            case .annual: return 100_000
+            case .annual: return 2_000
             default: return 0
             }
         }

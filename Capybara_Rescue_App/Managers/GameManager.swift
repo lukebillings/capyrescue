@@ -921,20 +921,23 @@ class GameManager: ObservableObject {
         }
     }
     
-    /// Grants yearly coin allotment to Pro Annual subscribers. Call from main content onAppear.
+    /// Grants recurring coins to Pro Annual subscribers every 7 days (same rhythm as weekly; billing is yearly). Call from main content onAppear.
     func grantAnnualSubscriptionCoinsIfNeeded() {
         guard currentSubscriptionTier() == .annual else { return }
         let amount = SubscriptionManager.SubscriptionTier.annual.annualCoins
         let now = Date()
-        let calendar = Calendar.current
+#if DEBUG
+        let interval: TimeInterval = 7
+#else
+        let interval: TimeInterval = 7 * 24 * 60 * 60
+#endif
         if let last = gameState.lastAnnualCoinsGrantDate {
-            guard let nextGrant = calendar.date(byAdding: .year, value: 1, to: last), now >= nextGrant else {
-                return
-            }
+            let nextGrant = last.addingTimeInterval(interval)
+            guard now >= nextGrant else { return }
             gameState.capycoins += amount
             gameState.lastAnnualCoinsGrantDate = now
             showToast("Annual Pro reward: \(amount) coins! 🎉")
-            print("✅ Granted \(amount) annual coins. New balance: \(gameState.capycoins)")
+            print("✅ Granted \(amount) annual tier coins (7-day cycle). New balance: \(gameState.capycoins)")
         } else {
             gameState.lastAnnualCoinsGrantDate = now
         }
@@ -980,7 +983,7 @@ class GameManager: ObservableObject {
         case .monthly:
             rawNext = calendar.date(byAdding: .month, value: 1, to: anchor) ?? anchor.addingTimeInterval(30 * 24 * 60 * 60)
         case .annual:
-            rawNext = calendar.date(byAdding: .year, value: 1, to: anchor) ?? anchor.addingTimeInterval(365 * 24 * 60 * 60)
+            rawNext = anchor.addingTimeInterval(weekInterval)
         case .free:
             return nil
         }

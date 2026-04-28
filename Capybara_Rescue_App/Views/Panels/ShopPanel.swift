@@ -638,7 +638,7 @@ private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
         switch self {
         case .weekly: return "onboarding.coinPaywallLeftCoinsWeek"
         case .monthly: return "onboarding.coinPaywallLeftCoinsMonth"
-        case .annual: return "onboarding.coinPaywallLeftCoinsYear"
+        case .annual: return "onboarding.coinPaywallLeftCoinsWeek"
         }
     }
     
@@ -646,7 +646,7 @@ private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
         switch self {
         case .weekly: return "onboarding.coinPaywallListPeriodWeek"
         case .monthly: return "onboarding.coinPaywallListPeriodMonth"
-        case .annual: return "onboarding.coinPaywallListPeriodYear"
+        case .annual: return "onboarding.coinPaywallListPeriodWeek"
         }
     }
 }

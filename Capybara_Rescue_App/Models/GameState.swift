@@ -31,7 +31,7 @@ struct GameState: Codable {
     var hasSeenCNY2026Popup: Bool // Track if user has seen Chinese New Year 2026 popup
     var lastWeeklyCoinsGrantDate: Date? // For Pro Weekly: last time we granted the recurring weekly coins
     var lastMonthlyCoinsGrantDate: Date? // For Pro Monthly: last time we granted the 10,000 coins/month
-    var lastAnnualCoinsGrantDate: Date? // Pro Annual: last time we granted the yearly coin allotment
+    var lastAnnualCoinsGrantDate: Date? // Pro Annual: last recurring coin grant (7-day cycle; yearly billing)
     var lastCatchTheOrangeCompletedDate: Date? // Last calendar day user completed Catch the Orange (once per day reward)
     /// Counters for repeatable achievements (e.g. "feed" -> total feeds, "pet" -> total pets).
     var achievementCounts: [String: Int]

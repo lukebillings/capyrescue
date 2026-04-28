@@ -63,7 +63,7 @@ Optional coin subscriptions may include benefits such as recurring Capycoins, ac
 Depending on the plan you choose and what Apple offers in your region at purchase time, recurring Capycoin grants may work as follows (amounts and timing are also shown in the App):
 
 - **Weekly**: **2,000** Capycoins about every seven days while the weekly subscription remains active.
-- **Annual**: **100,000** Capycoins per billing year while the annual subscription remains active (typically around each renewal anniversary). The annual plan **may** include a **free trial** (for example, seven days); trial availability, duration, and pricing after the trial are shown by Apple when you subscribe.
+- **Annual**: **2,000** Capycoins when you subscribe, then **2,000** Capycoins about every seven days while the annual subscription remains active (billing still renews yearly through Apple). The annual plan **may** include a **free trial** (for example, seven days); trial availability, duration, and pricing after the trial are shown by Apple when you subscribe.
 - **Monthly (legacy)**: A legacy monthly tier may still apply to some accounts; while active it may grant **10,000** Capycoins per calendar month. New purchase flows may emphasize weekly and annual plans.
 
 **Apple’s checkout screens are the source of truth** for exact prices, currency, taxes, coin amounts, grant schedules, free trials, and renewal dates; those may change over time or vary by region. This section is a general description only.

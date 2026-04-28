@@ -78,7 +78,7 @@ struct OnboardingView: View {
             switch self {
             case .weekly: return "onboarding.coinPaywallFrequencyWeek"
             case .monthly: return "onboarding.coinPaywallFrequencyMonth"
-            case .annual: return "onboarding.coinPaywallFrequencyYear"
+            case .annual: return "onboarding.coinPaywallFrequencyWeek"
             }
         }
         /// Shorter subtitle under the coin amount in each row.
@@ -86,7 +86,7 @@ struct OnboardingView: View {
             switch self {
             case .weekly: return "onboarding.coinPaywallListPeriodWeek"
             case .monthly: return "onboarding.coinPaywallListPeriodMonth"
-            case .annual: return "onboarding.coinPaywallListPeriodYear"
+            case .annual: return "onboarding.coinPaywallListPeriodWeek"
             }
         }
         /// Under the big number: "coins per week" (no repeat of the amount).
@@ -94,7 +94,7 @@ struct OnboardingView: View {
             switch self {
             case .weekly: return "onboarding.coinPaywallLeftCoinsWeek"
             case .monthly: return "onboarding.coinPaywallLeftCoinsMonth"
-            case .annual: return "onboarding.coinPaywallLeftCoinsYear"
+            case .annual: return "onboarding.coinPaywallLeftCoinsWeek"
             }
         }
     }
