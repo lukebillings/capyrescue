@@ -32,48 +32,7 @@ struct FoodPanel: View {
                 VStack(spacing: 6) {
                     Spacer(minLength: 0)
                     
-                    HStack(alignment: .center, spacing: 12) {
-                        if let onBack = onBack {
-                            Button(action: {
-                                HapticManager.shared.buttonPress()
-                                onBack()
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundStyle(.white)
-                                    .frame(width: 36, height: 36)
-                                    .background(Circle().fill(Color(hex: "1a5f1a")))
-                            }
-                        }
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(availableFoodItems) { item in
-                                    FoodItemButton(
-                                        item: item,
-                                        canAfford: gameManager.canAfford(item.cost)
-                                    ) {
-                                        handleFoodSelection(item)
-                                    }
-                                    .frame(width: 72)
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                        }
-                        .frame(height: 100)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                }
-                .padding(.top, 240)
-                .padding(.bottom, 12)
-            } else {
-                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
-                GeometryReader { geometry in
-                    VStack(spacing: 6) {
-                        Spacer(minLength: 0)
-                        
+                    VStack(spacing: 4) {
                         HStack(alignment: .center, spacing: 12) {
                             if let onBack = onBack {
                                 Button(action: {
@@ -105,15 +64,69 @@ struct FoodPanel: View {
                             }
                             .frame(height: 100)
                         }
+                        consumableOneUseHint
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                }
+                .padding(.top, 240)
+                .padding(.bottom, 12)
+            } else {
+                // iPad / iPad mini: keep adaptive sizing to avoid row/header clipping.
+                GeometryReader { geometry in
+                    VStack(spacing: 6) {
+                        Spacer(minLength: 0)
+                        
+                        VStack(spacing: 4) {
+                            HStack(alignment: .center, spacing: 12) {
+                                if let onBack = onBack {
+                                    Button(action: {
+                                        HapticManager.shared.buttonPress()
+                                        onBack()
+                                    }) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 16, weight: .semibold))
+                                            .foregroundStyle(.white)
+                                            .frame(width: 36, height: 36)
+                                            .background(Circle().fill(Color(hex: "1a5f1a")))
+                                    }
+                                }
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(availableFoodItems) { item in
+                                            FoodItemButton(
+                                                item: item,
+                                                canAfford: gameManager.canAfford(item.cost)
+                                            ) {
+                                                handleFoodSelection(item)
+                                            }
+                                            .frame(width: 72)
+                                        }
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                }
+                                .frame(height: 100)
+                            }
+                            consumableOneUseHint
+                        }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
-                        .frame(height: 52)
                     }
                     .padding(.top, 8)
                     .padding(.bottom, 8)
                 }
             }
         }
+    }
+    
+    private var consumableOneUseHint: some View {
+        Text(L("panel.consumableOneUseHint"))
+            .font(.system(size: 10, weight: .regular))
+            .foregroundStyle(Color(hex: "5A5A5A"))
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
     }
     
     private func handleFoodSelection(_ item: FoodItem) {

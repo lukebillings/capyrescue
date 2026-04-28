@@ -49,5 +49,17 @@ struct AppColors {
     static let paywallCTAGreen = Color(hex: "3A7337")
     /// Paywall CTA button border (lighter green).
     static let paywallCTABorder = Color(hex: "9CC899")
+    /// Onboarding coin paywall: gold accent, card surfaces, CTA gradient (matches App Store style reference).
+    static let paywallCardGray = Color(hex: "F7F7F7")
+    static let paywallGold = Color(hex: "F5C344")
+    static let paywallGoldDeep = Color(hex: "E8A317")
+    static let paywallGoldPale = Color(hex: "FFF4C4")
+    static var paywallGoldCTAGradient: LinearGradient {
+        LinearGradient(
+            colors: [paywallGoldPale, paywallGoldDeep],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
 }
 

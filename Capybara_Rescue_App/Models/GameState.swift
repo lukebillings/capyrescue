@@ -403,32 +403,52 @@ struct CoinPack: Identifiable {
         )
     ]
     
-    /// Coin packs ordered most expensive first (by tier; aligns with typical IAP price ordering).
-    static var packsSortedMostExpensiveFirst: [CoinPack] {
-        packs.sorted { $0.coins > $1.coins }
+    /// Post-subscription onboarding upsell: product IDs and order must match App Store Connect.
+    static let onboardingCoinPackProductIds: [String] = [
+        "coins_25000",
+        "coins_10000",
+        "coins_1500",
+    ]
+    
+    /// Coins to grant / display: parsed from ASC product id `coins_<amount>` when present, else `coins` fallback.
+    var grantCoins: Int {
+        Self.coinsFromAppStoreProductId(productId) ?? coins
     }
     
-    /// Top three packs shown on the post-subscription onboarding upsell.
+    static func coinsFromAppStoreProductId(_ productId: String) -> Int? {
+        let prefix = "coins_"
+        guard productId.hasPrefix(prefix) else { return nil }
+        return Int(productId.dropFirst(prefix.count))
+    }
+    
+    /// Coin packs ordered most expensive first (by tier; aligns with typical IAP price ordering).
+    static var packsSortedMostExpensiveFirst: [CoinPack] {
+        packs.sorted { $0.grantCoins > $1.grantCoins }
+    }
+    
+    /// Top three packs shown on the post-subscription onboarding upsell (ASC ids in `onboardingCoinPackProductIds`).
     static var topThreeCoinPacksForOnboarding: [CoinPack] {
-        Array(packsSortedMostExpensiveFirst.prefix(3))
+        onboardingCoinPackProductIds.compactMap { id in
+            packs.first { $0.productId == id }
+        }
     }
     
     // Calculate coins per pound for value comparison
     var coinsPerPound: Double {
         let priceValue = Double(price.replacingOccurrences(of: "£", with: "")) ?? 1.0
-        return Double(coins) / priceValue
+        return Double(grantCoins) / priceValue
     }
     
     // Calculate savings percentage compared to starter pack
     var savingsComparedToStarter: String? {
         guard let starterPack = CoinPack.packs.last else { return nil } // Starter pack is now last
-        guard coins > starterPack.coins else { return nil }
+        guard grantCoins > starterPack.grantCoins else { return nil }
         
         let starterPrice = Double(starterPack.price.replacingOccurrences(of: "£", with: "")) ?? 0
         let currentPrice = Double(price.replacingOccurrences(of: "£", with: "")) ?? 0
         
         // Calculate equivalent cost if buying multiple starter packs
-        let packsEquivalent = Double(coins) / Double(starterPack.coins)
+        let packsEquivalent = Double(grantCoins) / Double(starterPack.grantCoins)
         let equivalentCost = starterPrice * packsEquivalent
         let savings = equivalentCost - currentPrice
         

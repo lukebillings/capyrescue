@@ -7,10 +7,11 @@ import StoreKit
 class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
     
-    // Product IDs - update these with your actual App Store Connect product IDs
-    static let annualProductId = "com.capybara.pro.annual"
+    // Product IDs — must match App Store Connect (auto-renewable subscriptions).
+    static let annualProductId = "com.capyrescue.coins.perweek.2000.billing.yearly"
+    static let weeklyProductId = "com.capyrescue.coins.perweek.2000.billing.weekly"
+    /// Legacy tier; omit from new offerings if unused in Connect.
     static let monthlyProductId = "com.capybara.pro.monthly"
-    static let weeklyProductId = "com.capybara.pro.weekly"
     
     @Published private(set) var products: [String: Product] = [:]
     @Published private(set) var isLoading: Bool = false
@@ -35,7 +36,7 @@ class SubscriptionManager: ObservableObject {
         var startingCoins: Int {
             switch self {
             case .free: return 500
-            case .weekly: return 1_000
+            case .weekly: return 2_000
             case .monthly: return 10_000
             case .annual: return 100_000
             }
@@ -52,7 +53,7 @@ class SubscriptionManager: ObservableObject {
         /// Recurring coins per week (weekly plan only).
         var weeklyCoins: Int {
             switch self {
-            case .weekly: return 1_000
+            case .weekly: return 2_000
             default: return 0
             }
         }

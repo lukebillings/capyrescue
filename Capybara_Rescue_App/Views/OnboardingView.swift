@@ -41,8 +41,8 @@ struct OnboardingView: View {
     private enum CoinPaywallPlan: String, CaseIterable, Identifiable {
         case weekly, monthly, annual
         var id: String { rawValue }
-        /// Top to bottom in the paywall: 100,000 / year first, 1,000 / week last.
-        static let displayOrder: [CoinPaywallPlan] = [.annual, .monthly, .weekly]
+        /// Shown on the marketing paywall: annual (trial) first, weekly second.
+        static let displayOrder: [CoinPaywallPlan] = [.annual, .weekly]
         var productId: String {
             switch self {
             case .weekly: return SubscriptionManager.weeklyProductId
@@ -65,7 +65,7 @@ struct OnboardingView: View {
             case .annual: return SubscriptionManager.SubscriptionTier.annual.annualCoins
             }
         }
-        /// Temporary fixed prices until App Store Connect products are configured.
+        /// Unused placeholders (shop/onboarding use StoreKit `displayPrice` when available).
         var hardcodedPaywallPrice: String {
             switch self {
             case .weekly: return "$0.99"
@@ -108,22 +108,30 @@ struct OnboardingView: View {
     
     /// Same top inset and capybara height on every onboarding step so capybara and CTA stay in exact same position.
     private static let onboardingTopInset: CGFloat = 20
+    /// One style for language + both onboarding paywall headlines (same size, weight, and vertical position).
+    private static let onboardingScreenTitleSize: CGFloat = 24
     private static let onboardingCapybaraHeight: CGFloat = 180
     private static let onboardingCTAHorizontalPadding: CGFloat = 24
     private static let onboardingCTABottomPadding: CGFloat = 40
     private static let paywallHatCycleSeconds: TimeInterval = 2.4
     private static let paywallDismissCountdownSeconds: Int = 20
     /// Tighter layout so all three plans + footer fit on one screen without scrolling.
-    private static let paywallCompactTopInset: CGFloat = 4
-    private static let paywallTitleFontSize: CGFloat = 20
     private static let paywallSubtitleFontSize: CGFloat = 14
     private static let paywallHeroCapybaraHeight: CGFloat = 118
     private static let paywallHeroCapybaraScale: CGFloat = 0.30
+    /// Subscription paywall: extra headroom + bottom-anchored scale so the 3D preview sits lower and tall hats aren’t clipped.
+    private static let paywallSubscriptionHeroHeight: CGFloat = 136
     private static let paywallHatStripHeight: CGFloat = 48
     private static let paywallPlanRowVPadding: CGFloat = 9
     private static let paywallPlanCardCornerRadius: CGFloat = 14
     private static let paywallPlanCoinFontSize: CGFloat = 21
     private static let paywallBottomSectionSpacing: CGFloat = 8
+    /// Restore, disclaimer body, Privacy/Terms — same as `LegalFinePrintTypography` in ShopPanel.swift.
+    private static let paywallLegalCopySize: CGFloat = 10
+    /// Pushes footer + CTA identically above the bottom on subscription vs coin-pack paywall (`Spacer` before legal block).
+    private static let paywallPreCTAFooterSpacerMinLength: CGFloat = 12
+    /// Shown only while StoreKit hasn’t returned `Product.displayPrice` yet.
+    private static let coinPaywallPriceLoadingPlaceholder = "…"
     private static let paywallLegalPrivacyURL = URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!
     private static let paywallLegalTermsURL = URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!
     private static let paywallLegalEULAURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
@@ -159,6 +167,29 @@ struct OnboardingView: View {
         let hats = paywallShowcaseHats
         guard !hats.isEmpty else { return nil }
         return hats[paywallShowcaseHatIndex % hats.count]
+    }
+    
+    /// Name + coin price for the cycling hat preview (paywall 1 & 2).
+    @ViewBuilder
+    private var paywallShowcaseCyclingItemCaption: some View {
+        if let item = paywallPreviewedAccessory {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(localizedAccessoryName(id: item.id))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Self.onboardingPrimaryText)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 8)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(formattedCoinCount(item.cost))
+                        .font(.system(size: 14, weight: .medium))
+                    Text(L("common.coins"))
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Self.onboardingPrimaryText)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 24)
+        }
     }
     
     /// Drives the hat strip / 3D preview from elapsed time so rotation keeps going during the 20s dismiss countdown.
@@ -211,12 +242,8 @@ struct OnboardingView: View {
             Spacer()
                 .frame(height: Self.onboardingTopInset)
             
-            Image(systemName: "globe")
-                .font(.system(size: 44))
-                .foregroundStyle(AppColors.paywallCTAGreen)
-            
             Text(L("onboarding.languageTitle"))
-                .font(.system(size: 22, weight: .bold))
+                .font(.system(size: Self.onboardingScreenTitleSize, weight: .bold))
                 .foregroundStyle(Self.onboardingPrimaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -226,6 +253,10 @@ struct OnboardingView: View {
                 .foregroundStyle(Self.onboardingSecondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
+            
+            Image(systemName: "globe")
+                .font(.system(size: 44))
+                .foregroundStyle(AppColors.paywallCTAGreen)
             
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                 ForEach(LocalizationManager.supportedLanguages, id: \.code) { lang in
@@ -653,55 +684,34 @@ struct OnboardingView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
+        .padding(.top, 8)
         .padding(.bottom, 4)
     }
     
     // MARK: - Coin Paywall (post-pledge)
-    /// Single-screen layout: no vertical scroll for plans; CTA + legal pinned at bottom.
+    /// Same cream background and bottom green CTA as earlier onboarding steps; selectable plans use green rim.
     private var coinPaywallView: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 Spacer()
-                    .frame(height: Self.paywallCompactTopInset)
+                    .frame(height: Self.onboardingTopInset)
+                VStack(spacing: 6) {
+                    Text(L("onboarding.coinPaywallTitleLine1"))
+                        .font(.system(size: Self.onboardingScreenTitleSize, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                    Text(L("onboarding.coinPaywallTitleLine2"))
+                        .font(.system(size: Self.onboardingScreenTitleSize, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.82)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
                 paywallCoinBalanceHeader
-                Text(L("onboarding.coinPaywallTitle"))
-                    .font(.system(size: Self.paywallTitleFontSize, weight: .bold))
-                    .foregroundStyle(Self.onboardingPrimaryText)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.78)
-                    .lineLimit(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 2)
-                Text(L("onboarding.coinPaywallItemsHint"))
-                    .font(.system(size: Self.paywallSubtitleFontSize, weight: .medium))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.82)
-                    .lineLimit(6)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                VStack(spacing: 5) {
+                VStack(spacing: 6) {
                     paywallHatShowcaseStrip
-                    if let item = paywallPreviewedAccessory {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(localizedAccessoryName(id: item.id))
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                                .multilineTextAlignment(.leading)
-                            Spacer(minLength: 8)
-                            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text(formattedCoinCount(item.cost))
-                                    .font(.system(size: 14, weight: .medium))
-                                Text(L("common.coins"))
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 24)
-                    }
+                    paywallShowcaseCyclingItemCaption
                     if #available(iOS 17.0, *) {
                         Capybara3DView(
                             emotion: gameManager.gameState.capybaraEmotion,
@@ -710,25 +720,26 @@ struct OnboardingView: View {
                             onPet: { },
                             initialRotation: nil
                         )
-                        .frame(height: Self.paywallHeroCapybaraHeight)
-                        .scaleEffect(Self.paywallHeroCapybaraScale)
-                        .frame(height: Self.paywallHeroCapybaraHeight)
+                        .frame(height: Self.paywallSubscriptionHeroHeight)
+                        .scaleEffect(Self.paywallHeroCapybaraScale, anchor: .bottom)
+                        .frame(height: Self.paywallSubscriptionHeroHeight, alignment: .bottom)
                         .clipped()
                         .allowsHitTesting(false)
                     } else {
                         Text(paywallShowcaseHats.isEmpty ? "🐹" : (paywallShowcaseHats[paywallShowcaseHatIndex % paywallShowcaseHats.count].emoji))
                             .font(.system(size: 64))
-                            .frame(height: Self.paywallHeroCapybaraHeight)
+                            .frame(height: Self.paywallSubscriptionHeroHeight, alignment: .bottom)
                     }
-                    VStack(spacing: 5) {
-                        ForEach(CoinPaywallPlan.displayOrder) { plan in
-                            coinPaywallOptionButton(plan: plan)
-                        }
-                    }
-                    .padding(.horizontal, 24)
                 }
-                .padding(.top, 5)
-                Spacer(minLength: 0)
+                .padding(.top, 10)
+                VStack(spacing: 10) {
+                    ForEach(CoinPaywallPlan.displayOrder) { plan in
+                        coinPaywallPlanCard(plan: plan)
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                Spacer(minLength: 12)
                 VStack(spacing: Self.paywallBottomSectionSpacing) {
                     coinPaywallPreCTALegalBlock
                     Button(action: { Task { await purchaseSelectedPlan() } }) {
@@ -758,6 +769,7 @@ struct OnboardingView: View {
                 .padding(.horizontal, Self.onboardingCTAHorizontalPadding)
                 .padding(.bottom, Self.onboardingCTABottomPadding)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             paywallTopTrailingDismissControl
                 .padding(.trailing, 16)
                 .padding(.top, 6)
@@ -780,22 +792,87 @@ struct OnboardingView: View {
         }
     }
     
+    private func coinPaywallPlanCard(plan: CoinPaywallPlan) -> some View {
+        let selected = selectedCoinPlan == plan
+        return Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedCoinPlan = plan
+            }
+        } label: {
+            if plan == .annual {
+                HStack(alignment: .center, spacing: 12) {
+                    Text(L("onboarding.coinPaywallAnnualTitle"))
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                    Spacer(minLength: 8)
+                    Text(annualPaywallRenewSubtitle)
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle(Self.onboardingSecondaryText)
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(L("onboarding.coinPaywallWeeklyLabelLeft"))
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(Self.onboardingPrimaryText)
+                    Spacer(minLength: 8)
+                    Text(weeklyPaywallPriceLine)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundStyle(Self.onboardingSecondaryText)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 12)
+        .padding(.vertical, Self.paywallPlanRowVPadding)
+        .background(
+            RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
+                .fill(Self.onboardingCardFill)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
+                        .stroke(
+                            selected ? AppColors.paywallCTAGreen : Self.onboardingCardStroke,
+                            lineWidth: selected ? 2 : 1
+                        )
+                )
+        )
+    }
+    
+    private var annualPaywallRenewSubtitle: String {
+        let price = subscriptionManager.displayPrice(
+            for: CoinPaywallPlan.annual.productId,
+            fallback: Self.coinPaywallPriceLoadingPlaceholder
+        )
+        return String(format: L("onboarding.coinPaywallAnnualRenewFormat"), price)
+    }
+    
+    private var weeklyPaywallPriceLine: String {
+        let price = subscriptionManager.displayPrice(
+            for: CoinPaywallPlan.weekly.productId,
+            fallback: Self.coinPaywallPriceLoadingPlaceholder
+        )
+        return String(format: L("onboarding.coinPaywallWeeklyRightFormat"), price)
+    }
+    
     // MARK: - Coin pack onboarding (after subscription paywall)
     private var coinPackOnboardingView: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 Spacer()
-                    .frame(height: Self.paywallCompactTopInset)
-                paywallCoinBalanceHeader
+                    .frame(height: Self.onboardingTopInset)
                 Text(L("onboarding.coinPackOfferTitle"))
-                    .font(.system(size: Self.paywallTitleFontSize, weight: .bold))
+                    .font(.system(size: Self.onboardingScreenTitleSize, weight: .bold))
                     .foregroundStyle(Self.onboardingPrimaryText)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.78)
                     .lineLimit(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
-                    .padding(.top, 2)
                 Text(L("onboarding.coinPackOfferSubtitle"))
                     .font(.system(size: Self.paywallSubtitleFontSize, weight: .medium))
                     .foregroundStyle(Self.onboardingSecondaryText)
@@ -805,26 +882,10 @@ struct OnboardingView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
+                paywallCoinBalanceHeader
                 VStack(spacing: 5) {
                     paywallHatShowcaseStrip
-                    if let item = paywallPreviewedAccessory {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(localizedAccessoryName(id: item.id))
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Self.onboardingPrimaryText)
-                                .multilineTextAlignment(.leading)
-                            Spacer(minLength: 8)
-                            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                                Text(formattedCoinCount(item.cost))
-                                    .font(.system(size: 14, weight: .medium))
-                                Text(L("common.coins"))
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .foregroundStyle(Self.onboardingPrimaryText)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 24)
-                    }
+                    paywallShowcaseCyclingItemCaption
                     if #available(iOS 17.0, *) {
                         Capybara3DView(
                             emotion: gameManager.gameState.capybaraEmotion,
@@ -851,7 +912,7 @@ struct OnboardingView: View {
                     .padding(.horizontal, 24)
                 }
                 .padding(.top, 5)
-                Spacer(minLength: 0)
+                Spacer(minLength: Self.paywallPreCTAFooterSpacerMinLength)
                 VStack(spacing: Self.paywallBottomSectionSpacing) {
                     coinPackOfferPreCTALegalBlock
                     Button(action: { Task { await purchaseSelectedCoinPack() } }) {
@@ -859,7 +920,7 @@ struct OnboardingView: View {
                             if isPurchasingCoinPack {
                                 Text(L("onboarding.coinPackOfferPurchasing"))
                             } else {
-                                Text(String(format: L("onboarding.coinPackOfferCTAFormat"), formattedCoinCount(selectedOnboardingCoinPack.coins)))
+                                Text(String(format: L("onboarding.coinPackOfferCTAFormat"), formattedCoinCount(selectedOnboardingCoinPack.grantCoins)))
                             }
                         }
                         .font(.system(size: 19, weight: .bold))
@@ -902,6 +963,9 @@ struct OnboardingView: View {
             }
             updatePaywallShowcaseHatIndexFromElapsedTime()
         }
+        .task {
+            await gameManager.refreshIAPProducts()
+        }
     }
     
     private var selectedOnboardingCoinPack: CoinPack {
@@ -917,27 +981,18 @@ struct OnboardingView: View {
         Group {
             if coinPackDismissSecondsRemaining > 0 {
                 Text("\(coinPackDismissSecondsRemaining)")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
                     .foregroundStyle(Self.onboardingPrimaryText)
                     .monospacedDigit()
-                    .frame(width: 40, height: 40)
-                    .background(
-                        Circle()
-                            .fill(Self.onboardingCardFill)
-                            .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
-                    )
+                    .frame(minWidth: 40, minHeight: 40, alignment: .center)
                     .accessibilityLabel(Text(verbatim: "\(coinPackDismissSecondsRemaining)"))
             } else {
                 Button(action: { completeOnboardingAndDismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Self.onboardingPrimaryText)
-                        .frame(width: 40, height: 40)
-                        .background(
-                            Circle()
-                                .fill(Self.onboardingCardFill)
-                                .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
-                        )
+                        .frame(minWidth: 40, minHeight: 40)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(verbatim: L("common.dismiss")))
@@ -946,23 +1001,13 @@ struct OnboardingView: View {
     }
     
     private var coinPackOfferPreCTALegalBlock: some View {
-        VStack(spacing: 6) {
-            Button(action: { Task { await restorePurchases() } }) {
-                Text(L("onboarding.restorePurchases"))
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .underline()
-            }
-            .buttonStyle(.plain)
-            .disabled(isPurchasingCoinPack)
+        paywallLegalFooter(restoreDisabled: isPurchasingCoinPack) {
             Text(L("onboarding.coinPackOfferFinePrint"))
-                .font(.system(size: 10, weight: .regular))
+                .font(.system(size: Self.paywallLegalCopySize, weight: .regular))
                 .foregroundStyle(Self.onboardingSecondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            coinPaywallLegalLinkRow
         }
-        .frame(maxWidth: .infinity)
     }
     
     private func coinPackOnboardingOptionButton(pack: CoinPack) -> some View {
@@ -975,9 +1020,14 @@ struct OnboardingView: View {
         } label: {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(formattedCoinCount(pack.coins))
-                        .font(.system(size: Self.paywallPlanCoinFontSize, weight: .bold))
-                        .foregroundStyle(Self.onboardingPrimaryText)
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(formattedCoinCount(pack.grantCoins))
+                            .font(.system(size: Self.paywallPlanCoinFontSize, weight: .bold))
+                            .foregroundStyle(Self.onboardingPrimaryText)
+                        Text(L("common.coins"))
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Self.onboardingPrimaryText)
+                    }
                     Text(L("onboarding.coinPackOfferRowSubtitle"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Self.onboardingSecondaryText)
@@ -1006,27 +1056,18 @@ struct OnboardingView: View {
         Group {
             if paywallDismissSecondsRemaining > 0 {
                 Text("\(paywallDismissSecondsRemaining)")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 16, weight: .regular, design: .rounded))
                     .foregroundStyle(Self.onboardingPrimaryText)
                     .monospacedDigit()
-                    .frame(width: 40, height: 40)
-                    .background(
-                        Circle()
-                            .fill(Self.onboardingCardFill)
-                            .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
-                    )
+                    .frame(minWidth: 40, minHeight: 40, alignment: .center)
                     .accessibilityLabel(Text(verbatim: "\(paywallDismissSecondsRemaining)"))
             } else {
                 Button(action: { advanceFromSubscriptionPaywall() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Self.onboardingPrimaryText)
-                        .frame(width: 40, height: 40)
-                        .background(
-                            Circle()
-                                .fill(Self.onboardingCardFill)
-                                .overlay(Circle().stroke(Self.onboardingCardStroke, lineWidth: 1))
-                        )
+                        .frame(minWidth: 40, minHeight: 40)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(Text(verbatim: L("common.dismiss")))
@@ -1035,20 +1076,28 @@ struct OnboardingView: View {
     }
     
     private var coinPaywallPreCTALegalBlock: some View {
+        paywallLegalFooter(restoreDisabled: isPurchasing) {
+            Text(L("onboarding.coinPaywallFinePrint"))
+                .font(.system(size: Self.paywallLegalCopySize, weight: .regular))
+                .foregroundStyle(Self.onboardingSecondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+    
+    /// Shared legal stack for both onboarding paywalls (same position, fonts, and weights).
+    @ViewBuilder
+    private func paywallLegalFooter(restoreDisabled: Bool, @ViewBuilder finePrint: () -> some View) -> some View {
         VStack(spacing: 6) {
             Button(action: { Task { await restorePurchases() } }) {
                 Text(L("onboarding.restorePurchases"))
-                    .font(.system(size: 10, weight: .regular))
+                    .font(.system(size: Self.paywallLegalCopySize, weight: .regular))
                     .foregroundStyle(Self.onboardingSecondaryText)
                     .underline()
             }
             .buttonStyle(.plain)
-            .disabled(isPurchasing)
-            Text(L("onboarding.coinPaywallFinePrint"))
-                .font(.system(size: 10, weight: .regular))
-                .foregroundStyle(Self.onboardingSecondaryText)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
+            .disabled(restoreDisabled)
+            finePrint()
             coinPaywallLegalLinkRow
         }
         .frame(maxWidth: .infinity)
@@ -1062,7 +1111,7 @@ struct OnboardingView: View {
             Text("·")
             Link(L("onboarding.termsOfUseEula"), destination: Self.paywallLegalEULAURL)
         }
-        .font(.system(size: 10, weight: .regular))
+        .font(.system(size: Self.paywallLegalCopySize, weight: .regular))
         .foregroundStyle(Self.onboardingSecondaryText)
         .tint(Self.onboardingSecondaryText)
         .multilineTextAlignment(.center)
@@ -1136,49 +1185,6 @@ struct OnboardingView: View {
         )
     }
     
-    private func coinPaywallOptionButton(plan: CoinPaywallPlan) -> some View {
-        let selected = selectedCoinPlan == plan
-        let price = plan.hardcodedPaywallPrice
-        return Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                selectedCoinPlan = plan
-            }
-        } label: {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(formattedCoinCount(plan.coinsPerPeriod))
-                        .font(.system(size: Self.paywallPlanCoinFontSize, weight: .bold))
-                        .foregroundStyle(Self.onboardingPrimaryText)
-                    Text(L(plan.leftCoinsOnlySubtitleKey))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 8)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    let pricePeriodFont = Font.system(size: 14, weight: .medium)
-                    Text(price)
-                        .font(pricePeriodFont)
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                    Text(L(plan.listPeriodKey))
-                        .font(pricePeriodFont)
-                        .foregroundStyle(Self.onboardingSecondaryText)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, Self.paywallPlanRowVPadding)
-            .background(
-                RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
-                    .fill(Self.onboardingCardFill)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Self.paywallPlanCardCornerRadius, style: .continuous)
-                            .stroke(selected ? AppColors.paywallCTAGreen : Self.onboardingCardStroke, lineWidth: selected ? 2 : 1)
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-    }
-    
     private func formattedCoinCount(_ value: Int) -> String {
         let f = NumberFormatter()
         f.numberStyle = .decimal
@@ -1187,9 +1193,12 @@ struct OnboardingView: View {
     }
     
     private func ctaLabelForSelectedPlan() -> String {
-        let coins = formattedCoinCount(selectedCoinPlan.coinsPerPeriod)
-        let freq = L(selectedCoinPlan.ctaFrequencyKey)
-        return String(format: L("onboarding.coinPaywallCTAFormat"), coins, freq)
+        switch selectedCoinPlan {
+        case .annual:
+            return L("onboarding.coinPaywallCTATrial")
+        case .monthly, .weekly:
+            return L("onboarding.coinPaywallCTAWeekly")
+        }
     }
     
     @MainActor
@@ -1271,9 +1280,9 @@ struct OnboardingView: View {
 
 // MARK: - Coin paywall CTA: diagonal light sweep
 private struct CoinPaywallCTADiagonalShine: View {
-    private let period: TimeInterval = 2.5
-    /// ~55° reads clearly as a diagonal line across the pill.
-    private let lineAngle: CGFloat = 56
+    private let period: TimeInterval = 5.2
+    /// Opposite tilt from the previous direction; still reads clearly across the pill.
+    private let lineAngle: CGFloat = -56
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { context in

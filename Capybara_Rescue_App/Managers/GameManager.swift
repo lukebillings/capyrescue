@@ -157,8 +157,9 @@ class GameManager: ObservableObject {
                 
                 // Coin pack purchase
                 if let pack = CoinPack.packs.first(where: { $0.productId == productId }) {
-                    gameState.capycoins += pack.coins
-                    showToast("\(pack.coins) coins added! 🎉")
+                    let grant = pack.grantCoins
+                    gameState.capycoins += grant
+                    showToast("\(grant) coins added! 🎉")
                 }
                 // Subscription purchases are handled by SubscriptionManager's listener
                 
@@ -669,8 +670,9 @@ class GameManager: ObservableObject {
 
             // Deliver goods for consumable
             if transaction.productID == pack.productId {
-                gameState.capycoins += pack.coins
-                showToast("\(pack.coins) coins added! 🎉")
+                let grant = pack.grantCoins
+                gameState.capycoins += grant
+                showToast("\(grant) coins added! 🎉")
                 return true
             }
             iapLastErrorMessage = "Purchase completed but product ID didn’t match. Expected \(pack.productId)."
@@ -704,6 +706,11 @@ class GameManager: ObservableObject {
         } catch {
             // Keep fallbacks if StoreKit is unavailable
         }
+    }
+    
+    /// Reloads consumable coin pack `Product`s from App Store Connect (prices, availability).
+    func refreshIAPProducts() async {
+        await loadIAPProducts()
     }
 
     private func product(for productId: String) async throws -> Product {

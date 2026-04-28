@@ -1,6 +1,13 @@
 import SwiftUI
 
 // MARK: - Shop Panel
+
+/// Matches `OnboardingView` paywall legal footer (same size / weight everywhere).
+private enum LegalFinePrintTypography {
+    static let fontSize: CGFloat = 10
+    static let weight: Font.Weight = .regular
+}
+
 struct ShopPanel: View {
     @EnvironmentObject var gameManager: GameManager
     @ObservedObject private var localizationManager = LocalizationManager.shared
@@ -16,10 +23,6 @@ struct ShopPanel: View {
             VStack(spacing: 16) {
                 // Hero Balance Card
                 BalanceHeroCard(coins: gameManager.gameState.capycoins)
-                
-                // Coin subscription plans (Pro)
-                shopCoinSubscriptionsSection
-                    .padding(.top, 8)
                 
                 // Play Daily Games section
                 VStack(alignment: .leading, spacing: 12) {
@@ -50,6 +53,10 @@ struct ShopPanel: View {
                 }
                 .padding(.top, 24)
                 
+                // Coin subscription plans (Pro) — below daily game
+                shopCoinSubscriptionsSection
+                    .padding(.top, 8)
+                
                 // Coin Packs Section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -78,13 +85,13 @@ struct ShopPanel: View {
                     // Purchase disclaimers
                     VStack(spacing: 8) {
                         Text("Purchases are processed by Apple. Refunds handled via Apple Support.")
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.black.opacity(0.8))
+                            .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                            .foregroundStyle(Color(hex: "5A5A5A"))
                             .multilineTextAlignment(.center)
                         
                         Text("Coins can be used for purchasing In Game Items, In Game Foods and In Game Drinks. Coins are non-refundable and have no cash value.")
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.black.opacity(0.8))
+                            .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                            .foregroundStyle(Color(hex: "5A5A5A"))
                             .multilineTextAlignment(.center)
                         
                         // Legal links
@@ -92,18 +99,18 @@ struct ShopPanel: View {
                             HStack(spacing: 8) {
                                 Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
                                     Text("Privacy Policy")
-                                        .font(.system(size: 11, weight: .regular))
-                                        .foregroundStyle(.black)
+                                        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                                        .foregroundStyle(Color(hex: "5A5A5A"))
                                 }
                                 
                                 Text("•")
-                                    .font(.system(size: 11, weight: .regular))
-                                    .foregroundStyle(.black)
+                                    .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                                    .foregroundStyle(Color(hex: "5A5A5A"))
                                 
                                 Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
                                     Text("Terms and Conditions")
-                                        .font(.system(size: 11, weight: .regular))
-                                        .foregroundStyle(.black)
+                                        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                                        .foregroundStyle(Color(hex: "5A5A5A"))
                                 }
                             }
                         }
@@ -232,15 +239,16 @@ struct ShopPanel: View {
             VStack(spacing: 6) {
                 Button(action: { Task { await restoreShopSubscriptions() } }) {
                     Text(L("panel.restorePurchases"))
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color(hex: "1a5f1a"))
+                        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                        .foregroundStyle(Color(hex: "5A5A5A"))
+                        .underline()
                 }
                 .buttonStyle(.plain)
                 .disabled(subscriptionProductLoadingId != nil || isSubscriptionRestoreLoading)
                 
                 Text(L("panel.subscriptionBillingNote"))
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundStyle(Color(hex: "5A5A5A").opacity(0.9))
+                    .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
+                    .foregroundStyle(Color(hex: "5A5A5A"))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 20)
             }
@@ -450,6 +458,7 @@ struct CoinIcon: View {
 
 // MARK: - Coin Pack Card
 struct CoinPackCard: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let pack: CoinPack
     let tier: Int
     let priceText: String
@@ -482,12 +491,12 @@ struct CoinPackCard: View {
                         }
                     }
                     
-                    HStack(spacing: 4) {
-                        Text(formatCoins(pack.coins))
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(formatCoins(pack.grantCoins))
                             .font(.system(size: 22, weight: .semibold))
                             .foregroundStyle(Self.primaryText)
-                        Text("coins")
-                            .font(.system(size: 22, weight: .medium))
+                        Text(L("common.coins"))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(Self.secondaryText)
                     }
                 }
@@ -542,7 +551,8 @@ private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
     
     var id: String { rawValue }
     
-    static let displayOrder: [ShopSubscriptionPlan] = [.annual, .monthly, .weekly]
+    /// Same tiers as onboarding coin paywall (`CoinPaywallPlan.displayOrder`): annual, then weekly — no monthly row.
+    static let displayOrder: [ShopSubscriptionPlan] = [.annual, .weekly]
     
     var tier: SubscriptionManager.SubscriptionTier {
         switch self {
