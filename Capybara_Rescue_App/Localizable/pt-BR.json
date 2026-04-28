@@ -20,7 +20,7 @@
   "settings.shareMessage": "Conheça o Capyrescue – cuide da sua capivara!",
   "settings.terms": "Termos e Condições",
   "settings.privacy": "Política de Privacidade",
-  "legal.versionNotice": "As versões do app anteriores à 1.12 podem exibir anúncios do Google AdMob e processar dados publicitários relacionados. A partir da versão 1.12, os anúncios do Google AdMob e o rastreamento publicitário foram removidos.",
+  "legal.versionNotice": "As versões do app anteriores à 1.12 podem exibir anúncios do Google AdMob e processar dados publicitários relacionados. A partir da versão 1.12, os anúncios do Google AdMob e o rastreamento publicitário foram removidos.\n\nA partir da versão 1.14: notificações locais podem incluir lembretes de cuidados, lembretes de jogabilidade (como um minijogo diário) e atualizações ou lembretes sobre recursos no app, como itens, acessórios (por exemplo chapéus), compras para sua capivara, conquistas e similares. Elas são agendadas apenas no seu dispositivo; não enviamos push remoto de nossos próprios servidores para esses alertas. Durante o tutorial opcional na primeira vez, se necessário, comida, bebida ou felicidade podem ser reduzidas de 100 para 99 para que você conclua todas as etapas.",
   "onboarding.languageTitle": "Escolha seu idioma",
   "onboarding.languageSubtitle": "O app usará este idioma. Você pode alterar depois nas configurações.",
   "onboarding.welcomeTitle": "Obrigado por resgatar uma capivara!",

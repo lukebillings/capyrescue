@@ -20,7 +20,7 @@
   "settings.shareMessage": "來看看 Capyrescue，照顧你的水豚！",
   "settings.terms": "條款與條件",
   "settings.privacy": "隱私權政策",
-  "legal.versionNotice": "1.12 版之前的 App 版本可能會顯示 Google AdMob 廣告並處理相關廣告資料。自 1.12 版起，已移除 Google AdMob 廣告與廣告追蹤。",
+  "legal.versionNotice": "1.12 版之前的 App 版本可能會顯示 Google AdMob 廣告並處理相關廣告資料。自 1.12 版起，已移除 Google AdMob 廣告與廣告追蹤。\n\n自 1.14 版起：本機通知可能包含照護提醒、遊戲玩法提醒（例如每日小遊戲），以及關於道具、配件（例如帽子）、為您的水豚購物、成就等應用程式內功能的更新或提醒；這些通知僅在您的裝置上排程，我們不會針對這類提示從自有伺服器發送遠端推播。在選用的首次教學期間，若有需要，食物、飲料或開心值可能從 100 降至 99，以便您完成所有教學步驟。",
   "onboarding.languageTitle": "選擇語言",
   "onboarding.languageSubtitle": "應用程式將使用此語言顯示。您可稍後在設定中變更。",
   "onboarding.welcomeTitle": "感謝你領養水豚！",

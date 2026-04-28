@@ -98,26 +98,8 @@ struct ShopPanel: View {
                             .foregroundStyle(Color(hex: "5A5A5A"))
                             .multilineTextAlignment(.center)
                         
-                        // Legal links
-                        VStack(spacing: 6) {
-                            HStack(spacing: 8) {
-                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
-                                    Text(L("settings.privacy"))
-                                        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
-                                        .foregroundStyle(Color(hex: "5A5A5A"))
-                                }
-                                
-                                Text("•")
-                                    .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
-                                    .foregroundStyle(Color(hex: "5A5A5A"))
-                                
-                                Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                                    Text(L("settings.terms"))
-                                        .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
-                                        .foregroundStyle(Color(hex: "5A5A5A"))
-                                }
-                            }
-                        }
+                        // Legal links (same Privacy / Terms / EULA row as subscription section)
+                        shopSubscriptionLegalLinkRow
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
