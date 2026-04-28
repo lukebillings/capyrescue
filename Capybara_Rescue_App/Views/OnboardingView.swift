@@ -115,8 +115,6 @@ struct OnboardingView: View {
     private static let onboardingCTABottomPadding: CGFloat = 40
     private static let paywallHatCycleSeconds: TimeInterval = 2.4
     private static let paywallDismissCountdownSeconds: Int = 20
-    /// Tighter layout so all three plans + footer fit on one screen without scrolling.
-    private static let paywallSubtitleFontSize: CGFloat = 14
     private static let paywallHeroCapybaraHeight: CGFloat = 118
     private static let paywallHeroCapybaraScale: CGFloat = 0.30
     /// Subscription paywall: slightly taller hero than coin-pack paywall so tall hat previews aren’t clipped; capybara uses center scale like paywall 2.
@@ -878,15 +876,6 @@ struct OnboardingView: View {
                     .lineLimit(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 20)
-                Text(L("onboarding.coinPackOfferSubtitle"))
-                    .font(.system(size: Self.paywallSubtitleFontSize, weight: .medium))
-                    .foregroundStyle(Self.onboardingSecondaryText)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.82)
-                    .lineLimit(6)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
                 paywallCoinBalanceHeader
                 VStack(spacing: 5) {
                     paywallHatShowcaseStrip
