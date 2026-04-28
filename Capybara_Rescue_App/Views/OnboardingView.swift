@@ -1209,7 +1209,7 @@ struct OnboardingView: View {
         do {
             try await subscriptionManager.purchaseSubscription(productId: selectedCoinPlan.productId)
             gameManager.upgradeSubscription(to: selectedCoinPlan.tier)
-            advanceFromSubscriptionPaywall()
+            completeOnboardingAfterSubscriptionPurchase()
         } catch is CancellationError {
             return
         } catch {
@@ -1227,7 +1227,7 @@ struct OnboardingView: View {
             if let s = subscriptionManager.activeSubscription, s != .free {
                 gameManager.upgradeSubscription(to: s)
                 if currentStep == .coinPaywall {
-                    advanceFromSubscriptionPaywall()
+                    completeOnboardingAfterSubscriptionPurchase()
                 }
             }
         } catch {
@@ -1235,6 +1235,13 @@ struct OnboardingView: View {
         }
     }
     
+    /// After a successful subscription (or restore) on the onboarding paywall, skip one-off coin packs and dismiss into the main app / tutorial.
+    private func completeOnboardingAfterSubscriptionPurchase() {
+        gameManager.gameState.hasCompletedPaywall = true
+        completeOnboardingAndDismiss()
+    }
+    
+    /// User closed the subscription paywall without subscribing — offer one-off coin packs next.
     private func advanceFromSubscriptionPaywall() {
         gameManager.gameState.hasCompletedPaywall = true
         coinPackDismissSecondsRemaining = Self.paywallDismissCountdownSeconds
