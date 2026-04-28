@@ -8,10 +8,11 @@ class SubscriptionManager: ObservableObject {
     static let shared = SubscriptionManager()
     
     // Product IDs — must match App Store Connect (auto-renewable subscriptions).
-    static let annualProductId = "com.capyrescue.coins.perweek.2000.billing.yearly"
-    static let weeklyProductId = "com.capyrescue.coins.perweek.2000.billing.weekly"
+    // `nonisolated`: referenced from SwiftUI helper enums; immutable strings are safe across isolation.
+    nonisolated static let annualProductId = "com.capyrescue.coins.perweek.2000.billing.yearly"
+    nonisolated static let weeklyProductId = "com.capyrescue.coins.perweek.2000.billing.weekly"
     /// Legacy tier; omit from new offerings if unused in Connect.
-    static let monthlyProductId = "com.capybara.pro.monthly"
+    nonisolated static let monthlyProductId = "com.capybara.pro.monthly"
     
     @Published private(set) var products: [String: Product] = [:]
     @Published private(set) var isLoading: Bool = false
