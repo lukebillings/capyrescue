@@ -88,12 +88,12 @@ struct ShopPanel: View {
                     
                     // Purchase disclaimers
                     VStack(spacing: 8) {
-                        Text("Purchases are processed by Apple. Refunds handled via Apple Support.")
+                        Text(L("panel.shopPurchasesRefundDisclaimer"))
                             .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                             .foregroundStyle(Color(hex: "5A5A5A"))
                             .multilineTextAlignment(.center)
                         
-                        Text("Coins can be used for purchasing In Game Items, In Game Foods and In Game Drinks. Coins are non-refundable and have no cash value.")
+                        Text(L("panel.shopCoinsSpendDisclaimer"))
                             .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                             .foregroundStyle(Color(hex: "5A5A5A"))
                             .multilineTextAlignment(.center)
@@ -102,7 +102,7 @@ struct ShopPanel: View {
                         VStack(spacing: 6) {
                             HStack(spacing: 8) {
                                 Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/privacypolicy/")!) {
-                                    Text("Privacy Policy")
+                                    Text(L("settings.privacy"))
                                         .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                                         .foregroundStyle(Color(hex: "5A5A5A"))
                                 }
@@ -112,7 +112,7 @@ struct ShopPanel: View {
                                     .foregroundStyle(Color(hex: "5A5A5A"))
                                 
                                 Link(destination: URL(string: "https://lukebillings.github.io/capyrescue/termsandconditions/")!) {
-                                    Text("Terms and Conditions")
+                                    Text(L("settings.terms"))
                                         .font(.system(size: LegalFinePrintTypography.fontSize, weight: LegalFinePrintTypography.weight))
                                         .foregroundStyle(Color(hex: "5A5A5A"))
                                 }
@@ -127,12 +127,13 @@ struct ShopPanel: View {
             }
             .padding(.top, 12)
         }
-        .alert("Purchase Issue", isPresented: $showIAPError) {
-            Button("OK") {
+        .id(localizationManager.currentLanguage)
+        .alert(L("onboarding.purchaseIssueAlert"), isPresented: $showIAPError) {
+            Button(L("common.ok")) {
                 gameManager.iapLastErrorMessage = nil
             }
         } message: {
-            Text(gameManager.iapLastErrorMessage ?? "Unknown error")
+            Text(gameManager.iapLastErrorMessage ?? L("common.unknownError"))
         }
         .onChange(of: gameManager.iapLastErrorMessage) { _, newValue in
             showIAPError = (newValue != nil)
@@ -240,6 +241,14 @@ struct ShopPanel: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 20)
+            
+            Text(L("panel.coinSubscriptionBlurb"))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color(hex: "5A5A5A"))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 20)
+                .padding(.top, 6)
             
             if let nextGrant = gameManager.nextSubscriptionCoinGrantInfo() {
                 subscriptionNextCapycoinsCallout(
@@ -644,6 +653,7 @@ private enum ShopSubscriptionPlan: String, CaseIterable, Identifiable {
 
 // MARK: - Shop subscription plan row
 private struct ShopSubscriptionPlanRow: View {
+    @ObservedObject private var localizationManager = LocalizationManager.shared
     let plan: ShopSubscriptionPlan
     let priceText: String
     /// Set for `.annual` only; onboarding paywall style (7-day trial / renew line), not coin totals.

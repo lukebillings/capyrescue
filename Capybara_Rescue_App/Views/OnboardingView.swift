@@ -119,7 +119,7 @@ struct OnboardingView: View {
     private static let paywallSubtitleFontSize: CGFloat = 14
     private static let paywallHeroCapybaraHeight: CGFloat = 118
     private static let paywallHeroCapybaraScale: CGFloat = 0.30
-    /// Subscription paywall: extra headroom + bottom-anchored scale so the 3D preview sits lower and tall hats aren’t clipped.
+    /// Subscription paywall: slightly taller hero than coin-pack paywall so tall hat previews aren’t clipped; capybara uses center scale like paywall 2.
     private static let paywallSubscriptionHeroHeight: CGFloat = 136
     private static let paywallHatStripHeight: CGFloat = 48
     private static let paywallPlanRowVPadding: CGFloat = 9
@@ -721,8 +721,9 @@ struct OnboardingView: View {
                             initialRotation: nil
                         )
                         .frame(height: Self.paywallSubscriptionHeroHeight)
-                        .scaleEffect(Self.paywallHeroCapybaraScale, anchor: .bottom)
-                        .frame(height: Self.paywallSubscriptionHeroHeight, alignment: .bottom)
+                        .scaleEffect(Self.paywallHeroCapybaraScale)
+                        .frame(height: Self.paywallSubscriptionHeroHeight)
+                        .offset(y: -14)
                         .clipped()
                         .allowsHitTesting(false)
                     } else {
